@@ -56,7 +56,7 @@ src/
 | Spandex | https://spandex.sh/ | Mock token prices + swap execution — **no API key required, public API** |
 | Codex | https://docs.codex.io/ | Mock price history + volume |
 | Polymarket CLOB | https://docs.polymarket.com/ | Mock market data + trade execution |
-| CDP Embedded EOA | https://docs.cdp.coinbase.com/embedded-wallets/welcome | Mock wallet state in `use-wallet.ts` |
+| CDP Embedded EOA | https://docs.cdp.coinbase.com/embedded-wallets/welcome | When `VITE_CDP_PROJECT_ID` is set, embedded wallet (email/social) used for "Create wallet"; otherwise Coinbase Wallet SDK. `CDP_API_KEY_*` reserved for future server-side use. |
 | Relay | https://docs.relay.link/ | Trade routing |
 
 ## Liveline chart API
