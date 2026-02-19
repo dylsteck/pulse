@@ -151,7 +151,7 @@ function PerpsTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
                 gridCols,
                 selected
                   ? 'border-l-foreground bg-accent'
@@ -167,35 +167,33 @@ function PerpsTable({
                   wrapperClassName="size-7 shrink-0 rounded-full"
                   className="size-7 rounded-full object-cover"
                 />
-                <span className="font-mono text-sm font-semibold">
-                  {market.coin}
-                </span>
+                <span className="text-sm font-semibold">{market.coin}</span>
                 <span className="text-xs text-muted-foreground">PERP</span>
               </div>
-              <span className="text-right font-mono text-sm tabular-nums">
+              <span className="text-right text-sm tabular-nums">
                 ${formatPerpPrice(market, market.markPx)}
               </span>
               <span
                 className={cn(
-                  'text-right font-mono text-sm tabular-nums',
+                  'text-right text-sm tabular-nums',
                   market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
                 )}
               >
                 {market.change24h >= 0 ? '+' : ''}
                 {market.change24h.toFixed(2)}%
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatCompact(market.volume24h)}
               </span>
               <span
                 className={cn(
-                  'text-right font-mono text-xs tabular-nums',
+                  'text-right text-xs tabular-nums',
                   market.funding >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
                 )}
               >
                 {(market.funding * 100).toFixed(4)}%
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatCompact(market.openInterest)}
               </span>
               <span className="flex justify-end pr-1">
@@ -230,10 +228,8 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
-        <span className="font-mono text-sm font-semibold">
-          {market.coin} PERP
-        </span>
-        <span className="font-mono text-lg font-semibold tabular-nums">
+        <span className="text-sm font-semibold">{market.coin} PERP</span>
+        <span className="text-lg font-semibold tabular-nums">
           ${formatPerpPrice(market, market.markPx)}
         </span>
       </div>
@@ -255,40 +251,41 @@ function PerpsGrid({ markets }: { markets: PerpMarketSnapshot[] }) {
           key={market.id}
           to="/asset/$type/$id"
           params={{ type: 'perps', id: market.id }}
-          className="block overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
+          className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
         >
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
               <FadeImage
                 src={perpIconUrl(market.coin)}
                 alt=""
-                wrapperClassName="size-7 shrink-0 rounded-full"
-                className="size-7 rounded-full object-cover"
+                wrapperClassName="size-9 shrink-0 rounded-full"
+                className="size-9 rounded-full object-cover"
               />
-              <span className="font-mono text-sm font-semibold">
-                {market.coin} PERP
-              </span>
+              <div>
+                <div className="text-sm font-semibold">{market.coin}</div>
+                <div className="text-xs text-muted-foreground">PERP</div>
+              </div>
+            </div>
+            <div
+              className={cn(
+                'text-xs font-medium tabular-nums',
+                market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+              )}
+            >
+              {market.change24h >= 0 ? '+' : ''}
+              {market.change24h.toFixed(2)}%
             </div>
           </div>
-          <div
-            className={cn(
-              'mt-2 text-xs font-mono tabular-nums',
-              market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-            )}
-          >
-            {market.change24h >= 0 ? '+' : ''}
-            {market.change24h.toFixed(2)}%
-          </div>
-          <div className="mt-3 font-mono text-lg tabular-nums">
+          <div className="mt-2 mb-1 text-lg font-semibold tabular-nums">
             ${formatPerpPrice(market, market.markPx)}
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+          <div className="mt-auto pt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
             <span className="text-muted-foreground">Volume</span>
-            <span className="text-right font-mono">
+            <span className="text-right tabular-nums">
               {formatCompact(market.volume24h)}
             </span>
             <span className="text-muted-foreground">Funding</span>
-            <span className="text-right font-mono">
+            <span className="text-right tabular-nums">
               {(market.funding * 100).toFixed(4)}%
             </span>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ArrowUpRight, LayoutGridIcon, Rows3Icon } from 'lucide-react'
+import { LayoutGridIcon, Rows3Icon } from 'lucide-react'
 import {
   LivelineChart,
   WINDOW_SECS_TO_LABEL,
@@ -499,32 +499,6 @@ interface TokenTableProps {
   onRowClick: (index: number) => void
 }
 
-export function AssetLink({
-  type,
-  id,
-  className,
-}: {
-  type: ViewMode
-  id: string
-  className?: string
-}) {
-  return (
-    <Link
-      to="/asset/$type/$id"
-      params={{ type, id }}
-      className={cn(
-        'inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
-        className,
-      )}
-      aria-label="View details"
-      title="View details"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <ArrowUpRight className="size-3.5" />
-    </Link>
-  )
-}
-
 function TokenTable({
   tokens,
   selectedIndex,
@@ -532,7 +506,7 @@ function TokenTable({
   rowRefs,
   onRowClick,
 }: TokenTableProps) {
-  const gridCols = 'grid-cols-[2fr_1fr_0.7fr_0.8fr_0.8fr_32px]'
+  const gridCols = 'grid-cols-[2fr_1fr_0.7fr_0.8fr_0.8fr]'
   return (
     <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
       <div
@@ -556,7 +530,6 @@ function TokenTable({
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Mkt Cap
         </span>
-        <span />
       </div>
 
       {tokens.map((token, i) => {
@@ -571,7 +544,7 @@ function TokenTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
                 gridCols,
                 selected
                   ? 'border-l-foreground bg-accent'
@@ -590,34 +563,29 @@ function TokenTable({
                   />
                 )}
                 <div className="min-w-0">
-                  <span className="font-mono text-sm font-semibold">
-                    {token.symbol}
-                  </span>
+                  <span className="text-sm font-semibold">{token.symbol}</span>
                   <div className="truncate text-xs text-muted-foreground">
                     {token.name}
                   </div>
                 </div>
               </div>
-              <span className="text-right font-mono text-sm tabular-nums">
+              <span className="text-right text-sm tabular-nums">
                 ${formatPrice(token.price)}
               </span>
               <span
                 className={cn(
-                  'text-right font-mono text-sm tabular-nums',
+                  'text-right text-sm tabular-nums',
                   token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
                 )}
               >
                 {token.change24h >= 0 ? '+' : ''}
                 {token.change24h.toFixed(2)}%
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatCompact(token.volume24h)}
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatCompact(token.marketCap)}
-              </span>
-              <span className="flex justify-end pr-1">
-                <AssetLink type="tokens" id={token.id} />
               </span>
             </button>
 
@@ -652,8 +620,8 @@ function InlineTokenChart({ token }: { token: Token }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
-        <span className="font-mono text-sm font-semibold">{token.symbol}</span>
-        <span className="font-mono text-lg font-semibold tabular-nums">
+        <span className="text-sm font-semibold">{token.symbol}</span>
+        <span className="text-lg font-semibold tabular-nums">
           ${formatPrice(price)}
         </span>
       </div>
@@ -689,7 +657,7 @@ function MarketTable({
   rowRefs,
   onRowClick,
 }: MarketTableProps) {
-  const gridCols = 'grid-cols-[3fr_0.6fr_0.8fr_0.8fr_32px]'
+  const gridCols = 'grid-cols-[3fr_0.6fr_0.8fr_0.8fr]'
   return (
     <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
       <div
@@ -710,7 +678,6 @@ function MarketTable({
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Expires
         </span>
-        <span />
       </div>
 
       {markets.map((market, i) => {
@@ -725,7 +692,7 @@ function MarketTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
                 gridCols,
                 selected
                   ? 'border-l-foreground bg-accent'
@@ -745,17 +712,14 @@ function MarketTable({
                 )}
                 <span className="truncate text-sm">{market.title}</span>
               </div>
-              <span className="text-right font-mono text-sm tabular-nums">
+              <span className="text-right text-sm tabular-nums">
                 {market.yesPercent}%
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatCompact(market.volume)}
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatExpiry(market.expiry)}
-              </span>
-              <span className="flex justify-end pr-1">
-                <AssetLink type="markets" id={market.id} />
               </span>
             </button>
 
@@ -773,19 +737,33 @@ function MarketTable({
 
 function InlineMarketChart({ market }: { market: Market }) {
   const { yesPercent, history } = useMarketOdds(market)
+
+  const chartData =
+    history.length >= 2
+      ? history
+      : history.length === 1
+        ? [
+            { time: history[0]!.time - 60, value: history[0]!.value },
+            history[0]!,
+          ]
+        : [
+            { time: Date.now() / 1000 - 60, value: yesPercent },
+            { time: Date.now() / 1000, value: yesPercent },
+          ]
+
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-sm font-medium">{market.title}</span>
-        <span className="font-mono text-sm font-semibold text-[#22c55e]">
-          {yesPercent.toFixed(1)}% Yes
+        <span className="text-sm font-semibold text-[#22c55e]">
+          {Math.round(yesPercent)}% Yes
         </span>
       </div>
       <LivelineChart
-        data={history}
+        data={chartData}
         value={yesPercent}
         height={220}
-        formatValue={(v) => `${v.toFixed(1)}%`}
+        formatValue={(v) => `${Math.round(v)}%`}
       />
     </div>
   )
@@ -808,7 +786,7 @@ function MusicTable({
   rowRefs,
   onRowClick,
 }: MusicTableProps) {
-  const gridCols = 'grid-cols-[2fr_1.5fr_0.7fr_0.6fr_0.8fr_32px]'
+  const gridCols = 'grid-cols-[2fr_1.5fr_0.7fr_0.6fr_0.8fr]'
   if (isLoading) {
     return <LoadingPanel />
   }
@@ -842,7 +820,6 @@ function MusicTable({
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Created
         </span>
-        <span />
       </div>
 
       {songs.map((song, i) => {
@@ -857,7 +834,7 @@ function MusicTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
                 gridCols,
                 selected
                   ? 'border-l-foreground bg-accent'
@@ -878,17 +855,14 @@ function MusicTable({
               <span className="truncate text-sm text-muted-foreground">
                 {song.artist}
               </span>
-              <span className="text-right font-mono text-sm tabular-nums">
+              <span className="text-right text-sm tabular-nums">
                 {song.collection_count}
               </span>
               <span className="text-right text-xs text-muted-foreground capitalize">
                 {song.media_type}
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatCreated(song.created_at)}
-              </span>
-              <span className="flex justify-end pr-1">
-                <AssetLink type="music" id={song.id} />
               </span>
             </button>
 
@@ -962,7 +936,7 @@ function CreatorsTable({
   rowRefs,
   onRowClick,
 }: CreatorsTableProps) {
-  const gridCols = 'grid-cols-[1.7fr_0.8fr_0.8fr_0.8fr_0.7fr_32px]'
+  const gridCols = 'grid-cols-[1.7fr_0.8fr_0.8fr_0.8fr_0.7fr]'
 
   if (isLoading) {
     return <LoadingPanel />
@@ -999,7 +973,6 @@ function CreatorsTable({
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Holders
         </span>
-        <span />
       </div>
 
       {creators.map((creator, i) => {
@@ -1017,7 +990,7 @@ function CreatorsTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
                 gridCols,
                 selected
                   ? 'border-l-foreground bg-accent'
@@ -1036,7 +1009,7 @@ function CreatorsTable({
                   />
                 )}
                 <div className="min-w-0">
-                  <div className="truncate font-mono text-sm font-semibold">
+                  <div className="truncate text-sm font-semibold">
                     {creator.symbol}
                   </div>
                   <div className="truncate text-xs text-muted-foreground">
@@ -1044,12 +1017,12 @@ function CreatorsTable({
                   </div>
                 </div>
               </div>
-              <span className="text-right font-mono text-sm tabular-nums">
+              <span className="text-right text-sm tabular-nums">
                 {formatCompact(creator.marketCap)}
               </span>
               <span
                 className={cn(
-                  'text-right font-mono text-sm tabular-nums',
+                  'text-right text-sm tabular-nums',
                   creator.marketCapDelta24h >= 0
                     ? 'text-[#22c55e]'
                     : 'text-[#ef4444]',
@@ -1058,14 +1031,11 @@ function CreatorsTable({
                 {creator.marketCapDelta24h >= 0 ? '+' : ''}
                 {creator.marketCapDelta24h.toFixed(2)}%
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {formatCompact(creator.volume24h)}
               </span>
-              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
                 {creator.uniqueHolders.toLocaleString('en-US')}
-              </span>
-              <span className="flex justify-end pr-1">
-                <AssetLink type="creators" id={creator.id} />
               </span>
             </button>
 
@@ -1096,10 +1066,8 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
-        <span className="font-mono text-sm font-semibold">
-          {creator.symbol}
-        </span>
-        <span className="font-mono text-lg font-semibold tabular-nums">
+        <span className="text-sm font-semibold">{creator.symbol}</span>
+        <span className="text-lg font-semibold tabular-nums">
           ${last.value.toFixed(last.value >= 1 ? 4 : 8)}
         </span>
       </div>
@@ -1135,9 +1103,7 @@ const TokenGridCard = React.memo(function TokenGridCard({
             />
           )}
           <div className="min-w-0">
-            <div className="font-mono text-sm font-semibold">
-              {token.symbol}
-            </div>
+            <div className="text-sm font-semibold">{token.symbol}</div>
             <div className="truncate text-xs text-muted-foreground">
               {token.name}
             </div>
@@ -1147,7 +1113,7 @@ const TokenGridCard = React.memo(function TokenGridCard({
       <div className="mt-2 flex items-baseline justify-between">
         <div
           className={cn(
-            'text-xs font-mono tabular-nums',
+            'text-xs tabular-nums',
             token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
           )}
         >
@@ -1155,18 +1121,14 @@ const TokenGridCard = React.memo(function TokenGridCard({
           {token.change24h.toFixed(2)}%
         </div>
       </div>
-      <div className="mt-3 font-mono text-lg tabular-nums">
+      <div className="mt-3 text-lg tabular-nums">
         ${formatPrice(token.price)}
       </div>
       <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
         <span className="text-muted-foreground">Volume</span>
-        <span className="text-right font-mono">
-          {formatCompact(token.volume24h)}
-        </span>
+        <span className="text-right">{formatCompact(token.volume24h)}</span>
         <span className="text-muted-foreground">Mkt Cap</span>
-        <span className="text-right font-mono">
-          {formatCompact(token.marketCap)}
-        </span>
+        <span className="text-right">{formatCompact(token.marketCap)}</span>
       </div>
     </Link>
   )
@@ -1181,38 +1143,50 @@ const CreatorGridCard = React.memo(function CreatorGridCard({
     <Link
       to="/asset/$type/$id"
       params={{ type: 'creators', id: creator.id }}
-      className="block overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="truncate font-mono text-sm font-semibold">
-            {creator.symbol}
-          </div>
-          <div className="truncate text-xs text-muted-foreground">
-            {creator.creatorHandle ?? creator.name}
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 gap-3">
+          {creator.imageUrl && (
+            <FadeImage
+              src={creator.imageUrl}
+              alt=""
+              wrapperClassName="size-9 shrink-0 rounded-full"
+              className="size-9 rounded-full object-cover"
+            />
+          )}
+          <div className="min-w-0 flex-1 pt-0.5">
+            <div className="truncate text-sm font-semibold">
+              {creator.symbol}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {creator.creatorHandle ?? creator.name}
+            </div>
           </div>
         </div>
+        <div
+          className={cn(
+            'text-xs font-medium tabular-nums',
+            creator.marketCapDelta24h >= 0
+              ? 'text-[#22c55e]'
+              : 'text-[#ef4444]',
+          )}
+        >
+          {creator.marketCapDelta24h >= 0 ? '+' : ''}
+          {creator.marketCapDelta24h.toFixed(2)}%
+        </div>
       </div>
-      <div
-        className={cn(
-          'mt-2 text-xs font-mono tabular-nums',
-          creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-        )}
-      >
-        {creator.marketCapDelta24h >= 0 ? '+' : ''}
-        {creator.marketCapDelta24h.toFixed(2)}%
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+      <div className="mt-auto pt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
         <span className="text-muted-foreground">Mkt Cap</span>
-        <span className="text-right font-mono">
+        <span className="text-right tabular-nums">
           {formatCompact(creator.marketCap)}
         </span>
         <span className="text-muted-foreground">24h Vol</span>
-        <span className="text-right font-mono">
+        <span className="text-right tabular-nums">
           {formatCompact(creator.volume24h)}
         </span>
         <span className="text-muted-foreground">Holders</span>
-        <span className="text-right font-mono">
+        <span className="text-right tabular-nums">
           {creator.uniqueHolders.toLocaleString('en-US')}
         </span>
       </div>
@@ -1220,51 +1194,154 @@ const CreatorGridCard = React.memo(function CreatorGridCard({
   )
 })
 
+function ChanceGauge({
+  percent,
+  size = 56,
+}: {
+  percent: number
+  size?: number
+}) {
+  const stroke = 5
+  const r = (size - stroke) / 2
+  const cx = size / 2
+  const cy = size / 2
+
+  const startAngle = 220
+  const endAngle = 500
+  const totalArc = endAngle - startAngle
+  const fillAngle = startAngle + (totalArc * Math.min(percent, 100)) / 100
+
+  const toRad = (deg: number) => ((deg - 90) * Math.PI) / 180
+  const arcPoint = (angle: number) => ({
+    x: cx + r * Math.cos(toRad(angle)),
+    y: cy + r * Math.sin(toRad(angle)),
+  })
+
+  const bgStart = arcPoint(startAngle)
+  const bgEnd = arcPoint(endAngle)
+  const bgLargeArc = totalArc > 180 ? 1 : 0
+  const bgPath = `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 ${bgLargeArc} 1 ${bgEnd.x} ${bgEnd.y}`
+
+  const fillEnd = arcPoint(fillAngle)
+  const fillSweep = fillAngle - startAngle
+  const fillLargeArc = fillSweep > 180 ? 1 : 0
+  const fillPath =
+    fillSweep > 0.5
+      ? `M ${bgStart.x} ${bgStart.y} A ${r} ${r} 0 ${fillLargeArc} 1 ${fillEnd.x} ${fillEnd.y}`
+      : ''
+
+  const color = percent >= 50 ? '#22c55e' : '#ef4444'
+
+  return (
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className="absolute inset-0"
+      >
+        <path
+          d={bgPath}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          className="text-muted-foreground/25"
+        />
+        {fillPath && (
+          <path
+            d={fillPath}
+            fill="none"
+            stroke={color}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+          />
+        )}
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-[13px] font-bold leading-none text-foreground">
+          {Math.round(percent)}%
+        </span>
+      </div>
+    </div>
+  )
+}
+
 const MarketGridCard = React.memo(function MarketGridCard({
   market,
 }: {
   market: Market
 }) {
+  const hasOutcomes = market.outcomes && market.outcomes.length > 0
+
   return (
     <Link
       to="/asset/$type/$id"
       params={{ type: 'markets', id: market.id }}
-      className="block overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-1 items-start gap-2">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 gap-3">
           {market.imageUrl && (
             <FadeImage
               src={market.imageUrl}
               alt=""
-              wrapperClassName="size-7 shrink-0 rounded-sm"
-              className="size-7 rounded-sm object-cover"
+              wrapperClassName="size-9 shrink-0 rounded-lg"
+              className="size-9 rounded-lg object-cover"
             />
           )}
-          <div className="min-w-0 flex-1 text-sm font-medium leading-snug">
-            {market.title}
+          <div className="min-w-0 flex-1 pt-0.5">
+            <div className="line-clamp-2 text-sm font-medium leading-snug">
+              {market.title}
+            </div>
           </div>
         </div>
+
+        {!hasOutcomes && <ChanceGauge percent={market.yesPercent} />}
       </div>
-      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <span>Yes {market.yesPercent}%</span>
-        <span>No {market.noPercent}%</span>
-      </div>
-      <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full rounded-full bg-[#22c55e]"
-          style={{ width: `${market.yesPercent}%` }}
-        />
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-        <span className="text-muted-foreground">Volume</span>
-        <span className="text-right font-mono">
-          {formatCompact(market.volume)}
-        </span>
-        <span className="text-muted-foreground">Expires</span>
-        <span className="text-right font-mono">
-          {formatExpiry(market.expiry)}
-        </span>
+
+      {hasOutcomes ? (
+        <div className="mt-3 space-y-1.5">
+          {market.outcomes!.map((o) => (
+            <div key={o.name} className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-sm">{o.name}</span>
+              <span className="shrink-0 text-sm font-medium tabular-nums">
+                {Math.round(o.percent)}%
+              </span>
+              <span className="group/yes shrink-0 cursor-pointer rounded px-2 py-0.5 text-xs font-semibold bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e] hover:text-white dark:bg-[#22c55e]/20 dark:hover:bg-[#22c55e] transition-colors">
+                <span className="group-hover/yes:hidden">Yes</span>
+                <span className="hidden group-hover/yes:inline tabular-nums">
+                  {Math.round(o.percent)}%
+                </span>
+              </span>
+              <span className="group/no shrink-0 cursor-pointer rounded px-2 py-0.5 text-xs font-semibold bg-[#ef4444]/15 text-[#ef4444] hover:bg-[#ef4444] hover:text-white dark:bg-[#ef4444]/20 dark:hover:bg-[#ef4444] transition-colors">
+                <span className="group-hover/no:hidden">No</span>
+                <span className="hidden group-hover/no:inline tabular-nums">
+                  {Math.round(100 - o.percent)}%
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 flex gap-2">
+          <div className="group/yes flex-1 cursor-pointer rounded-lg bg-[#22c55e]/15 py-2 text-center text-sm font-semibold text-[#22c55e] hover:bg-[#22c55e] hover:text-white dark:bg-[#22c55e]/20 dark:hover:bg-[#22c55e] transition-colors">
+            <span className="group-hover/yes:hidden">Yes</span>
+            <span className="hidden group-hover/yes:inline tabular-nums">
+              {Math.round(market.yesPercent)}%
+            </span>
+          </div>
+          <div className="group/no flex-1 cursor-pointer rounded-lg bg-[#ef4444]/15 py-2 text-center text-sm font-semibold text-[#ef4444] hover:bg-[#ef4444] hover:text-white dark:bg-[#ef4444]/20 dark:hover:bg-[#ef4444] transition-colors">
+            <span className="group-hover/no:hidden">No</span>
+            <span className="hidden group-hover/no:inline tabular-nums">
+              {Math.round(market.noPercent)}%
+            </span>
+          </div>
+        </div>
+      )}
+
+      <div className="mt-auto pt-3 text-xs font-medium text-muted-foreground">
+        <span>{formatCompact(market.volume)} Vol.</span>
       </div>
     </Link>
   )
@@ -1279,27 +1356,27 @@ const MusicGridCard = React.memo(function MusicGridCard({
     <Link
       to="/asset/$type/$id"
       params={{ type: 'music', id: song.id }}
-      className="block overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 flex-1 gap-3">
-          <FadeImage
-            src={imageUrl(song.image_ipfs_cid)}
-            alt=""
-            wrapperClassName="size-14 shrink-0 rounded-md"
-            className="size-14 rounded-md object-cover"
-          />
-          <div className="min-w-0">
-            <div className="truncate text-sm font-medium">{song.title}</div>
-            <div className="truncate text-xs text-muted-foreground">
-              {song.artist}
-            </div>
+      <div className="flex items-start gap-3">
+        <FadeImage
+          src={imageUrl(song.image_ipfs_cid)}
+          alt=""
+          wrapperClassName="size-12 shrink-0 rounded-lg"
+          className="size-12 rounded-lg object-cover"
+        />
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="truncate text-sm font-medium leading-snug">
+            {song.title}
+          </div>
+          <div className="truncate text-xs text-muted-foreground">
+            {song.artist}
           </div>
         </div>
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+      <div className="mt-auto pt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
         <span className="text-muted-foreground">Collections</span>
-        <span className="text-right font-mono">{song.collection_count}</span>
+        <span className="text-right tabular-nums">{song.collection_count}</span>
         <span className="text-muted-foreground">Type</span>
         <span className="text-right capitalize">{song.media_type}</span>
       </div>

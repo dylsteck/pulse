@@ -3,9 +3,9 @@ import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import type { CreatorToken } from '@/lib/zora/service'
-import type { Market, Token  } from '@/lib/types'
+import type { Market, Token } from '@/lib/types'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
-import type {Song} from '@/lib/tortoise';
+import type { Song } from '@/lib/tortoise'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
@@ -20,7 +20,7 @@ import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { fetchCodexTokenByAddress } from '@/lib/codex'
 import { fetchPolymarketEventById } from '@/lib/polymarket'
 import { FadeImage } from '@/components/ui/fade-image'
-import {  imageUrl } from '@/lib/tortoise'
+import { imageUrl } from '@/lib/tortoise'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { cn } from '@/lib/utils'
 
@@ -162,13 +162,13 @@ function TokenDetailContent({ token }: { token: Token }) {
             />
           )}
           <div>
-            <h1 className="font-mono text-lg font-semibold">{token.symbol}</h1>
+            <h1 className="text-lg font-semibold">{token.symbol}</h1>
             <p className="text-sm text-muted-foreground">{token.name}</p>
           </div>
         </div>
         <span
           className={cn(
-            'text-sm font-mono tabular-nums',
+            'text-sm tabular-nums',
             token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
           )}
         >
@@ -176,9 +176,7 @@ function TokenDetailContent({ token }: { token: Token }) {
           {token.change24h.toFixed(2)}%
         </span>
       </div>
-      <div className="mb-6 font-mono text-2xl tabular-nums">
-        ${formatPrice(price)}
-      </div>
+      <div className="mb-6 text-2xl tabular-nums">${formatPrice(price)}</div>
       {isLoading && chartData.length === 0 ? (
         <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
       ) : (
@@ -193,11 +191,11 @@ function TokenDetailContent({ token }: { token: Token }) {
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
-          <p className="font-mono">{formatCompact(token.volume24h)}</p>
+          <p className="">{formatCompact(token.volume24h)}</p>
         </div>
         <div>
           <span className="text-muted-foreground">Mkt Cap</span>
-          <p className="font-mono">{formatCompact(token.marketCap)}</p>
+          <p className="">{formatCompact(token.marketCap)}</p>
         </div>
       </div>
     </div>
@@ -258,7 +256,7 @@ function MarketDetailContent({ market }: { market: Market }) {
         <span className="text-muted-foreground">
           Yes {yesPercent.toFixed(1)}%
         </span>
-        <span className="font-mono font-semibold text-[#22c55e]">
+        <span className="font-semibold text-[#22c55e]">
           {yesPercent.toFixed(1)}% Yes
         </span>
       </div>
@@ -277,11 +275,11 @@ function MarketDetailContent({ market }: { market: Market }) {
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
-          <p className="font-mono">{formatCompact(market.volume)}</p>
+          <p className="">{formatCompact(market.volume)}</p>
         </div>
         <div>
           <span className="text-muted-foreground">Expires</span>
-          <p className="font-mono">{formatExpiry(market.expiry)}</p>
+          <p className="">{formatExpiry(market.expiry)}</p>
         </div>
       </div>
     </div>
@@ -315,9 +313,7 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
             />
           )}
           <div>
-            <h1 className="font-mono text-lg font-semibold">
-              {creator.symbol}
-            </h1>
+            <h1 className="text-lg font-semibold">{creator.symbol}</h1>
             <p className="text-sm text-muted-foreground">
               {creator.creatorHandle ?? creator.name}
             </p>
@@ -343,14 +339,14 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
           />
         )}
         <div>
-          <h1 className="font-mono text-lg font-semibold">{creator.symbol}</h1>
+          <h1 className="text-lg font-semibold">{creator.symbol}</h1>
           <p className="text-sm text-muted-foreground">
             {creator.creatorHandle ?? creator.name}
           </p>
         </div>
         <span
           className={cn(
-            'ml-auto text-sm font-mono tabular-nums',
+            'ml-auto text-sm tabular-nums',
             creator.marketCapDelta24h >= 0
               ? 'text-[#22c55e]'
               : 'text-[#ef4444]',
@@ -360,7 +356,7 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
           {creator.marketCapDelta24h.toFixed(2)}%
         </span>
       </div>
-      <div className="mb-6 font-mono text-2xl tabular-nums">
+      <div className="mb-6 text-2xl tabular-nums">
         ${last.value.toFixed(last.value >= 1 ? 4 : 8)}
       </div>
       <LivelineChart
@@ -372,17 +368,15 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Mkt Cap</span>
-          <p className="font-mono">{formatCompact(creator.marketCap)}</p>
+          <p className="">{formatCompact(creator.marketCap)}</p>
         </div>
         <div>
           <span className="text-muted-foreground">24h Vol</span>
-          <p className="font-mono">{formatCompact(creator.volume24h)}</p>
+          <p className="">{formatCompact(creator.volume24h)}</p>
         </div>
         <div>
           <span className="text-muted-foreground">Holders</span>
-          <p className="font-mono">
-            {creator.uniqueHolders.toLocaleString('en-US')}
-          </p>
+          <p className="">{creator.uniqueHolders.toLocaleString('en-US')}</p>
         </div>
       </div>
     </div>
@@ -489,13 +483,11 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
             wrapperClassName="size-8 shrink-0 rounded-full"
             className="size-8 rounded-full object-cover"
           />
-          <h1 className="font-mono text-lg font-semibold">
-            {market.coin} PERP
-          </h1>
+          <h1 className="text-lg font-semibold">{market.coin} PERP</h1>
         </div>
         <span
           className={cn(
-            'text-sm font-mono tabular-nums',
+            'text-sm tabular-nums',
             market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
           )}
         >
@@ -503,7 +495,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
           {market.change24h.toFixed(2)}%
         </span>
       </div>
-      <div className="mb-6 font-mono text-2xl tabular-nums">
+      <div className="mb-6 text-2xl tabular-nums">
         ${formatPerpPrice(market, market.markPx)}
       </div>
       <LivelineChart
@@ -515,15 +507,15 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
-          <p className="font-mono">{formatCompact(market.volume24h)}</p>
+          <p className="">{formatCompact(market.volume24h)}</p>
         </div>
         <div>
           <span className="text-muted-foreground">Funding</span>
-          <p className="font-mono">{(market.funding * 100).toFixed(4)}%</p>
+          <p className="">{(market.funding * 100).toFixed(4)}%</p>
         </div>
         <div>
           <span className="text-muted-foreground">Open Interest</span>
-          <p className="font-mono">{formatCompact(market.openInterest)}</p>
+          <p className="">{formatCompact(market.openInterest)}</p>
         </div>
       </div>
     </div>

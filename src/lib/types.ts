@@ -11,6 +11,11 @@ export interface Token {
   imageUrl?: string
 }
 
+export interface MarketOutcome {
+  name: string
+  percent: number
+}
+
 export interface Market {
   id: string
   title: string
@@ -20,4 +25,5 @@ export interface Market {
   expiry: string
   priceHistory: { time: number; value: number }[]
   imageUrl?: string
+  outcomes?: MarketOutcome[]
 }
