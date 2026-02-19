@@ -26,7 +26,10 @@ export function LivelineChart({ data, value, height = 260, formatValue }: Liveli
   }, [])
 
   return (
-    <div style={{ width: '100%', height: `${height}px` }}>
+    <div
+      className="min-h-0 overflow-visible"
+      style={{ width: '100%', height: `${height}px`, minHeight: `${height}px` }}
+    >
       {mounted && (
         <Liveline
           data={data}
@@ -40,8 +43,9 @@ export function LivelineChart({ data, value, height = 260, formatValue }: Liveli
           momentum
           fill
           grid
+          padding={{ top: 12, right: 80, bottom: 40, left: 12 }}
           {...(formatValue ? { formatValue } : {})}
-          style={{ width: '100%', height: `${height}px` }}
+          style={{ width: '100%', height: '100%' }}
         />
       )}
     </div>

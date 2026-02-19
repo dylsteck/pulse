@@ -7,6 +7,18 @@ import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
 
 const config = defineConfig({
+  ssr: {
+    noExternal: ['@coinbase/cdp-react', '@coinbase/cdp-hooks', '@coinbase/cdp-core', '@coinbase/cdp-wagmi'],
+  },
+  server: {
+    proxy: {
+      '/api/tortoise': {
+        target: 'https://tortoise.studio',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/tortoise/, '/api'),
+      },
+    },
+  },
   plugins: [
     devtools(),
     nitro(),
