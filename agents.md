@@ -42,6 +42,7 @@ src/
 
 ## Key conventions
 
+- **Package manager**: Always use bun for install, dev, build, test, and other npm scripts. If bun isn't in the sandbox, run `curl -fsSL https://bun.sh/install | bash` and `source ~/.bashrc`.
 - **Routing**: TanStack Router file-based. New routes go in `src/routes/`. Run dev server to auto-regenerate `routeTree.gen.ts`, or update it manually.
 - **Path alias**: `@/` maps to `src/` (configured in `tsconfig.json`).
 - **Styling**: Tailwind v4 + shadcn. Design tokens are in `src/styles.css`. Raw color values used: `#FFFFFF` bg, `#F9F9F9` sections, `#E5E5E5` borders, `#22c55e` green, `#ef4444` red.
@@ -73,7 +74,17 @@ src/
 
 ## Running
 
+Use **bun** for all package operations (install, dev, build, test, etc.). If bun is not available in the sandbox, install it first:
+
 ```bash
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc   # or restart the shell so bun is on PATH
+```
+
+Then:
+
+```bash
+bun install
 bun run dev     # localhost:3000
 bun run build   # production build (catches type errors)
 ```

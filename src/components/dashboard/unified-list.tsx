@@ -46,9 +46,32 @@ interface UnifiedListProps {
   onModeChange?: (mode: ViewMode) => void
 }
 
+const MOBILE_BREAKPOINT = 768
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`)
+    const handler = () => setIsMobile(mq.matches)
+    handler()
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return isMobile
+}
+
 export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedListProps) {
+  const isMobile = useIsMobile()
   const [mode, setMode] = useState<ViewMode>(initialMode)
   const [layout, setLayout] = useState<ViewLayout>('list')
+  const hasSetInitialLayout = useRef(false)
+
+  useEffect(() => {
+    if (isMobile && !hasSetInitialLayout.current) {
+      hasSetInitialLayout.current = true
+      setLayout('grid')
+    }
+  }, [isMobile])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -154,9 +177,9 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-37px)] max-w-6xl flex-col px-4 py-2 sm:px-6">
-      <div className="mb-2 flex items-end justify-between">
-        <div className="flex items-center gap-5">
+    <div className="mx-auto flex h-[calc(100vh-37px)] max-w-6xl flex-col px-3 py-2 sm:px-6">
+      <div className="mb-2 flex items-end justify-between gap-2">
+        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
           {(['tokens', 'markets', 'creators', 'music', 'perps'] as ViewMode[]).map((tab) => {
             const active = mode === tab
             return (
@@ -169,7 +192,7 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
                   setSelectedIndex(0)
                 }}
                 className={cn(
-                  'text-sm font-medium capitalize transition-colors',
+                  'shrink-0 text-sm font-medium capitalize transition-colors',
                   active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
                 )}
               >
@@ -839,9 +862,9 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
 
 function TokenGrid({ tokens }: { tokens: Token[] }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {tokens.map((token) => (
-        <div key={token.id} className="rounded-xl border border-border bg-card p-4">
+        <div key={token.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
           <div className="flex items-baseline justify-between">
             <div>
               <div className="font-mono text-sm font-semibold">{token.symbol}</div>
@@ -892,9 +915,9 @@ function CreatorsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {creators.map((creator) => (
-        <div key={creator.id} className="rounded-xl border border-border bg-card p-4">
+        <div key={creator.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
@@ -928,9 +951,9 @@ function CreatorsGrid({
 
 function MarketGrid({ markets }: { markets: Market[] }) {
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {markets.map((market) => (
-        <div key={market.id} className="rounded-xl border border-border bg-card p-4">
+        <div key={market.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
           <div className="text-sm font-medium leading-snug">{market.title}</div>
           <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
             <span>Yes {market.yesPercent}%</span>
@@ -967,9 +990,9 @@ function MusicGrid({ songs, isLoading }: { songs: Song[]; isLoading: boolean }) 
     )
   }
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {songs.map((song) => (
-        <div key={song.id} className="rounded-xl border border-border bg-card p-4">
+        <div key={song.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
           <div className="flex items-start gap-3">
             <img src={imageUrl(song.image_ipfs_cid)} alt="" className="size-14 rounded-md object-cover" />
             <div className="min-w-0">
