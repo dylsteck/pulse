@@ -3,10 +3,9 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { CDPHooksProvider } from '@coinbase/cdp-hooks'
 import { Header } from '@/components/layout/header'
 import { ThemeProvider } from '@/components/theme-provider'
-import { wagmiConfig, isCDPEmbeddedEnabled, cdpConfig } from '@/lib/wagmi'
+import { wagmiConfig } from '@/lib/wagmi'
 
 import appCss from '../styles.css?url'
 
@@ -40,23 +39,14 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground">
-        {(() => {
-          const app = (
-            <WagmiProvider config={wagmiConfig}>
-              <QueryClientProvider client={queryClient}>
-                <ThemeProvider>
-                  <Header />
-                  {children}
-                </ThemeProvider>
-              </QueryClientProvider>
-            </WagmiProvider>
-          )
-          return isCDPEmbeddedEnabled && cdpConfig ? (
-            <CDPHooksProvider config={cdpConfig}>{app}</CDPHooksProvider>
-          ) : (
-            app
-          )
-        })()}
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <ThemeProvider>
+              <Header />
+              {children}
+            </ThemeProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
         <TanStackDevtools
           config={{ position: 'bottom-right' }}
           plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
