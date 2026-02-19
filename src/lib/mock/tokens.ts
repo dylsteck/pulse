@@ -8,10 +8,14 @@ export interface Token {
   volume24h: number
   marketCap: number
   priceHistory: { time: number; value: number }[]
+  imageUrl?: string
 }
 
 // 1440 points × 60s = 86400s = 24h (covers all time windows including 1D)
-function generateHistory(basePrice: number, points = 1440): { time: number; value: number }[] {
+function generateHistory(
+  basePrice: number,
+  points = 1440,
+): { time: number; value: number }[] {
   const now = Date.now() / 1000
   const history: { time: number; value: number }[] = []
   let price = basePrice * 0.88

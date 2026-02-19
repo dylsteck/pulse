@@ -11,6 +11,9 @@ interface CodexTokenResult {
     symbol: string
     name: string
     networkId: number
+    info?: {
+      imageSmallUrl?: string
+    }
   }
 }
 
@@ -36,6 +39,9 @@ const fetchCodexBaseTokensServer = createServerFn({ method: 'POST' })
               symbol
               name
               networkId
+              info {
+                imageSmallUrl
+              }
             }
           }
         }
@@ -100,6 +106,7 @@ const fetchCodexBaseTokensServer = createServerFn({ method: 'POST' })
           volume24h: Number(item.volume24 || 0),
           marketCap: Number(item.marketCap || 0),
           priceHistory: [{ time: now, value: price }],
+          imageUrl: item.token.info?.imageSmallUrl ?? undefined,
         } satisfies Token
       })
   })
@@ -131,6 +138,9 @@ const fetchCodexTokenByAddressServer = createServerFn({ method: 'POST' })
               symbol
               name
               networkId
+              info {
+                imageSmallUrl
+              }
             }
           }
         }
@@ -193,6 +203,7 @@ const fetchCodexTokenByAddressServer = createServerFn({ method: 'POST' })
       volume24h: Number(result.volume24 || 0),
       marketCap: Number(result.marketCap || 0),
       priceHistory: [{ time: now, value: price }],
+      imageUrl: result.token.info?.imageSmallUrl ?? undefined,
     } satisfies Token
   })
 
@@ -200,4 +211,121 @@ export async function fetchCodexTokenByAddress(
   address: string,
 ): Promise<Token | null> {
   return fetchCodexTokenByAddressServer({ data: { address } })
+}
+
+// ── Historical bar data (OHLC) ──────────────────────────────────────────
+
+export interface BarDataPoint {
+  time: number
+  value: number
+}
+
+export interface BarsResponse {
+  bars: BarDataPoint[]
+  status: string
+}
+
+/** Map our UI time-window labels to Codex resolution strings */
+const RESOLUTION_MAP: Record<string, string> = {
+  '15m': '1', // 1-minute bars over 15 minutes
+  '1H': '1', // 1-minute bars over 1 hour
+  '6H': '15', // 15-minute bars over 6 hours
+  '1D': '60', // 60-minute bars over 1 day
+}
+
+const fetchCodexBarsServer = createServerFn({ method: 'POST' })
+  .inputValidator((input: { address: string; windowLabel: string }) => input)
+  .handler(async ({ data }): Promise<BarsResponse> => {
+    if (!process.env.CODEX_API_KEY) {
+      throw new Error('Missing CODEX_API_KEY')
+    }
+
+    const resolution = RESOLUTION_MAP[data.windowLabel] ?? '15'
+    const windowSecsMap: Record<string, number> = {
+      '15m': 900,
+      '1H': 3600,
+      '6H': 21600,
+      '1D': 86400,
+    }
+    const windowSecs = windowSecsMap[data.windowLabel] ?? 3600
+    const now = Math.floor(Date.now() / 1000)
+    const from = now - windowSecs
+
+    const query = `
+      query GetTokenBars($symbol: String!, $from: Int!, $to: Int!, $resolution: String!) {
+        getTokenBars(
+          symbol: $symbol
+          from: $from
+          to: $to
+          resolution: $resolution
+          removeEmptyBars: true
+        ) {
+          c
+          t
+          s
+        }
+      }
+    `
+
+    const res = await fetch('https://graph.codex.io/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: process.env.CODEX_API_KEY,
+      },
+      body: JSON.stringify({
+        query,
+        variables: {
+          symbol: `${data.address}:${BASE_NETWORK_ID}`,
+          from,
+          to: now,
+          resolution,
+        },
+      }),
+    })
+
+    if (!res.ok) {
+      throw new Error(`Codex bars API error: ${res.status}`)
+    }
+
+    const json = (await res.json()) as {
+      errors?: Array<{ message: string }>
+      data?: {
+        getTokenBars?: {
+          c: number[] | null
+          t: number[] | null
+          s: string
+        }
+      }
+    }
+
+    if (json.errors?.length) {
+      throw new Error(
+        `Codex bars query failed: ${json.errors[0]?.message ?? 'Unknown error'}`,
+      )
+    }
+
+    const result = json.data?.getTokenBars
+    if (
+      !result ||
+      result.s !== 'ok' ||
+      !result.c?.length ||
+      !result.t?.length
+    ) {
+      return { bars: [], status: result?.s ?? 'no_data' }
+    }
+
+    const bars: BarDataPoint[] = result.t.map((timestamp, i) => ({
+      time: timestamp,
+      value: result.c![i] ?? 0,
+    }))
+
+    return { bars, status: 'ok' }
+  })
+
+export async function fetchCodexBars(
+  address: string,
+  windowLabel: string,
+): Promise<BarsResponse> {
+  return fetchCodexBarsServer({ data: { address, windowLabel } })
 }

@@ -1,8 +1,14 @@
+import { useState, useRef, useCallback } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
-import { LivelineChart } from '@/components/trading/liveline-chart'
+import {
+  LivelineChart,
+  WINDOW_SECS_TO_LABEL,
+  WINDOW_LABEL_TO_SECS,
+} from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
+import { useTokenBars } from '@/hooks/use-token-bars'
 import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useTortoiseSongs, useAudioDetail } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
@@ -130,13 +136,35 @@ function TokenDetail({ id }: { id: string }) {
 }
 
 function TokenDetailContent({ token }: { token: Token }) {
-  const { price, history } = useTokenPrice(token)
+  const { price } = useTokenPrice(token)
+  const [windowLabel, setWindowLabel] = useState('15m')
+  const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
+  const chartData = bars.length >= 2 ? bars : token.priceHistory
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel]!)
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-      <div className="mb-4 flex items-baseline justify-between">
-        <div>
-          <h1 className="font-mono text-lg font-semibold">{token.symbol}</h1>
-          <p className="text-sm text-muted-foreground">{token.name}</p>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {token.imageUrl && (
+            <FadeImage
+              src={token.imageUrl}
+              alt=""
+              wrapperClassName="size-10 shrink-0 rounded-full"
+              className="size-10 rounded-full object-cover"
+            />
+          )}
+          <div>
+            <h1 className="font-mono text-lg font-semibold">{token.symbol}</h1>
+            <p className="text-sm text-muted-foreground">{token.name}</p>
+          </div>
         </div>
         <span
           className={cn(
@@ -151,7 +179,17 @@ function TokenDetailContent({ token }: { token: Token }) {
       <div className="mb-6 font-mono text-2xl tabular-nums">
         ${formatPrice(price)}
       </div>
-      <LivelineChart data={history} value={price} height={280} />
+      {isLoading && bars.length === 0 ? (
+        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+      ) : (
+        <LivelineChart
+          data={chartData}
+          value={price}
+          height={280}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+        />
+      )}
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
@@ -443,8 +481,18 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
   const color = market.change24h >= 0 ? '#22c55e' : '#ef4444'
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-      <div className="mb-4 flex items-baseline justify-between">
-        <h1 className="font-mono text-lg font-semibold">{market.coin} PERP</h1>
+      <div className="mb-4 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <FadeImage
+            src={`https://app.hyperliquid.xyz/coins/${market.coin}.svg`}
+            alt=""
+            wrapperClassName="size-8 shrink-0 rounded-full"
+            className="size-8 rounded-full object-cover"
+          />
+          <h1 className="font-mono text-lg font-semibold">
+            {market.coin} PERP
+          </h1>
+        </div>
         <span
           className={cn(
             'text-sm font-mono tabular-nums',

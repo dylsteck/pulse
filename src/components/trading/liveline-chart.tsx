@@ -2,12 +2,20 @@ import { useState, useEffect } from 'react'
 import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
 
-const TIME_WINDOWS = [
+export const TIME_WINDOWS = [
   { label: '15m', secs: 900 },
   { label: '1H', secs: 3600 },
   { label: '6H', secs: 21600 },
   { label: '1D', secs: 86400 },
 ]
+
+export const WINDOW_SECS_TO_LABEL: Record<number, string> = Object.fromEntries(
+  TIME_WINDOWS.map((w) => [w.secs, w.label]),
+)
+
+export const WINDOW_LABEL_TO_SECS: Record<string, number> = Object.fromEntries(
+  TIME_WINDOWS.map((w) => [w.label, w.secs]),
+)
 
 interface LivelineChartProps {
   data: { time: number; value: number }[]
@@ -15,6 +23,8 @@ interface LivelineChartProps {
   height?: number
   color?: string
   formatValue?: (v: number) => string
+  onWindowChange?: (secs: number) => void
+  window?: number
 }
 
 export function LivelineChart({
@@ -23,6 +33,8 @@ export function LivelineChart({
   height = 260,
   color,
   formatValue,
+  onWindowChange,
+  window: windowProp,
 }: LivelineChartProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
@@ -32,14 +44,11 @@ export function LivelineChart({
     setMounted(true)
   }, [])
 
-  // Compute a sensible default window from the data range
   const dataSpanSecs =
     data.length >= 2
       ? Math.abs(data[data.length - 1]!.time - data[0]!.time)
       : 3600
-  // Time values may be in seconds or milliseconds — normalise to seconds
   const spanSecs = dataSpanSecs > 1e9 ? dataSpanSecs / 1000 : dataSpanSecs
-  // Pick the largest window that fits, defaulting to 1H
   const defaultWindow =
     TIME_WINDOWS.find((w) => w.secs >= spanSecs)?.secs ??
     TIME_WINDOWS[TIME_WINDOWS.length - 1]!.secs
@@ -57,8 +66,9 @@ export function LivelineChart({
           value={value}
           color={resolvedColor}
           theme={isDark ? 'dark' : 'light'}
-          window={defaultWindow}
+          window={windowProp ?? defaultWindow}
           windows={TIME_WINDOWS}
+          onWindowChange={onWindowChange}
           windowStyle="text"
           badge
           momentum
