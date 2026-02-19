@@ -10,13 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TokensRouteImport } from './routes/tokens'
+import { Route as PerpsRouteImport } from './routes/perps'
 import { Route as MusicRouteImport } from './routes/music'
 import { Route as MarketsRouteImport } from './routes/markets'
+import { Route as CreatorsRouteImport } from './routes/creators'
 import { Route as IndexRouteImport } from './routes/index'
 
 const TokensRoute = TokensRouteImport.update({
   id: '/tokens',
   path: '/tokens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PerpsRoute = PerpsRouteImport.update({
+  id: '/perps',
+  path: '/perps',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MusicRoute = MusicRouteImport.update({
@@ -29,6 +36,11 @@ const MarketsRoute = MarketsRouteImport.update({
   path: '/markets',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreatorsRoute = CreatorsRouteImport.update({
+  id: '/creators',
+  path: '/creators',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -37,35 +49,50 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/creators': typeof CreatorsRoute
   '/markets': typeof MarketsRoute
   '/music': typeof MusicRoute
+  '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/creators': typeof CreatorsRoute
   '/markets': typeof MarketsRoute
   '/music': typeof MusicRoute
+  '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/creators': typeof CreatorsRoute
   '/markets': typeof MarketsRoute
   '/music': typeof MusicRoute
+  '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/markets' | '/music' | '/tokens'
+  fullPaths: '/' | '/creators' | '/markets' | '/music' | '/perps' | '/tokens'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/markets' | '/music' | '/tokens'
-  id: '__root__' | '/' | '/markets' | '/music' | '/tokens'
+  to: '/' | '/creators' | '/markets' | '/music' | '/perps' | '/tokens'
+  id:
+    | '__root__'
+    | '/'
+    | '/creators'
+    | '/markets'
+    | '/music'
+    | '/perps'
+    | '/tokens'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreatorsRoute: typeof CreatorsRoute
   MarketsRoute: typeof MarketsRoute
   MusicRoute: typeof MusicRoute
+  PerpsRoute: typeof PerpsRoute
   TokensRoute: typeof TokensRoute
 }
 
@@ -76,6 +103,13 @@ declare module '@tanstack/react-router' {
       path: '/tokens'
       fullPath: '/tokens'
       preLoaderRoute: typeof TokensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perps': {
+      id: '/perps'
+      path: '/perps'
+      fullPath: '/perps'
+      preLoaderRoute: typeof PerpsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/music': {
@@ -92,6 +126,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/creators': {
+      id: '/creators'
+      path: '/creators'
+      fullPath: '/creators'
+      preLoaderRoute: typeof CreatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,8 +145,10 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreatorsRoute: CreatorsRoute,
   MarketsRoute: MarketsRoute,
   MusicRoute: MusicRoute,
+  PerpsRoute: PerpsRoute,
   TokensRoute: TokensRoute,
 }
 export const routeTree = rootRouteImport

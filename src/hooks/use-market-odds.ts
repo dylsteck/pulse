@@ -14,22 +14,7 @@ export function useMarketOdds(market: Market): LiveOdds {
   useEffect(() => {
     setYesPercent(market.yesPercent)
     setHistory(market.priceHistory)
-  }, [market.id])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setYesPercent((prev) => {
-        const drift = (Math.random() - 0.5) * 0.3
-        const next = Math.max(1, Math.min(99, prev + drift))
-        setHistory((h) => {
-          const updated = [...h, { time: Date.now() / 1000, value: next }]
-          return updated.slice(-600)
-        })
-        return next
-      })
-    }, 2000)
-    return () => clearInterval(interval)
-  }, [market.id])
+  }, [market.id, market.yesPercent, market.priceHistory])
 
   return { yesPercent, noPercent: parseFloat((100 - yesPercent).toFixed(1)), history }
 }

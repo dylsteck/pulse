@@ -13,23 +13,7 @@ export function useTokenPrice(token: Token): LivePrice {
   useEffect(() => {
     setPrice(token.price)
     setHistory(token.priceHistory)
-  }, [token.id])
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPrice((prev) => {
-        const change = prev * (Math.random() - 0.49) * 0.003
-        const next = Math.max(prev + change, 0.0001)
-        setHistory((h) => {
-          const updated = [...h, { time: Date.now() / 1000, value: next }]
-          // Keep enough points to fill the 9000s window (600 × 1.5s = 900s of live data)
-          return updated.slice(-600)
-        })
-        return next
-      })
-    }, 1500)
-    return () => clearInterval(interval)
-  }, [token.id])
+  }, [token.id, token.price, token.priceHistory])
 
   return { price, history }
 }

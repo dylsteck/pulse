@@ -1,18 +1,18 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { UnifiedList } from '@/components/dashboard/unified-list'
 
-export const Route = createFileRoute('/markets')({
-  component: MarketsPage,
+export const Route = createFileRoute('/creators')({
+  component: CreatorsPage,
 })
 
-function MarketsPage() {
+function CreatorsPage() {
   const navigate = useNavigate()
   return (
     <UnifiedList
-      initialMode="markets"
+      initialMode="creators"
       onModeChange={(mode) => {
         if (mode === 'tokens') navigate({ to: '/tokens' })
-        if (mode === 'creators') navigate({ to: '/creators' })
+        if (mode === 'markets') navigate({ to: '/markets' })
         if (mode === 'music') navigate({ to: '/music' })
         if (mode === 'perps') navigate({ to: '/perps' })
       }}

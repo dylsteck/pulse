@@ -12,7 +12,9 @@ function TokensPage() {
       initialMode="tokens"
       onModeChange={(mode) => {
         if (mode === 'markets') navigate({ to: '/markets' })
+        if (mode === 'creators') navigate({ to: '/creators' })
         if (mode === 'music') navigate({ to: '/music' })
+        if (mode === 'perps') navigate({ to: '/perps' })
       }}
     />
   )

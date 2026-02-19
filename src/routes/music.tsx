@@ -13,6 +13,8 @@ function MusicPage() {
       onModeChange={(mode) => {
         if (mode === 'tokens') navigate({ to: '/tokens' })
         if (mode === 'markets') navigate({ to: '/markets' })
+        if (mode === 'creators') navigate({ to: '/creators' })
+        if (mode === 'perps') navigate({ to: '/perps' })
       }}
     />
   )

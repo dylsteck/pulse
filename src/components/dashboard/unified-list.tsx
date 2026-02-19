@@ -4,9 +4,15 @@ import { LivelineChart } from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useTortoiseSongs, useAudioDetail } from '@/hooks/use-tortoise-songs'
-import { TOKENS, type Token } from '@/lib/mock/tokens'
-import { MARKETS, type Market } from '@/lib/mock/markets'
+import { usePerpMarkets } from '@/hooks/use-perps'
+import { useZoraCreators } from '@/hooks/use-zora-creators'
+import { useLiveTokens } from '@/hooks/use-live-tokens'
+import { useLiveMarkets } from '@/hooks/use-live-markets'
+import { PerpsPanel } from '@/components/perps/perps-panel'
+import type { Token } from '@/lib/mock/tokens'
+import type { Market } from '@/lib/mock/markets'
 import { imageUrl, type Song } from '@/lib/tortoise'
+import type { CreatorToken } from '@/lib/zora/service'
 import { cn } from '@/lib/utils'
 
 function formatCompact(v: number): string {
@@ -32,7 +38,7 @@ function formatCreated(s: string): string {
   return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-export type ViewMode = 'tokens' | 'markets' | 'music'
+export type ViewMode = 'tokens' | 'markets' | 'creators' | 'music' | 'perps'
 type ViewLayout = 'list' | 'grid'
 
 interface UnifiedListProps {
@@ -46,14 +52,26 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const { data: songsData } = useTortoiseSongs()
+  const { data: perpMarkets, isLoading: isPerpsLoading } = usePerpMarkets()
+  const creatorsQuery = useZoraCreators(20)
+  const creators = creatorsQuery.items
+  const liveTokensQuery = useLiveTokens(40)
+  const liveMarketsQuery = useLiveMarkets(40)
+  const liveTokens = liveTokensQuery.data ?? []
+  const liveMarkets = liveMarketsQuery.data ?? []
 
   const items: Array<{ id: string }> =
     mode === 'tokens'
-      ? TOKENS
+      ? liveTokens
       : mode === 'markets'
-        ? MARKETS
-        : (songsData?.songs ?? [])
+        ? liveMarkets
+        : mode === 'creators'
+          ? creators
+        : mode === 'music'
+          ? (songsData?.songs ?? [])
+          : (perpMarkets ?? [])
 
   useEffect(() => {
     setMode(initialMode)
@@ -66,9 +84,18 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
   }, [mode, onModeChange])
 
   useEffect(() => {
+    if (!items.length) {
+      setSelectedIndex(0)
+      return
+    }
+    setSelectedIndex((current) => Math.min(current, items.length - 1))
+  }, [items.length])
+
+  useEffect(() => {
     if (layout !== 'list') return
 
     function handleKey(e: KeyboardEvent) {
+      if (!items.length) return
       if (e.key === 'ArrowDown') {
         e.preventDefault()
         setSelectedIndex((i) => {
@@ -93,9 +120,36 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
     return () => window.removeEventListener('keydown', handleKey)
   }, [items, selectedIndex, layout])
 
+  useEffect(() => {
+    if (mode !== 'creators') return
+    if (!creatorsQuery.hasNextPage || creatorsQuery.isFetchingNextPage) return
+    const target = creatorsLoadMoreRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (entry?.isIntersecting && creatorsQuery.hasNextPage && !creatorsQuery.isFetchingNextPage) {
+          void creatorsQuery.fetchNextPage()
+        }
+      },
+      { rootMargin: '300px 0px' },
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [
+    mode,
+    creatorsQuery.hasNextPage,
+    creatorsQuery.isFetchingNextPage,
+    creatorsQuery.fetchNextPage,
+  ])
+
   const handleRowClick = (index: number) => {
+    if (!items.length) return
     setSelectedIndex(index)
     const item = items[index]
+    if (!item) return
     setExpandedId((prev) => (prev === item.id ? null : item.id))
   }
 
@@ -103,7 +157,7 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
     <div className="mx-auto flex h-[calc(100vh-37px)] max-w-6xl flex-col px-4 py-2 sm:px-6">
       <div className="mb-2 flex items-end justify-between">
         <div className="flex items-center gap-5">
-          {(['tokens', 'markets', 'music'] as ViewMode[]).map((tab) => {
+          {(['tokens', 'markets', 'creators', 'music', 'perps'] as ViewMode[]).map((tab) => {
             const active = mode === tab
             return (
               <button
@@ -160,22 +214,55 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
       <div className="flex-1 overflow-y-auto">
         {layout === 'list' ? (
           mode === 'tokens' ? (
-            <TokenTable
-              tokens={TOKENS}
-              selectedIndex={selectedIndex}
-              expandedId={expandedId}
-              rowRefs={rowRefs}
-              onRowClick={handleRowClick}
-            />
+            liveTokensQuery.isLoading ? (
+              <LoadingPanel label="Loading live token data..." />
+            ) : liveTokensQuery.error ? (
+              <ErrorPanel
+                label={
+                  liveTokensQuery.error instanceof Error
+                    ? liveTokensQuery.error.message
+                    : 'Failed to load live token data.'
+                }
+              />
+            ) : (
+              <TokenTable
+                tokens={liveTokens}
+                selectedIndex={selectedIndex}
+                expandedId={expandedId}
+                rowRefs={rowRefs}
+                onRowClick={handleRowClick}
+              />
+            )
           ) : mode === 'markets' ? (
-            <MarketTable
-              markets={MARKETS}
+            liveMarketsQuery.isLoading ? (
+              <LoadingPanel label="Loading Polymarket events..." />
+            ) : liveMarketsQuery.error ? (
+              <ErrorPanel
+                label={
+                  liveMarketsQuery.error instanceof Error
+                    ? liveMarketsQuery.error.message
+                    : 'Failed to load live market data.'
+                }
+              />
+            ) : (
+              <MarketTable
+                markets={liveMarkets}
+                selectedIndex={selectedIndex}
+                expandedId={expandedId}
+                rowRefs={rowRefs}
+                onRowClick={handleRowClick}
+              />
+            )
+          ) : mode === 'creators' ? (
+            <CreatorsTable
+              creators={creators}
+              isLoading={creatorsQuery.isLoading}
               selectedIndex={selectedIndex}
               expandedId={expandedId}
               rowRefs={rowRefs}
               onRowClick={handleRowClick}
             />
-          ) : (
+          ) : mode === 'music' ? (
             <MusicTable
               songs={songsData?.songs ?? []}
               isLoading={!songsData}
@@ -184,17 +271,82 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
               rowRefs={rowRefs}
               onRowClick={handleRowClick}
             />
+          ) : (
+            <PerpsPanel
+              markets={perpMarkets ?? []}
+              isLoading={isPerpsLoading}
+              layout="list"
+              selectedIndex={selectedIndex}
+              expandedId={expandedId}
+              rowRefs={rowRefs}
+              onRowClick={handleRowClick}
+            />
           )
         ) : (
           mode === 'tokens' ? (
-            <TokenGrid tokens={TOKENS} />
+            liveTokensQuery.isLoading ? (
+              <LoadingPanel label="Loading live token data..." />
+            ) : liveTokensQuery.error ? (
+              <ErrorPanel
+                label={
+                  liveTokensQuery.error instanceof Error
+                    ? liveTokensQuery.error.message
+                    : 'Failed to load live token data.'
+                }
+              />
+            ) : (
+              <TokenGrid tokens={liveTokens} />
+            )
           ) : mode === 'markets' ? (
-            <MarketGrid markets={MARKETS} />
-          ) : (
+            liveMarketsQuery.isLoading ? (
+              <LoadingPanel label="Loading Polymarket events..." />
+            ) : liveMarketsQuery.error ? (
+              <ErrorPanel
+                label={
+                  liveMarketsQuery.error instanceof Error
+                    ? liveMarketsQuery.error.message
+                    : 'Failed to load live market data.'
+                }
+              />
+            ) : (
+              <MarketGrid markets={liveMarkets} />
+            )
+          ) : mode === 'creators' ? (
+            <CreatorsGrid creators={creators} isLoading={creatorsQuery.isLoading} />
+          ) : mode === 'music' ? (
             <MusicGrid songs={songsData?.songs ?? []} isLoading={!songsData} />
+          ) : (
+            <PerpsPanel
+              markets={perpMarkets ?? []}
+              isLoading={isPerpsLoading}
+              layout="grid"
+              selectedIndex={selectedIndex}
+              expandedId={expandedId}
+              rowRefs={rowRefs}
+              onRowClick={handleRowClick}
+            />
           )
         )}
+        {mode === 'creators' && creatorsQuery.hasNextPage && (
+          <div ref={creatorsLoadMoreRef} className="h-6" aria-hidden />
+        )}
       </div>
+    </div>
+  )
+}
+
+function LoadingPanel({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
+      {label}
+    </div>
+  )
+}
+
+function ErrorPanel({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-[#ef4444]">
+      {label}
     </div>
   )
 }
@@ -531,6 +683,160 @@ function InlineSongDetail({ song }: { song: Song }) {
   )
 }
 
+interface CreatorsTableProps {
+  creators: CreatorToken[]
+  isLoading: boolean
+  selectedIndex: number
+  expandedId: string | null
+  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  onRowClick: (index: number) => void
+}
+
+function CreatorsTable({
+  creators,
+  isLoading,
+  selectedIndex,
+  expandedId,
+  rowRefs,
+  onRowClick,
+}: CreatorsTableProps) {
+  const gridCols = 'grid-cols-[1.7fr_0.8fr_0.8fr_0.8fr_0.7fr_32px]'
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
+        Loading tokens…
+      </div>
+    )
+  }
+
+  if (creators.length === 0) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
+        No tokens found
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <div
+        className={cn(
+          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-4 py-2 sm:px-6',
+          gridCols,
+        )}
+      >
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Token
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Mkt Cap
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          24h %
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          24h Vol
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Holders
+        </span>
+        <span />
+      </div>
+
+      {creators.map((creator, i) => {
+        const selected = i === selectedIndex
+        const expanded = expandedId === creator.id
+        return (
+          <div key={creator.id} className="border-b border-border last:border-0">
+            <button
+              ref={(el) => {
+                rowRefs.current[i] = el
+              }}
+              type="button"
+              onClick={() => onRowClick(i)}
+              className={cn(
+                'grid w-full items-center gap-4 border-l-2 px-4 py-3 text-left transition-colors sm:px-6',
+                gridCols,
+                selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
+              )}
+              aria-selected={selected}
+              aria-expanded={expanded}
+            >
+              <div className="flex items-center gap-2">
+                {creator.imageUrl && (
+                  <img src={creator.imageUrl} alt="" className="size-7 rounded-sm object-cover" />
+                )}
+                <div className="min-w-0">
+                  <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {creator.creatorHandle ?? creator.name}
+                  </div>
+                </div>
+              </div>
+              <span className="text-right font-mono text-sm tabular-nums">
+                {formatCompact(creator.marketCap)}
+              </span>
+              <span
+                className={cn(
+                  'text-right font-mono text-sm tabular-nums',
+                  creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                )}
+              >
+                {creator.marketCapDelta24h >= 0 ? '+' : ''}
+                {creator.marketCapDelta24h.toFixed(2)}%
+              </span>
+              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+                {formatCompact(creator.volume24h)}
+              </span>
+              <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
+                {creator.uniqueHolders.toLocaleString('en-US')}
+              </span>
+              <span />
+            </button>
+
+            {expanded && (
+              <div className="border-t border-border bg-muted/30 px-4 py-4 sm:px-6">
+                <InlineCreatorChart creator={creator} />
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
+  if (creator.sparkline.length < 2) {
+    return (
+      <div className="rounded-lg border border-border bg-card p-4 text-xs text-muted-foreground">
+        No chart data available.
+      </div>
+    )
+  }
+
+  const last = creator.sparkline.at(-1)
+  if (!last) return null
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="mb-3 flex items-baseline justify-between">
+        <span className="font-mono text-sm font-semibold">{creator.symbol}</span>
+        <span className="font-mono text-lg font-semibold tabular-nums">
+          ${last.value.toFixed(last.value >= 1 ? 4 : 8)}
+        </span>
+      </div>
+      <LivelineChart
+        data={creator.sparkline}
+        value={last.value}
+        height={220}
+        color={creator.marketCapDelta24h >= 0 ? '#22c55e' : '#ef4444'}
+      />
+    </div>
+  )
+}
+
 function TokenGrid({ tokens }: { tokens: Token[] }) {
   return (
     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -556,6 +862,63 @@ function TokenGrid({ tokens }: { tokens: Token[] }) {
             <span className="text-right font-mono">{formatCompact(token.volume24h)}</span>
             <span className="text-muted-foreground">Mkt Cap</span>
             <span className="text-right font-mono">{formatCompact(token.marketCap)}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function CreatorsGrid({
+  creators,
+  isLoading,
+}: {
+  creators: CreatorToken[]
+  isLoading: boolean
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
+        Loading tokens…
+      </div>
+    )
+  }
+  if (creators.length === 0) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
+        No tokens found
+      </div>
+    )
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {creators.map((creator) => (
+        <div key={creator.id} className="rounded-xl border border-border bg-card p-4">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
+              <div className="truncate text-xs text-muted-foreground">
+                {creator.creatorHandle ?? creator.name}
+              </div>
+            </div>
+            <div
+              className={cn(
+                'text-xs font-mono tabular-nums',
+                creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+              )}
+            >
+              {creator.marketCapDelta24h >= 0 ? '+' : ''}
+              {creator.marketCapDelta24h.toFixed(2)}%
+            </div>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+            <span className="text-muted-foreground">Mkt Cap</span>
+            <span className="text-right font-mono">{formatCompact(creator.marketCap)}</span>
+            <span className="text-muted-foreground">24h Vol</span>
+            <span className="text-right font-mono">{formatCompact(creator.volume24h)}</span>
+            <span className="text-muted-foreground">Holders</span>
+            <span className="text-right font-mono">{creator.uniqueHolders.toLocaleString('en-US')}</span>
           </div>
         </div>
       ))}
