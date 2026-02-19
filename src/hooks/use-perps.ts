@@ -2,7 +2,6 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useWalletClient } from 'wagmi'
 import { useWallet } from '@/hooks/use-wallet'
-import { MOCK_PERPS } from '@/lib/mock/perps'
 import {
   armDeadManSwitch,
   batchModify as batchModifyOrders,
@@ -15,7 +14,6 @@ import {
   fetchPerpFills,
   fetchPerpMarketsSnapshot,
   fetchPerpOpenOrders,
-  isLivePerpsEnabled,
   newCloid,
   placeBatchOrders,
   placeOrder,
@@ -32,29 +30,12 @@ const PERPS_QUERY_KEYS = {
   fills: (address: string | null) => ['hyperliquid', 'fills', address] as const,
 }
 
-function toMockSnapshot(): PerpMarketSnapshot[] {
-  return MOCK_PERPS.map((market, index) => ({
-    id: market.id,
-    assetId: index,
-    coin: market.coin,
-    markPx: market.markPx,
-    midPx: market.markPx,
-    prevDayPx: market.markPx * (1 - market.funding * 10),
-    change24h: market.funding * 1000,
-    funding: market.funding,
-    openInterest: market.openInterest,
-    premium: market.premium,
-    volume24h: market.volume24h,
-    szDecimals: market.szDecimals,
-    maxLeverage: market.maxLeverage,
-  }))
-}
 
 export function usePerpMarkets() {
   return useQuery({
     queryKey: PERPS_QUERY_KEYS.markets,
-    queryFn: async () => (isLivePerpsEnabled() ? fetchPerpMarketsSnapshot() : toMockSnapshot()),
-    refetchInterval: isLivePerpsEnabled() ? 7_500 : false,
+    queryFn: fetchPerpMarketsSnapshot,
+    refetchInterval: 7_500,
   })
 }
 
@@ -62,7 +43,7 @@ export function usePerpAccountState() {
   const wallet = useWallet()
   return useQuery({
     queryKey: PERPS_QUERY_KEYS.account(wallet.address),
-    enabled: Boolean(wallet.address && isLivePerpsEnabled()),
+    enabled: Boolean(wallet.address),
     queryFn: async () => fetchPerpAccountState(wallet.address!),
     refetchInterval: 10_000,
   })
@@ -72,7 +53,7 @@ export function usePerpOpenOrders() {
   const wallet = useWallet()
   return useQuery({
     queryKey: PERPS_QUERY_KEYS.openOrders(wallet.address),
-    enabled: Boolean(wallet.address && isLivePerpsEnabled()),
+    enabled: Boolean(wallet.address),
     queryFn: async () => fetchPerpOpenOrders(wallet.address!),
     refetchInterval: 5_000,
   })
@@ -82,7 +63,7 @@ export function usePerpFills() {
   const wallet = useWallet()
   return useQuery({
     queryKey: PERPS_QUERY_KEYS.fills(wallet.address),
-    enabled: Boolean(wallet.address && isLivePerpsEnabled()),
+    enabled: Boolean(wallet.address),
     queryFn: async () => fetchPerpFills(wallet.address!),
     refetchInterval: 15_000,
   })

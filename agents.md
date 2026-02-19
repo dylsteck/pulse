@@ -4,7 +4,7 @@ Context for AI agents working in this codebase.
 
 ## What this is
 
-Pulse is a trading interface for Base tokens (via Spandex) and Polymarket prediction markets. MVP uses mock data throughout; real API integrations are stubbed behind `VITE_USE_LIVE_DATA`.
+Pulse is a trading interface for Base tokens (via Spandex) and Polymarket prediction markets.
 
 ## Project structure
 
@@ -46,7 +46,7 @@ src/
 - **Path alias**: `@/` maps to `src/` (configured in `tsconfig.json`).
 - **Styling**: Tailwind v4 + shadcn. Design tokens are in `src/styles.css`. Raw color values used: `#FFFFFF` bg, `#F9F9F9` sections, `#E5E5E5` borders, `#22c55e` green, `#ef4444` red.
 - **UI components**: Prefer existing shadcn components in `src/components/ui/` before creating new ones. They're built on `@base-ui/react`.
-- **Mock vs live**: All data comes from `src/lib/mock/`. When wiring real APIs, add a `VITE_USE_LIVE_DATA` guard and keep mock as fallback.
+- **Mock vs live**: All data comes from `src/lib/mock/`. When wiring real APIs, keep mock as fallback.
 - **No auto-commit**: Don't commit unless explicitly asked.
 
 ## Integrations to wire (post-MVP)

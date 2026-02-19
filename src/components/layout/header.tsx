@@ -1,4 +1,4 @@
-import { SunIcon, MoonIcon } from 'lucide-react'
+import { MoonIcon, SunIcon } from 'lucide-react'
 import { WalletButton } from '@/components/wallet/wallet-button'
 import { useWallet } from '@/hooks/use-wallet'
 import { useTheme } from '@/components/theme-provider'
@@ -10,7 +10,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 bg-background">
       <div className="mx-auto flex h-9 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <span className="text-sm font-semibold text-foreground">📈 Pulse</span>
+        <span className="text-sm font-semibold text-foreground">Pulse</span>
         <div className="flex items-center gap-2">
           <button
             onClick={toggleTheme}

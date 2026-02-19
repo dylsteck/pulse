@@ -288,9 +288,6 @@ export async function createLimitOrder(params: {
   })
 }
 
-export function isLivePerpsEnabled(): boolean {
-  return getHyperliquidRuntimeConfig().useLiveData
-}
 
 export function formatPerpPrice(market: PerpMarketSnapshot, price: number): string {
   return formatPrice(price, market.szDecimals, 'perp')

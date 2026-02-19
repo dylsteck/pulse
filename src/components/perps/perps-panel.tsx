@@ -2,10 +2,7 @@ import { useMemo } from 'react'
 import { LivelineChart } from '@/components/trading/liveline-chart'
 import { cn } from '@/lib/utils'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
-import {
-  formatPerpPrice,
-  isLivePerpsEnabled,
-} from '@/lib/hyperliquid/service'
+import { formatPerpPrice } from '@/lib/hyperliquid/service'
 
 function formatCompact(v: number): string {
   if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`
@@ -51,13 +48,7 @@ export function PerpsPanel({
 
   return (
     <div className="space-y-3">
-      {!isLivePerpsEnabled() && (
-        <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-          Running with mock perps data. Set `VITE_USE_LIVE_DATA=true` to enable Hyperliquid live mode.
-        </div>
-      )}
-
-      {layout === 'list' ? (
+{layout === 'list' ? (
         <PerpsTable
           markets={markets}
           selectedIndex={selectedIndex}
