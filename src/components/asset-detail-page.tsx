@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
 import { LivelineChart } from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
@@ -6,8 +7,9 @@ import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useTortoiseSongs, useAudioDetail } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
-import { useLiveTokens } from '@/hooks/use-live-tokens'
-import { useLiveMarkets } from '@/hooks/use-live-markets'
+import { fetchCodexTokenByAddress } from '@/lib/codex'
+import { fetchPolymarketEventById } from '@/lib/polymarket'
+import { FadeImage } from '@/components/ui/fade-image'
 import { imageUrl, type Song } from '@/lib/tortoise'
 import type { CreatorToken } from '@/lib/zora/service'
 import type { Token } from '@/lib/mock/tokens'
@@ -25,18 +27,20 @@ function formatCompact(v: number): string {
 
 function formatPrice(price: number): string {
   if (price >= 1000)
-    return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return price.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
   if (price >= 1) return price.toFixed(4)
   if (price >= 0.001) return price.toFixed(6)
   return price.toFixed(8)
 }
 
 function formatExpiry(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
-
-function formatCreated(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return new Date(s).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 const BACK_ROUTES: Record<string, string> = {
@@ -78,8 +82,43 @@ export function AssetDetailPage({ type, id }: { type: string; id: string }) {
 }
 
 function TokenDetail({ id }: { id: string }) {
-  const { data: tokens } = useLiveTokens(100)
-  const token = tokens?.find((t) => t.id === id)
+  const {
+    data: token,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['codex', 'token', id],
+    queryFn: () => fetchCodexTokenByAddress(id),
+  })
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-6 flex items-baseline justify-between">
+          <div className="space-y-2">
+            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="h-4 w-14 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mb-6 h-7 w-32 animate-pulse rounded bg-muted" />
+        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="h-10 animate-pulse rounded bg-muted" />
+          <div className="h-10 animate-pulse rounded bg-muted" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Unable to load token
+      </div>
+    )
+  }
+
   if (!token) {
     return (
       <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
@@ -109,7 +148,9 @@ function TokenDetailContent({ token }: { token: Token }) {
           {token.change24h.toFixed(2)}%
         </span>
       </div>
-      <div className="mb-6 font-mono text-2xl tabular-nums">${formatPrice(price)}</div>
+      <div className="mb-6 font-mono text-2xl tabular-nums">
+        ${formatPrice(price)}
+      </div>
       <LivelineChart data={history} value={price} height={280} />
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
@@ -126,8 +167,40 @@ function TokenDetailContent({ token }: { token: Token }) {
 }
 
 function MarketDetail({ id }: { id: string }) {
-  const { data: markets } = useLiveMarkets(100)
-  const market = markets?.find((m) => m.id === id)
+  const {
+    data: market,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['polymarket', 'event', id],
+    queryFn: () => fetchPolymarketEventById(id),
+  })
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-6 space-y-2">
+          <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+          <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mb-6 h-2 w-full animate-pulse rounded-full bg-muted" />
+        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="h-10 animate-pulse rounded bg-muted" />
+          <div className="h-10 animate-pulse rounded bg-muted" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Unable to load market
+      </div>
+    )
+  }
+
   if (!market) {
     return (
       <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
@@ -144,11 +217,18 @@ function MarketDetailContent({ market }: { market: Market }) {
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <h1 className="mb-4 text-lg font-medium">{market.title}</h1>
       <div className="mb-4 flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Yes {yesPercent.toFixed(1)}%</span>
-        <span className="font-mono font-semibold text-[#22c55e]">{yesPercent.toFixed(1)}% Yes</span>
+        <span className="text-muted-foreground">
+          Yes {yesPercent.toFixed(1)}%
+        </span>
+        <span className="font-mono font-semibold text-[#22c55e]">
+          {yesPercent.toFixed(1)}% Yes
+        </span>
       </div>
       <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div className="h-full rounded-full bg-[#22c55e]" style={{ width: `${yesPercent}%` }} />
+        <div
+          className="h-full rounded-full bg-[#22c55e]"
+          style={{ width: `${yesPercent}%` }}
+        />
       </div>
       <LivelineChart
         data={history}
@@ -189,14 +269,25 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
       <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
         <div className="flex items-center gap-3">
           {creator.imageUrl && (
-            <img src={creator.imageUrl} alt="" className="size-14 rounded-lg object-cover" />
+            <FadeImage
+              src={creator.imageUrl}
+              alt=""
+              wrapperClassName="size-14 rounded-lg"
+              className="size-14 rounded-lg object-cover"
+            />
           )}
           <div>
-            <h1 className="font-mono text-lg font-semibold">{creator.symbol}</h1>
-            <p className="text-sm text-muted-foreground">{creator.creatorHandle ?? creator.name}</p>
+            <h1 className="font-mono text-lg font-semibold">
+              {creator.symbol}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {creator.creatorHandle ?? creator.name}
+            </p>
           </div>
         </div>
-        <p className="mt-4 text-sm text-muted-foreground">No chart data available.</p>
+        <p className="mt-4 text-sm text-muted-foreground">
+          No chart data available.
+        </p>
       </div>
     )
   }
@@ -206,16 +297,25 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
         {creator.imageUrl && (
-          <img src={creator.imageUrl} alt="" className="size-14 rounded-lg object-cover" />
+          <FadeImage
+            src={creator.imageUrl}
+            alt=""
+            wrapperClassName="size-14 rounded-lg"
+            className="size-14 rounded-lg object-cover"
+          />
         )}
         <div>
           <h1 className="font-mono text-lg font-semibold">{creator.symbol}</h1>
-          <p className="text-sm text-muted-foreground">{creator.creatorHandle ?? creator.name}</p>
+          <p className="text-sm text-muted-foreground">
+            {creator.creatorHandle ?? creator.name}
+          </p>
         </div>
         <span
           className={cn(
             'ml-auto text-sm font-mono tabular-nums',
-            creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+            creator.marketCapDelta24h >= 0
+              ? 'text-[#22c55e]'
+              : 'text-[#ef4444]',
           )}
         >
           {creator.marketCapDelta24h >= 0 ? '+' : ''}
@@ -242,7 +342,9 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
         </div>
         <div>
           <span className="text-muted-foreground">Holders</span>
-          <p className="font-mono">{creator.uniqueHolders.toLocaleString('en-US')}</p>
+          <p className="font-mono">
+            {creator.uniqueHolders.toLocaleString('en-US')}
+          </p>
         </div>
       </div>
     </div>
@@ -268,7 +370,12 @@ function MusicDetailContent({ song }: { song: Song }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div className="flex gap-4">
-        <img src={coverUrl} alt="" className="size-24 shrink-0 rounded-lg object-cover" />
+        <FadeImage
+          src={coverUrl}
+          alt=""
+          wrapperClassName="size-24 shrink-0 rounded-lg"
+          className="size-24 rounded-lg object-cover"
+        />
         <div className="min-w-0 flex-1">
           <h1 className="text-lg font-medium">{song.title}</h1>
           <p className="text-sm text-muted-foreground">{song.artist}</p>
@@ -310,7 +417,9 @@ function PerpDetail({ id }: { id: string }) {
   return <PerpDetailContent market={market} />
 }
 
-function buildPerpSeries(market: PerpMarketSnapshot): Array<{ time: number; value: number }> {
+function buildPerpSeries(
+  market: PerpMarketSnapshot,
+): Array<{ time: number; value: number }> {
   const now = Date.now()
   const points: Array<{ time: number; value: number }> = []
   const start = market.prevDayPx > 0 ? market.prevDayPx : market.markPx
@@ -349,7 +458,12 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
       <div className="mb-6 font-mono text-2xl tabular-nums">
         ${formatPerpPrice(market, market.markPx)}
       </div>
-      <LivelineChart data={history} value={market.markPx} height={280} color={color} />
+      <LivelineChart
+        data={history}
+        value={market.markPx}
+        height={280}
+        color={color}
+      />
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>

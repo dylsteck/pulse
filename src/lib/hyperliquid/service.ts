@@ -1,15 +1,12 @@
 import type {
-  Address,
   CancelSuccessResponse,
   ClearinghouseStateResponse,
   FrontendOpenOrdersResponse,
   OrderSuccessResponse,
   UserFillsResponse,
 } from '@nktkas/hyperliquid'
-import {
-  type ExchangeClient,
-  type OrderParameters,
-} from '@nktkas/hyperliquid'
+import { type ExchangeClient, type OrderParameters } from '@nktkas/hyperliquid'
+import { createServerFn } from '@tanstack/react-start'
 import {
   createHyperliquidExchangeClient,
   getHyperliquidInfoClient,
@@ -18,7 +15,12 @@ import {
 import { getHyperliquidRuntimeConfig } from '@/lib/hyperliquid/env'
 import { type PreparedOrder, prepareOrder } from '@/lib/hyperliquid/order-utils'
 import { normalizeHyperliquidError } from '@/lib/hyperliquid/errors'
-import { parseCancelStatuses, parseOrderStatuses, type ParsedCancelStatus, type ParsedOrderStatus } from '@/lib/hyperliquid/status'
+import {
+  parseCancelStatuses,
+  parseOrderStatuses,
+  type ParsedCancelStatus,
+  type ParsedOrderStatus,
+} from '@/lib/hyperliquid/status'
 import { OrderBatchQueue } from '@/lib/hyperliquid/batch-queue'
 import { ScheduleCancelHeartbeat } from '@/lib/hyperliquid/heartbeat'
 import { toHyperliquidWallet } from '@/lib/hyperliquid/signer'
@@ -41,12 +43,14 @@ export interface PerpMarketSnapshot {
   maxLeverage: number
 }
 
-export async function fetchPerpMarketsSnapshot(): Promise<PerpMarketSnapshot[]> {
+const fetchPerpMarketsSnapshotServer = createServerFn({
+  method: 'POST',
+}).handler(async (): Promise<PerpMarketSnapshot[]> => {
   const info = getHyperliquidInfoClient()
-  const [metaAndCtxs, mids, converter] = await Promise.all([
+  const converter = await getHyperliquidSymbolConverter()
+  const [metaAndCtxs, mids] = await Promise.all([
     info.metaAndAssetCtxs(),
     info.allMids(),
-    getHyperliquidSymbolConverter(),
   ])
   const [meta, ctxs] = metaAndCtxs
 
@@ -61,7 +65,8 @@ export async function fetchPerpMarketsSnapshot(): Promise<PerpMarketSnapshot[]> 
       const markPx = Number(ctx.markPx)
       const midPx = Number(ctx.midPx ?? ctx.markPx ?? mids[asset.name] ?? 0)
       const prevDayPx = Number(ctx.prevDayPx)
-      const change24h = prevDayPx > 0 ? ((midPx - prevDayPx) / prevDayPx) * 100 : 0
+      const change24h =
+        prevDayPx > 0 ? ((midPx - prevDayPx) / prevDayPx) * 100 : 0
 
       return {
         id: `${asset.name.toLowerCase()}-perp`,
@@ -81,18 +86,53 @@ export async function fetchPerpMarketsSnapshot(): Promise<PerpMarketSnapshot[]> 
     })
     .filter((market): market is PerpMarketSnapshot => market !== null)
     .sort((a, b) => b.volume24h - a.volume24h)
+})
+
+export async function fetchPerpMarketsSnapshot(): Promise<
+  PerpMarketSnapshot[]
+> {
+  return fetchPerpMarketsSnapshotServer()
 }
 
-export async function fetchPerpAccountState(user: Address): Promise<ClearinghouseStateResponse> {
-  return getHyperliquidInfoClient().clearinghouseState({ user })
+const fetchPerpAccountStateServer = createServerFn({ method: 'POST' })
+  .inputValidator((input: { user: string }) => input)
+  .handler(async ({ data }): Promise<ClearinghouseStateResponse> => {
+    return getHyperliquidInfoClient().clearinghouseState({
+      user: data.user as `0x${string}`,
+    })
+  })
+
+export async function fetchPerpAccountState(
+  user: string,
+): Promise<ClearinghouseStateResponse> {
+  return fetchPerpAccountStateServer({ data: { user } })
 }
 
-export async function fetchPerpOpenOrders(user: Address): Promise<FrontendOpenOrdersResponse> {
-  return getHyperliquidInfoClient().frontendOpenOrders({ user })
+const fetchPerpOpenOrdersServer = createServerFn({ method: 'POST' })
+  .inputValidator((input: { user: string }) => input)
+  .handler(async ({ data }) => {
+    return getHyperliquidInfoClient().frontendOpenOrders({
+      user: data.user as `0x${string}`,
+    })
+  })
+
+export async function fetchPerpOpenOrders(
+  user: string,
+): Promise<FrontendOpenOrdersResponse> {
+  return fetchPerpOpenOrdersServer({ data: { user } })
 }
 
-export async function fetchPerpFills(user: Address): Promise<UserFillsResponse> {
-  return getHyperliquidInfoClient().userFills({ user, aggregateByTime: true })
+const fetchPerpFillsServer = createServerFn({ method: 'POST' })
+  .inputValidator((input: { user: string }) => input)
+  .handler(async ({ data }): Promise<UserFillsResponse> => {
+    return getHyperliquidInfoClient().userFills({
+      user: data.user as `0x${string}`,
+      aggregateByTime: true,
+    })
+  })
+
+export async function fetchPerpFills(user: string): Promise<UserFillsResponse> {
+  return fetchPerpFillsServer({ data: { user } })
 }
 
 interface TradingContext {
@@ -135,7 +175,9 @@ export interface PlaceOrderResult {
   statuses: ParsedOrderStatus[]
 }
 
-export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResult> {
+export async function placeOrder(
+  input: PlaceOrderInput,
+): Promise<PlaceOrderResult> {
   const { queue } = getTradingContext(input.walletClient)
   try {
     const raw = await queue.enqueueOrder({
@@ -154,7 +196,9 @@ export interface PlaceBatchOrdersInput {
   orders: PreparedOrder[]
 }
 
-export async function placeBatchOrders(input: PlaceBatchOrdersInput): Promise<PlaceOrderResult> {
+export async function placeBatchOrders(
+  input: PlaceBatchOrdersInput,
+): Promise<PlaceOrderResult> {
   const { queue } = getTradingContext(input.walletClient)
   try {
     const raw = await queue.enqueueOrder({
@@ -228,7 +272,9 @@ export async function batchModify(
   }
 }
 
-export async function armDeadManSwitch(walletClient: WalletClient): Promise<void> {
+export async function armDeadManSwitch(
+  walletClient: WalletClient,
+): Promise<void> {
   const { heartbeat } = getTradingContext(walletClient)
   try {
     await heartbeat.arm()
@@ -237,7 +283,9 @@ export async function armDeadManSwitch(walletClient: WalletClient): Promise<void
   }
 }
 
-export async function disarmDeadManSwitch(walletClient: WalletClient): Promise<void> {
+export async function disarmDeadManSwitch(
+  walletClient: WalletClient,
+): Promise<void> {
   const { heartbeat } = getTradingContext(walletClient)
   try {
     await heartbeat.disarm()
@@ -288,7 +336,9 @@ export async function createLimitOrder(params: {
   })
 }
 
-
-export function formatPerpPrice(market: PerpMarketSnapshot, price: number): string {
+export function formatPerpPrice(
+  market: PerpMarketSnapshot,
+  price: number,
+): string {
   return formatPrice(price, market.szDecimals, 'perp')
 }

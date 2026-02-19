@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, LayoutGridIcon, Rows3Icon } from 'lucide-react'
 import { LivelineChart } from '@/components/trading/liveline-chart'
@@ -15,6 +15,7 @@ import type { Market } from '@/lib/mock/markets'
 import { imageUrl, type Song } from '@/lib/tortoise'
 import type { CreatorToken } from '@/lib/zora/service'
 import { cn } from '@/lib/utils'
+import { FadeImage } from '@/components/ui/fade-image'
 
 function formatCompact(v: number): string {
   if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`
@@ -25,18 +26,27 @@ function formatCompact(v: number): string {
 
 function formatPrice(price: number): string {
   if (price >= 1000)
-    return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    return price.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
   if (price >= 1) return price.toFixed(4)
   if (price >= 0.001) return price.toFixed(6)
   return price.toFixed(8)
 }
 
 function formatExpiry(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return new Date(s).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 function formatCreated(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return new Date(s).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
 }
 
 export type ViewMode = 'tokens' | 'markets' | 'creators' | 'music' | 'perps'
@@ -61,7 +71,10 @@ function useIsMobile() {
   return isMobile
 }
 
-export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedListProps) {
+export function UnifiedList({
+  initialMode = 'tokens',
+  onModeChange,
+}: UnifiedListProps) {
   const isMobile = useIsMobile()
   const [mode, setMode] = useState<ViewMode>(initialMode)
   const [layout, setLayout] = useState<ViewLayout>('list')
@@ -77,12 +90,14 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
   const [selectedIndex, setSelectedIndex] = useState(0)
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([])
   const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
+  const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
+  const marketsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const { data: songsData } = useTortoiseSongs()
   const { data: perpMarkets, isLoading: isPerpsLoading } = usePerpMarkets()
   const creatorsQuery = useZoraCreators(20)
   const creators = creatorsQuery.items
-  const liveTokensQuery = useLiveTokens(40)
-  const liveMarketsQuery = useLiveMarkets(40)
+  const liveTokensQuery = useLiveTokens()
+  const liveMarketsQuery = useLiveMarkets()
   const liveTokens = liveTokensQuery.data ?? []
   const liveMarkets = liveMarketsQuery.data ?? []
 
@@ -93,9 +108,9 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
         ? liveMarkets
         : mode === 'creators'
           ? creators
-        : mode === 'music'
-          ? (songsData?.songs ?? [])
-          : (perpMarkets ?? [])
+          : mode === 'music'
+            ? (songsData?.songs ?? [])
+            : (perpMarkets ?? [])
 
   useEffect(() => {
     setMode(initialMode)
@@ -153,7 +168,11 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
-        if (entry?.isIntersecting && creatorsQuery.hasNextPage && !creatorsQuery.isFetchingNextPage) {
+        if (
+          entry?.isIntersecting &&
+          creatorsQuery.hasNextPage &&
+          !creatorsQuery.isFetchingNextPage
+        ) {
           void creatorsQuery.fetchNextPage()
         }
       },
@@ -167,6 +186,64 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
     creatorsQuery.hasNextPage,
     creatorsQuery.isFetchingNextPage,
     creatorsQuery.fetchNextPage,
+  ])
+
+  useEffect(() => {
+    if (mode !== 'tokens') return
+    if (!liveTokensQuery.hasMore || liveTokensQuery.isFetching) return
+    const target = tokensLoadMoreRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (
+          entry?.isIntersecting &&
+          liveTokensQuery.hasMore &&
+          !liveTokensQuery.isFetching
+        ) {
+          liveTokensQuery.loadMore()
+        }
+      },
+      { rootMargin: '300px 0px' },
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [
+    mode,
+    liveTokensQuery.hasMore,
+    liveTokensQuery.isFetching,
+    liveTokensQuery.loadMore,
+  ])
+
+  useEffect(() => {
+    if (mode !== 'markets') return
+    if (!liveMarketsQuery.hasMore || liveMarketsQuery.isFetching) return
+    const target = marketsLoadMoreRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (
+          entry?.isIntersecting &&
+          liveMarketsQuery.hasMore &&
+          !liveMarketsQuery.isFetching
+        ) {
+          liveMarketsQuery.loadMore()
+        }
+      },
+      { rootMargin: '300px 0px' },
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [
+    mode,
+    liveMarketsQuery.hasMore,
+    liveMarketsQuery.isFetching,
+    liveMarketsQuery.loadMore,
   ])
 
   const handleRowClick = (index: number) => {
@@ -185,7 +262,9 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
     <div className="mx-auto flex h-[calc(100vh-37px)] w-full max-w-6xl flex-col px-2 py-2 sm:px-6">
       <div className="mb-2 flex items-end justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
-          {(['tokens', 'markets', 'creators', 'music', 'perps'] as ViewMode[]).map((tab) => {
+          {(
+            ['tokens', 'markets', 'creators', 'music', 'perps'] as ViewMode[]
+          ).map((tab) => {
             const active = mode === tab
             return (
               <button
@@ -198,7 +277,9 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
                 }}
                 className={cn(
                   'shrink-0 text-sm font-medium capitalize transition-colors',
-                  active ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+                  active
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {tab}
@@ -239,7 +320,7 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scrollbar-none">
         {layout === 'list' ? (
           mode === 'tokens' ? (
             liveTokensQuery.isLoading ? (
@@ -310,82 +391,97 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
               onRowClick={handleRowClick}
             />
           )
-        ) : (
-          mode === 'tokens' ? (
-            liveTokensQuery.isLoading ? (
-              <LoadingPanel label="Loading live token data..." />
-            ) : liveTokensQuery.error ? (
-              <ErrorPanel
-                label={
-                  liveTokensQuery.error instanceof Error
-                    ? liveTokensQuery.error.message
-                    : 'Failed to load live token data.'
-                }
-              />
-            ) : (
-              <TokenGrid
-                tokens={liveTokens}
-                expandedId={expandedId}
-                onCardClick={handleCardClick}
-              />
-            )
-          ) : mode === 'markets' ? (
-            liveMarketsQuery.isLoading ? (
-              <LoadingPanel label="Loading Polymarket events..." />
-            ) : liveMarketsQuery.error ? (
-              <ErrorPanel
-                label={
-                  liveMarketsQuery.error instanceof Error
-                    ? liveMarketsQuery.error.message
-                    : 'Failed to load live market data.'
-                }
-              />
-            ) : (
-              <MarketGrid
-                markets={liveMarkets}
-                expandedId={expandedId}
-                onCardClick={handleCardClick}
-              />
-            )
-          ) : mode === 'creators' ? (
-            <CreatorsGrid
-              creators={creators}
-              isLoading={creatorsQuery.isLoading}
-              expandedId={expandedId}
-              onCardClick={handleCardClick}
-            />
-          ) : mode === 'music' ? (
-            <MusicGrid
-              songs={songsData?.songs ?? []}
-              isLoading={!songsData}
-              expandedId={expandedId}
-              onCardClick={handleCardClick}
+        ) : mode === 'tokens' ? (
+          liveTokensQuery.isLoading ? (
+            <LoadingPanel label="Loading live token data..." />
+          ) : liveTokensQuery.error ? (
+            <ErrorPanel
+              label={
+                liveTokensQuery.error instanceof Error
+                  ? liveTokensQuery.error.message
+                  : 'Failed to load live token data.'
+              }
             />
           ) : (
-            <PerpsPanel
-              markets={perpMarkets ?? []}
-              isLoading={isPerpsLoading}
-              layout="grid"
-              selectedIndex={selectedIndex}
+            <TokenGrid
+              tokens={liveTokens}
               expandedId={expandedId}
-              rowRefs={rowRefs}
-              onRowClick={handleRowClick}
               onCardClick={handleCardClick}
             />
           )
+        ) : mode === 'markets' ? (
+          liveMarketsQuery.isLoading ? (
+            <LoadingPanel label="Loading Polymarket events..." />
+          ) : liveMarketsQuery.error ? (
+            <ErrorPanel
+              label={
+                liveMarketsQuery.error instanceof Error
+                  ? liveMarketsQuery.error.message
+                  : 'Failed to load live market data.'
+              }
+            />
+          ) : (
+            <MarketGrid
+              markets={liveMarkets}
+              expandedId={expandedId}
+              onCardClick={handleCardClick}
+            />
+          )
+        ) : mode === 'creators' ? (
+          <CreatorsGrid
+            creators={creators}
+            isLoading={creatorsQuery.isLoading}
+            expandedId={expandedId}
+            onCardClick={handleCardClick}
+          />
+        ) : mode === 'music' ? (
+          <MusicGrid
+            songs={songsData?.songs ?? []}
+            isLoading={!songsData}
+            expandedId={expandedId}
+            onCardClick={handleCardClick}
+          />
+        ) : (
+          <PerpsPanel
+            markets={perpMarkets ?? []}
+            isLoading={isPerpsLoading}
+            layout="grid"
+            selectedIndex={selectedIndex}
+            expandedId={expandedId}
+            rowRefs={rowRefs}
+            onRowClick={handleRowClick}
+            onCardClick={handleCardClick}
+          />
         )}
         {mode === 'creators' && creatorsQuery.hasNextPage && (
           <div ref={creatorsLoadMoreRef} className="h-6" aria-hidden />
+        )}
+        {mode === 'tokens' && liveTokensQuery.hasMore && (
+          <div ref={tokensLoadMoreRef} className="h-6" aria-hidden />
+        )}
+        {mode === 'markets' && liveMarketsQuery.hasMore && (
+          <div ref={marketsLoadMoreRef} className="h-6" aria-hidden />
         )}
       </div>
     </div>
   )
 }
 
-function LoadingPanel({ label }: { label: string }) {
+function LoadingPanel(_props?: { label?: string }) {
   return (
-    <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
-      {label}
+    <div className="w-full overflow-hidden rounded-xl border border-border">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-4 border-b border-border px-3 py-3 last:border-0 sm:px-6"
+        >
+          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+          <div className="ml-auto h-4 w-16 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-12 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-14 animate-pulse rounded bg-muted" />
+          <div className="h-4 w-14 animate-pulse rounded bg-muted" />
+        </div>
+      ))}
     </div>
   )
 }
@@ -406,7 +502,15 @@ interface TokenTableProps {
   onRowClick: (index: number) => void
 }
 
-export function AssetLink({ type, id, className }: { type: ViewMode; id: string; className?: string }) {
+export function AssetLink({
+  type,
+  id,
+  className,
+}: {
+  type: ViewMode
+  id: string
+  className?: string
+}) {
   return (
     <Link
       to="/asset/$type/$id"
@@ -424,7 +528,13 @@ export function AssetLink({ type, id, className }: { type: ViewMode; id: string;
   )
 }
 
-function TokenTable({ tokens, selectedIndex, expandedId, rowRefs, onRowClick }: TokenTableProps) {
+function TokenTable({
+  tokens,
+  selectedIndex,
+  expandedId,
+  rowRefs,
+  onRowClick,
+}: TokenTableProps) {
   const gridCols = 'grid-cols-[2fr_1fr_0.7fr_0.8fr_0.8fr_32px]'
   return (
     <div className="w-full overflow-hidden rounded-xl border border-border">
@@ -458,20 +568,36 @@ function TokenTable({ tokens, selectedIndex, expandedId, rowRefs, onRowClick }: 
         return (
           <div key={token.id} className="border-b border-border last:border-0">
             <button
-              ref={(el) => { rowRefs.current[i] = el }}
+              ref={(el) => {
+                rowRefs.current[i] = el
+              }}
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
                 'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
-                selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
+                selected
+                  ? 'border-l-foreground bg-accent'
+                  : 'border-l-transparent hover:bg-accent/40',
               )}
               aria-selected={selected}
               aria-expanded={expanded}
             >
-              <div className="flex min-w-0 items-baseline gap-2">
-                <span className="font-mono text-sm font-semibold">{token.symbol}</span>
-                <span className="truncate text-xs text-muted-foreground">{token.name}</span>
+              <div className="flex min-w-0 items-center gap-2">
+                <FadeImage
+                  src={`https://token-icons.s3.amazonaws.com/8453/${token.address}.png`}
+                  alt=""
+                  wrapperClassName="size-7 shrink-0 rounded-full"
+                  className="size-7 rounded-full object-cover"
+                />
+                <div className="min-w-0">
+                  <span className="font-mono text-sm font-semibold">
+                    {token.symbol}
+                  </span>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {token.name}
+                  </div>
+                </div>
               </div>
               <span className="text-right font-mono text-sm tabular-nums">
                 ${formatPrice(token.price)}
@@ -482,7 +608,8 @@ function TokenTable({ tokens, selectedIndex, expandedId, rowRefs, onRowClick }: 
                   token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
                 )}
               >
-                {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
+                {token.change24h >= 0 ? '+' : ''}
+                {token.change24h.toFixed(2)}%
               </span>
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {formatCompact(token.volume24h)}
@@ -513,7 +640,9 @@ function InlineTokenChart({ token }: { token: Token }) {
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
         <span className="font-mono text-sm font-semibold">{token.symbol}</span>
-        <span className="font-mono text-lg font-semibold tabular-nums">${formatPrice(price)}</span>
+        <span className="font-mono text-lg font-semibold tabular-nums">
+          ${formatPrice(price)}
+        </span>
       </div>
       <LivelineChart data={history} value={price} height={220} />
     </div>
@@ -528,7 +657,13 @@ interface MarketTableProps {
   onRowClick: (index: number) => void
 }
 
-function MarketTable({ markets, selectedIndex, expandedId, rowRefs, onRowClick }: MarketTableProps) {
+function MarketTable({
+  markets,
+  selectedIndex,
+  expandedId,
+  rowRefs,
+  onRowClick,
+}: MarketTableProps) {
   const gridCols = 'grid-cols-[3fr_0.6fr_0.8fr_0.8fr_32px]'
   return (
     <div className="w-full overflow-hidden rounded-xl border border-border">
@@ -559,19 +694,35 @@ function MarketTable({ markets, selectedIndex, expandedId, rowRefs, onRowClick }
         return (
           <div key={market.id} className="border-b border-border last:border-0">
             <button
-              ref={(el) => { rowRefs.current[i] = el }}
+              ref={(el) => {
+                rowRefs.current[i] = el
+              }}
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
                 'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
-                selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
+                selected
+                  ? 'border-l-foreground bg-accent'
+                  : 'border-l-transparent hover:bg-accent/40',
               )}
               aria-selected={selected}
               aria-expanded={expanded}
             >
-              <span className="truncate text-sm">{market.title}</span>
-              <span className="text-right font-mono text-sm tabular-nums">{market.yesPercent}%</span>
+              <div className="flex min-w-0 items-center gap-2">
+                {market.imageUrl && (
+                  <FadeImage
+                    src={market.imageUrl}
+                    alt=""
+                    wrapperClassName="size-7 shrink-0 rounded-sm"
+                    className="size-7 rounded-sm object-cover"
+                  />
+                )}
+                <span className="truncate text-sm">{market.title}</span>
+              </div>
+              <span className="text-right font-mono text-sm tabular-nums">
+                {market.yesPercent}%
+              </span>
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {formatCompact(market.volume)}
               </span>
@@ -601,7 +752,9 @@ function InlineMarketChart({ market }: { market: Market }) {
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-sm font-medium">{market.title}</span>
-        <span className="font-mono text-sm font-semibold text-[#22c55e]">{yesPercent.toFixed(1)}% Yes</span>
+        <span className="font-mono text-sm font-semibold text-[#22c55e]">
+          {yesPercent.toFixed(1)}% Yes
+        </span>
       </div>
       <LivelineChart
         data={history}
@@ -632,11 +785,7 @@ function MusicTable({
 }: MusicTableProps) {
   const gridCols = 'grid-cols-[2fr_1.5fr_0.7fr_0.6fr_0.8fr_32px]'
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
-        Loading music…
-      </div>
-    )
+    return <LoadingPanel />
   }
   if (songs.length === 0) {
     return (
@@ -677,21 +826,31 @@ function MusicTable({
         return (
           <div key={song.id} className="border-b border-border last:border-0">
             <button
-              ref={(el) => { rowRefs.current[i] = el }}
+              ref={(el) => {
+                rowRefs.current[i] = el
+              }}
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
                 'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
-                selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
+                selected
+                  ? 'border-l-foreground bg-accent'
+                  : 'border-l-transparent hover:bg-accent/40',
               )}
               aria-selected={selected}
               aria-expanded={expanded}
             >
               <span className="truncate text-sm">{song.title}</span>
-              <span className="truncate text-sm text-muted-foreground">{song.artist}</span>
-              <span className="text-right font-mono text-sm tabular-nums">{song.collection_count}</span>
-              <span className="text-right text-xs text-muted-foreground capitalize">{song.media_type}</span>
+              <span className="truncate text-sm text-muted-foreground">
+                {song.artist}
+              </span>
+              <span className="text-right font-mono text-sm tabular-nums">
+                {song.collection_count}
+              </span>
+              <span className="text-right text-xs text-muted-foreground capitalize">
+                {song.media_type}
+              </span>
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {formatCreated(song.created_at)}
               </span>
@@ -719,19 +878,18 @@ function InlineSongDetail({ song }: { song: Song }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex gap-4">
-        <img
+        <FadeImage
           src={coverUrl}
           alt=""
-          className="size-24 shrink-0 rounded-lg object-cover"
+          wrapperClassName="size-24 shrink-0 rounded-lg"
+          className="size-24 rounded-lg object-cover"
         />
         <div className="min-w-0 flex-1">
           <h3 className="font-medium">{song.title}</h3>
           <p className="text-sm text-muted-foreground">{song.artist}</p>
           <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
             <span>{song.collection_count} collections</span>
-            {audio && (
-              <span>{audio.price} ETH</span>
-            )}
+            {audio && <span>{audio.price} ETH</span>}
           </div>
           {isLoading ? (
             <p className="mt-2 text-xs text-muted-foreground">Loading…</p>
@@ -774,11 +932,7 @@ function CreatorsTable({
   const gridCols = 'grid-cols-[1.7fr_0.8fr_0.8fr_0.8fr_0.7fr_32px]'
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
-        Loading tokens…
-      </div>
-    )
+    return <LoadingPanel />
   }
 
   if (creators.length === 0) {
@@ -819,7 +973,10 @@ function CreatorsTable({
         const selected = i === selectedIndex
         const expanded = expandedId === creator.id
         return (
-          <div key={creator.id} className="border-b border-border last:border-0">
+          <div
+            key={creator.id}
+            className="border-b border-border last:border-0"
+          >
             <button
               ref={(el) => {
                 rowRefs.current[i] = el
@@ -829,17 +986,26 @@ function CreatorsTable({
               className={cn(
                 'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
-                selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
+                selected
+                  ? 'border-l-foreground bg-accent'
+                  : 'border-l-transparent hover:bg-accent/40',
               )}
               aria-selected={selected}
               aria-expanded={expanded}
             >
               <div className="flex min-w-0 items-center gap-2">
                 {creator.imageUrl && (
-                  <img src={creator.imageUrl} alt="" className="size-7 shrink-0 rounded-sm object-cover" />
+                  <FadeImage
+                    src={creator.imageUrl}
+                    alt=""
+                    wrapperClassName="size-7 shrink-0 rounded-sm"
+                    className="size-7 rounded-sm object-cover"
+                  />
                 )}
                 <div className="min-w-0">
-                  <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
+                  <div className="truncate font-mono text-sm font-semibold">
+                    {creator.symbol}
+                  </div>
                   <div className="truncate text-xs text-muted-foreground">
                     {creator.creatorHandle ?? creator.name}
                   </div>
@@ -851,7 +1017,9 @@ function CreatorsTable({
               <span
                 className={cn(
                   'text-right font-mono text-sm tabular-nums',
-                  creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  creator.marketCapDelta24h >= 0
+                    ? 'text-[#22c55e]'
+                    : 'text-[#ef4444]',
                 )}
               >
                 {creator.marketCapDelta24h >= 0 ? '+' : ''}
@@ -895,7 +1063,9 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
-        <span className="font-mono text-sm font-semibold">{creator.symbol}</span>
+        <span className="font-mono text-sm font-semibold">
+          {creator.symbol}
+        </span>
         <span className="font-mono text-lg font-semibold tabular-nums">
           ${last.value.toFixed(last.value >= 1 ? 4 : 8)}
         </span>
@@ -910,6 +1080,260 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
   )
 }
 
+const TokenGridCard = React.memo(function TokenGridCard({
+  token,
+  expanded,
+  onCardClick,
+}: {
+  token: Token
+  expanded: boolean
+  onCardClick: (id: string) => void
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => onCardClick(token.id)}
+        className={cn(
+          'w-full p-3 text-left transition-colors sm:p-4',
+          expanded && 'bg-accent/50',
+        )}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
+            <FadeImage
+              src={`https://token-icons.s3.amazonaws.com/8453/${token.address}.png`}
+              alt=""
+              wrapperClassName="size-7 shrink-0 rounded-full"
+              className="size-7 rounded-full object-cover"
+            />
+            <div className="min-w-0">
+              <div className="font-mono text-sm font-semibold">
+                {token.symbol}
+              </div>
+              <div className="truncate text-xs text-muted-foreground">
+                {token.name}
+              </div>
+            </div>
+          </div>
+          <AssetLink type="tokens" id={token.id} />
+        </div>
+        <div className="mt-2 flex items-baseline justify-between">
+          <div
+            className={cn(
+              'text-xs font-mono tabular-nums',
+              token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+            )}
+          >
+            {token.change24h >= 0 ? '+' : ''}
+            {token.change24h.toFixed(2)}%
+          </div>
+        </div>
+        <div className="mt-3 font-mono text-lg tabular-nums">
+          ${formatPrice(token.price)}
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+          <span className="text-muted-foreground">Volume</span>
+          <span className="text-right font-mono">
+            {formatCompact(token.volume24h)}
+          </span>
+          <span className="text-muted-foreground">Mkt Cap</span>
+          <span className="text-right font-mono">
+            {formatCompact(token.marketCap)}
+          </span>
+        </div>
+      </button>
+      {expanded && (
+        <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+          <InlineTokenChart token={token} />
+        </div>
+      )}
+    </div>
+  )
+})
+
+const CreatorGridCard = React.memo(function CreatorGridCard({
+  creator,
+  expanded,
+  onCardClick,
+}: {
+  creator: CreatorToken
+  expanded: boolean
+  onCardClick: (id: string) => void
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => onCardClick(creator.id)}
+        className={cn(
+          'w-full p-3 text-left transition-colors sm:p-4',
+          expanded && 'bg-accent/50',
+        )}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="truncate font-mono text-sm font-semibold">
+              {creator.symbol}
+            </div>
+            <div className="truncate text-xs text-muted-foreground">
+              {creator.creatorHandle ?? creator.name}
+            </div>
+          </div>
+          <AssetLink type="creators" id={creator.id} />
+        </div>
+        <div
+          className={cn(
+            'mt-2 text-xs font-mono tabular-nums',
+            creator.marketCapDelta24h >= 0
+              ? 'text-[#22c55e]'
+              : 'text-[#ef4444]',
+          )}
+        >
+          {creator.marketCapDelta24h >= 0 ? '+' : ''}
+          {creator.marketCapDelta24h.toFixed(2)}%
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+          <span className="text-muted-foreground">Mkt Cap</span>
+          <span className="text-right font-mono">
+            {formatCompact(creator.marketCap)}
+          </span>
+          <span className="text-muted-foreground">24h Vol</span>
+          <span className="text-right font-mono">
+            {formatCompact(creator.volume24h)}
+          </span>
+          <span className="text-muted-foreground">Holders</span>
+          <span className="text-right font-mono">
+            {creator.uniqueHolders.toLocaleString('en-US')}
+          </span>
+        </div>
+      </button>
+      {expanded && (
+        <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+          <InlineCreatorChart creator={creator} />
+        </div>
+      )}
+    </div>
+  )
+})
+
+const MarketGridCard = React.memo(function MarketGridCard({
+  market,
+  expanded,
+  onCardClick,
+}: {
+  market: Market
+  expanded: boolean
+  onCardClick: (id: string) => void
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => onCardClick(market.id)}
+        className={cn(
+          'w-full p-3 text-left transition-colors sm:p-4',
+          expanded && 'bg-accent/50',
+        )}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-start gap-2">
+            {market.imageUrl && (
+              <FadeImage
+                src={market.imageUrl}
+                alt=""
+                wrapperClassName="size-7 shrink-0 rounded-sm"
+                className="size-7 rounded-sm object-cover"
+              />
+            )}
+            <div className="min-w-0 flex-1 text-sm font-medium leading-snug">
+              {market.title}
+            </div>
+          </div>
+          <AssetLink type="markets" id={market.id} />
+        </div>
+        <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+          <span>Yes {market.yesPercent}%</span>
+          <span>No {market.noPercent}%</span>
+        </div>
+        <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-[#22c55e]"
+            style={{ width: `${market.yesPercent}%` }}
+          />
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+          <span className="text-muted-foreground">Volume</span>
+          <span className="text-right font-mono">
+            {formatCompact(market.volume)}
+          </span>
+          <span className="text-muted-foreground">Expires</span>
+          <span className="text-right font-mono">
+            {formatExpiry(market.expiry)}
+          </span>
+        </div>
+      </button>
+      {expanded && (
+        <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+          <InlineMarketChart market={market} />
+        </div>
+      )}
+    </div>
+  )
+})
+
+const MusicGridCard = React.memo(function MusicGridCard({
+  song,
+  expanded,
+  onCardClick,
+}: {
+  song: Song
+  expanded: boolean
+  onCardClick: (id: string) => void
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <button
+        type="button"
+        onClick={() => onCardClick(song.id)}
+        className={cn(
+          'w-full p-3 text-left transition-colors sm:p-4',
+          expanded && 'bg-accent/50',
+        )}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex min-w-0 flex-1 gap-3">
+            <FadeImage
+              src={imageUrl(song.image_ipfs_cid)}
+              alt=""
+              wrapperClassName="size-14 shrink-0 rounded-md"
+              className="size-14 rounded-md object-cover"
+            />
+            <div className="min-w-0">
+              <div className="truncate text-sm font-medium">{song.title}</div>
+              <div className="truncate text-xs text-muted-foreground">
+                {song.artist}
+              </div>
+            </div>
+          </div>
+          <AssetLink type="music" id={song.id} />
+        </div>
+        <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+          <span className="text-muted-foreground">Collections</span>
+          <span className="text-right font-mono">{song.collection_count}</span>
+          <span className="text-muted-foreground">Type</span>
+          <span className="text-right capitalize">{song.media_type}</span>
+        </div>
+      </button>
+      {expanded && (
+        <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+          <InlineSongDetail song={song} />
+        </div>
+      )}
+    </div>
+  )
+})
+
 function TokenGrid({
   tokens,
   expandedId,
@@ -921,51 +1345,14 @@ function TokenGrid({
 }) {
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {tokens.map((token) => {
-        const expanded = expandedId === token.id
-        return (
-          <div key={token.id} className="overflow-hidden rounded-xl border border-border bg-card">
-            <button
-              type="button"
-              onClick={() => onCardClick(token.id)}
-              className={cn(
-                'w-full p-3 text-left transition-colors sm:p-4',
-                expanded && 'bg-accent/50',
-              )}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="font-mono text-sm font-semibold">{token.symbol}</div>
-                  <div className="truncate text-xs text-muted-foreground">{token.name}</div>
-                </div>
-                <AssetLink type="tokens" id={token.id} />
-              </div>
-              <div className="mt-2 flex items-baseline justify-between">
-                <div
-                  className={cn(
-                    'text-xs font-mono tabular-nums',
-                    token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-                  )}
-                >
-                  {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
-                </div>
-              </div>
-              <div className="mt-3 font-mono text-lg tabular-nums">${formatPrice(token.price)}</div>
-              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                <span className="text-muted-foreground">Volume</span>
-                <span className="text-right font-mono">{formatCompact(token.volume24h)}</span>
-                <span className="text-muted-foreground">Mkt Cap</span>
-                <span className="text-right font-mono">{formatCompact(token.marketCap)}</span>
-              </div>
-            </button>
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
-                <InlineTokenChart token={token} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+      {tokens.map((token) => (
+        <TokenGridCard
+          key={token.id}
+          token={token}
+          expanded={expandedId === token.id}
+          onCardClick={onCardClick}
+        />
+      ))}
     </div>
   )
 }
@@ -982,11 +1369,7 @@ function CreatorsGrid({
   onCardClick: (id: string) => void
 }) {
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
-        Loading tokens…
-      </div>
-    )
+    return <LoadingPanel />
   }
   if (creators.length === 0) {
     return (
@@ -998,53 +1381,14 @@ function CreatorsGrid({
 
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {creators.map((creator) => {
-        const expanded = expandedId === creator.id
-        return (
-          <div key={creator.id} className="overflow-hidden rounded-xl border border-border bg-card">
-            <button
-              type="button"
-              onClick={() => onCardClick(creator.id)}
-              className={cn(
-                'w-full p-3 text-left transition-colors sm:p-4',
-                expanded && 'bg-accent/50',
-              )}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {creator.creatorHandle ?? creator.name}
-                  </div>
-                </div>
-                <AssetLink type="creators" id={creator.id} />
-              </div>
-              <div
-                className={cn(
-                  'mt-2 text-xs font-mono tabular-nums',
-                  creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-                )}
-              >
-                {creator.marketCapDelta24h >= 0 ? '+' : ''}
-                {creator.marketCapDelta24h.toFixed(2)}%
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                <span className="text-muted-foreground">Mkt Cap</span>
-                <span className="text-right font-mono">{formatCompact(creator.marketCap)}</span>
-                <span className="text-muted-foreground">24h Vol</span>
-                <span className="text-right font-mono">{formatCompact(creator.volume24h)}</span>
-                <span className="text-muted-foreground">Holders</span>
-                <span className="text-right font-mono">{creator.uniqueHolders.toLocaleString('en-US')}</span>
-              </div>
-            </button>
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
-                <InlineCreatorChart creator={creator} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+      {creators.map((creator) => (
+        <CreatorGridCard
+          key={creator.id}
+          creator={creator}
+          expanded={expandedId === creator.id}
+          onCardClick={onCardClick}
+        />
+      ))}
     </div>
   )
 }
@@ -1060,46 +1404,14 @@ function MarketGrid({
 }) {
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {markets.map((market) => {
-        const expanded = expandedId === market.id
-        return (
-          <div key={market.id} className="overflow-hidden rounded-xl border border-border bg-card">
-            <button
-              type="button"
-              onClick={() => onCardClick(market.id)}
-              className={cn(
-                'w-full p-3 text-left transition-colors sm:p-4',
-                expanded && 'bg-accent/50',
-              )}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0 flex-1">
-                  <div className="text-sm font-medium leading-snug">{market.title}</div>
-                </div>
-                <AssetLink type="markets" id={market.id} />
-              </div>
-              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                <span>Yes {market.yesPercent}%</span>
-                <span>No {market.noPercent}%</span>
-              </div>
-              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                <div className="h-full rounded-full bg-[#22c55e]" style={{ width: `${market.yesPercent}%` }} />
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                <span className="text-muted-foreground">Volume</span>
-                <span className="text-right font-mono">{formatCompact(market.volume)}</span>
-                <span className="text-muted-foreground">Expires</span>
-                <span className="text-right font-mono">{formatExpiry(market.expiry)}</span>
-              </div>
-            </button>
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
-                <InlineMarketChart market={market} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+      {markets.map((market) => (
+        <MarketGridCard
+          key={market.id}
+          market={market}
+          expanded={expandedId === market.id}
+          onCardClick={onCardClick}
+        />
+      ))}
     </div>
   )
 }
@@ -1116,11 +1428,7 @@ function MusicGrid({
   onCardClick: (id: string) => void
 }) {
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
-        Loading music…
-      </div>
-    )
+    return <LoadingPanel />
   }
   if (songs.length === 0) {
     return (
@@ -1131,43 +1439,14 @@ function MusicGrid({
   }
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {songs.map((song) => {
-        const expanded = expandedId === song.id
-        return (
-          <div key={song.id} className="overflow-hidden rounded-xl border border-border bg-card">
-            <button
-              type="button"
-              onClick={() => onCardClick(song.id)}
-              className={cn(
-                'w-full p-3 text-left transition-colors sm:p-4',
-                expanded && 'bg-accent/50',
-              )}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 flex-1 gap-3">
-                  <img src={imageUrl(song.image_ipfs_cid)} alt="" className="size-14 shrink-0 rounded-md object-cover" />
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium">{song.title}</div>
-                    <div className="truncate text-xs text-muted-foreground">{song.artist}</div>
-                  </div>
-                </div>
-                <AssetLink type="music" id={song.id} />
-              </div>
-              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-                <span className="text-muted-foreground">Collections</span>
-                <span className="text-right font-mono">{song.collection_count}</span>
-                <span className="text-muted-foreground">Type</span>
-                <span className="text-right capitalize">{song.media_type}</span>
-              </div>
-            </button>
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
-                <InlineSongDetail song={song} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+      {songs.map((song) => (
+        <MusicGridCard
+          key={song.id}
+          song={song}
+          expanded={expandedId === song.id}
+          onCardClick={onCardClick}
+        />
+      ))}
     </div>
   )
 }

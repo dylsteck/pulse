@@ -6,10 +6,14 @@ export interface Market {
   volume: number
   expiry: string
   priceHistory: { time: number; value: number }[]
+  imageUrl?: string
 }
 
 // Probability history — values are yesPercent (0–100), 1440 pts × 60s = 24h
-function generateProbabilityHistory(basePercent: number, points = 1440): { time: number; value: number }[] {
+function generateProbabilityHistory(
+  basePercent: number,
+  points = 1440,
+): { time: number; value: number }[] {
   const now = Date.now() / 1000
   const history: { time: number; value: number }[] = []
   let p = Math.max(5, Math.min(95, basePercent * (0.7 + Math.random() * 0.4)))
