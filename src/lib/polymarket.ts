@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import type { Market } from '@/lib/mock/markets'
+import type { Market } from '@/lib/types'
 
 interface PolymarketMarket {
   outcomes?: string

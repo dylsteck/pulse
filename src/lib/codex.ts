@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import type { Token } from '@/lib/mock/tokens'
+import type { Token } from '@/lib/types'
 
 interface CodexTokenResult {
   priceUSD: string

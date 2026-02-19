@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchCodexBaseTokens } from '@/lib/codex'
-import type { Token } from '@/lib/mock/tokens'
+import type { Token } from '@/lib/types'
 
 const PAGE_SIZE = 50
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Market } from '@/lib/mock/markets'
+import type { Market } from '@/lib/types'
 
 export interface LiveOdds {
   yesPercent: number
@@ -16,5 +16,9 @@ export function useMarketOdds(market: Market): LiveOdds {
     setHistory(market.priceHistory)
   }, [market.id, market.yesPercent, market.priceHistory])
 
-  return { yesPercent, noPercent: parseFloat((100 - yesPercent).toFixed(1)), history }
+  return {
+    yesPercent,
+    noPercent: parseFloat((100 - yesPercent).toFixed(1)),
+    history,
+  }
 }

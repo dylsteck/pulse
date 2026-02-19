@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchPolymarketEvents } from '@/lib/polymarket'
-import type { Market } from '@/lib/mock/markets'
+import type { Market } from '@/lib/types'
 
 const PAGE_SIZE = 50
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Token } from '@/lib/mock/tokens'
+import type { Token } from '@/lib/types'
 
 export interface LivePrice {
   price: number
