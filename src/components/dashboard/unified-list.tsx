@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { LayoutGridIcon, Rows3Icon } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { ArrowUpRight, LayoutGridIcon, Rows3Icon } from 'lucide-react'
 import { LivelineChart } from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useMarketOdds } from '@/hooks/use-market-odds'
@@ -176,8 +177,12 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
     setExpandedId((prev) => (prev === item.id ? null : item.id))
   }
 
+  const handleCardClick = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id))
+  }
+
   return (
-    <div className="mx-auto flex h-[calc(100vh-37px)] max-w-6xl flex-col px-3 py-2 sm:px-6">
+    <div className="mx-auto flex h-[calc(100vh-37px)] w-full max-w-6xl flex-col px-2 py-2 sm:px-6">
       <div className="mb-2 flex items-end justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
           {(['tokens', 'markets', 'creators', 'music', 'perps'] as ViewMode[]).map((tab) => {
@@ -318,7 +323,11 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
                 }
               />
             ) : (
-              <TokenGrid tokens={liveTokens} />
+              <TokenGrid
+                tokens={liveTokens}
+                expandedId={expandedId}
+                onCardClick={handleCardClick}
+              />
             )
           ) : mode === 'markets' ? (
             liveMarketsQuery.isLoading ? (
@@ -332,12 +341,26 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
                 }
               />
             ) : (
-              <MarketGrid markets={liveMarkets} />
+              <MarketGrid
+                markets={liveMarkets}
+                expandedId={expandedId}
+                onCardClick={handleCardClick}
+              />
             )
           ) : mode === 'creators' ? (
-            <CreatorsGrid creators={creators} isLoading={creatorsQuery.isLoading} />
+            <CreatorsGrid
+              creators={creators}
+              isLoading={creatorsQuery.isLoading}
+              expandedId={expandedId}
+              onCardClick={handleCardClick}
+            />
           ) : mode === 'music' ? (
-            <MusicGrid songs={songsData?.songs ?? []} isLoading={!songsData} />
+            <MusicGrid
+              songs={songsData?.songs ?? []}
+              isLoading={!songsData}
+              expandedId={expandedId}
+              onCardClick={handleCardClick}
+            />
           ) : (
             <PerpsPanel
               markets={perpMarkets ?? []}
@@ -347,6 +370,7 @@ export function UnifiedList({ initialMode = 'tokens', onModeChange }: UnifiedLis
               expandedId={expandedId}
               rowRefs={rowRefs}
               onRowClick={handleRowClick}
+              onCardClick={handleCardClick}
             />
           )
         )}
@@ -382,13 +406,31 @@ interface TokenTableProps {
   onRowClick: (index: number) => void
 }
 
+export function AssetLink({ type, id, className }: { type: ViewMode; id: string; className?: string }) {
+  return (
+    <Link
+      to="/asset/$type/$id"
+      params={{ type, id }}
+      className={cn(
+        'inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground',
+        className,
+      )}
+      aria-label="View details"
+      title="View details"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <ArrowUpRight className="size-3.5" />
+    </Link>
+  )
+}
+
 function TokenTable({ tokens, selectedIndex, expandedId, rowRefs, onRowClick }: TokenTableProps) {
   const gridCols = 'grid-cols-[2fr_1fr_0.7fr_0.8fr_0.8fr_32px]'
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="w-full overflow-hidden rounded-xl border border-border">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-4 py-2 sm:px-6',
+          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
@@ -420,14 +462,14 @@ function TokenTable({ tokens, selectedIndex, expandedId, rowRefs, onRowClick }: 
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-4 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
                 selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
               )}
               aria-selected={selected}
               aria-expanded={expanded}
             >
-              <div className="flex items-baseline gap-2">
+              <div className="flex min-w-0 items-baseline gap-2">
                 <span className="font-mono text-sm font-semibold">{token.symbol}</span>
                 <span className="truncate text-xs text-muted-foreground">{token.name}</span>
               </div>
@@ -448,11 +490,13 @@ function TokenTable({ tokens, selectedIndex, expandedId, rowRefs, onRowClick }: 
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {formatCompact(token.marketCap)}
               </span>
-              <span />
+              <span className="flex justify-end pr-1">
+                <AssetLink type="tokens" id={token.id} />
+              </span>
             </button>
 
             {expanded && (
-              <div className="border-t border-border bg-muted/30 px-4 py-4 sm:px-6">
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
                 <InlineTokenChart token={token} />
               </div>
             )}
@@ -487,10 +531,10 @@ interface MarketTableProps {
 function MarketTable({ markets, selectedIndex, expandedId, rowRefs, onRowClick }: MarketTableProps) {
   const gridCols = 'grid-cols-[3fr_0.6fr_0.8fr_0.8fr_32px]'
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="w-full overflow-hidden rounded-xl border border-border">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-4 py-2 sm:px-6',
+          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
@@ -519,14 +563,14 @@ function MarketTable({ markets, selectedIndex, expandedId, rowRefs, onRowClick }
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-4 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
                 selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
               )}
               aria-selected={selected}
               aria-expanded={expanded}
             >
-              <span className="text-sm">{market.title}</span>
+              <span className="truncate text-sm">{market.title}</span>
               <span className="text-right font-mono text-sm tabular-nums">{market.yesPercent}%</span>
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {formatCompact(market.volume)}
@@ -534,11 +578,13 @@ function MarketTable({ markets, selectedIndex, expandedId, rowRefs, onRowClick }
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {formatExpiry(market.expiry)}
               </span>
-              <span />
+              <span className="flex justify-end pr-1">
+                <AssetLink type="markets" id={market.id} />
+              </span>
             </button>
 
             {expanded && (
-              <div className="border-t border-border bg-muted/30 px-4 py-4 sm:px-6">
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
                 <InlineMarketChart market={market} />
               </div>
             )}
@@ -600,10 +646,10 @@ function MusicTable({
     )
   }
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="w-full overflow-hidden rounded-xl border border-border">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-4 py-2 sm:px-6',
+          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
@@ -635,7 +681,7 @@ function MusicTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-4 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
                 selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
               )}
@@ -649,11 +695,13 @@ function MusicTable({
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {formatCreated(song.created_at)}
               </span>
-              <span />
+              <span className="flex justify-end pr-1">
+                <AssetLink type="music" id={song.id} />
+              </span>
             </button>
 
             {expanded && (
-              <div className="border-t border-border bg-muted/30 px-4 py-4 sm:px-6">
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
                 <InlineSongDetail song={song} />
               </div>
             )}
@@ -742,10 +790,10 @@ function CreatorsTable({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="w-full overflow-hidden rounded-xl border border-border">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-4 py-2 sm:px-6',
+          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
@@ -779,16 +827,16 @@ function CreatorsTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-4 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
                 selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
               )}
               aria-selected={selected}
               aria-expanded={expanded}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-2">
                 {creator.imageUrl && (
-                  <img src={creator.imageUrl} alt="" className="size-7 rounded-sm object-cover" />
+                  <img src={creator.imageUrl} alt="" className="size-7 shrink-0 rounded-sm object-cover" />
                 )}
                 <div className="min-w-0">
                   <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
@@ -815,11 +863,13 @@ function CreatorsTable({
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">
                 {creator.uniqueHolders.toLocaleString('en-US')}
               </span>
-              <span />
+              <span className="flex justify-end pr-1">
+                <AssetLink type="creators" id={creator.id} />
+              </span>
             </button>
 
             {expanded && (
-              <div className="border-t border-border bg-muted/30 px-4 py-4 sm:px-6">
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
                 <InlineCreatorChart creator={creator} />
               </div>
             )}
@@ -860,34 +910,62 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
   )
 }
 
-function TokenGrid({ tokens }: { tokens: Token[] }) {
+function TokenGrid({
+  tokens,
+  expandedId,
+  onCardClick,
+}: {
+  tokens: Token[]
+  expandedId: string | null
+  onCardClick: (id: string) => void
+}) {
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {tokens.map((token) => (
-        <div key={token.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <div className="font-mono text-sm font-semibold">{token.symbol}</div>
-              <div className="text-xs text-muted-foreground">{token.name}</div>
-            </div>
-            <div
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+      {tokens.map((token) => {
+        const expanded = expandedId === token.id
+        return (
+          <div key={token.id} className="overflow-hidden rounded-xl border border-border bg-card">
+            <button
+              type="button"
+              onClick={() => onCardClick(token.id)}
               className={cn(
-                'text-xs font-mono tabular-nums',
-                token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                'w-full p-3 text-left transition-colors sm:p-4',
+                expanded && 'bg-accent/50',
               )}
             >
-              {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
-            </div>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="font-mono text-sm font-semibold">{token.symbol}</div>
+                  <div className="truncate text-xs text-muted-foreground">{token.name}</div>
+                </div>
+                <AssetLink type="tokens" id={token.id} />
+              </div>
+              <div className="mt-2 flex items-baseline justify-between">
+                <div
+                  className={cn(
+                    'text-xs font-mono tabular-nums',
+                    token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  )}
+                >
+                  {token.change24h >= 0 ? '+' : ''}{token.change24h.toFixed(2)}%
+                </div>
+              </div>
+              <div className="mt-3 font-mono text-lg tabular-nums">${formatPrice(token.price)}</div>
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <span className="text-muted-foreground">Volume</span>
+                <span className="text-right font-mono">{formatCompact(token.volume24h)}</span>
+                <span className="text-muted-foreground">Mkt Cap</span>
+                <span className="text-right font-mono">{formatCompact(token.marketCap)}</span>
+              </div>
+            </button>
+            {expanded && (
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+                <InlineTokenChart token={token} />
+              </div>
+            )}
           </div>
-          <div className="mt-3 font-mono text-lg tabular-nums">${formatPrice(token.price)}</div>
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-            <span className="text-muted-foreground">Volume</span>
-            <span className="text-right font-mono">{formatCompact(token.volume24h)}</span>
-            <span className="text-muted-foreground">Mkt Cap</span>
-            <span className="text-right font-mono">{formatCompact(token.marketCap)}</span>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -895,9 +973,13 @@ function TokenGrid({ tokens }: { tokens: Token[] }) {
 function CreatorsGrid({
   creators,
   isLoading,
+  expandedId,
+  onCardClick,
 }: {
   creators: CreatorToken[]
   isLoading: boolean
+  expandedId: string | null
+  onCardClick: (id: string) => void
 }) {
   if (isLoading) {
     return (
@@ -915,66 +997,124 @@ function CreatorsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {creators.map((creator) => (
-        <div key={creator.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
-              <div className="truncate text-xs text-muted-foreground">
-                {creator.creatorHandle ?? creator.name}
-              </div>
-            </div>
-            <div
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+      {creators.map((creator) => {
+        const expanded = expandedId === creator.id
+        return (
+          <div key={creator.id} className="overflow-hidden rounded-xl border border-border bg-card">
+            <button
+              type="button"
+              onClick={() => onCardClick(creator.id)}
               className={cn(
-                'text-xs font-mono tabular-nums',
-                creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                'w-full p-3 text-left transition-colors sm:p-4',
+                expanded && 'bg-accent/50',
               )}
             >
-              {creator.marketCapDelta24h >= 0 ? '+' : ''}
-              {creator.marketCapDelta24h.toFixed(2)}%
-            </div>
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="truncate font-mono text-sm font-semibold">{creator.symbol}</div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {creator.creatorHandle ?? creator.name}
+                  </div>
+                </div>
+                <AssetLink type="creators" id={creator.id} />
+              </div>
+              <div
+                className={cn(
+                  'mt-2 text-xs font-mono tabular-nums',
+                  creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                )}
+              >
+                {creator.marketCapDelta24h >= 0 ? '+' : ''}
+                {creator.marketCapDelta24h.toFixed(2)}%
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <span className="text-muted-foreground">Mkt Cap</span>
+                <span className="text-right font-mono">{formatCompact(creator.marketCap)}</span>
+                <span className="text-muted-foreground">24h Vol</span>
+                <span className="text-right font-mono">{formatCompact(creator.volume24h)}</span>
+                <span className="text-muted-foreground">Holders</span>
+                <span className="text-right font-mono">{creator.uniqueHolders.toLocaleString('en-US')}</span>
+              </div>
+            </button>
+            {expanded && (
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+                <InlineCreatorChart creator={creator} />
+              </div>
+            )}
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-            <span className="text-muted-foreground">Mkt Cap</span>
-            <span className="text-right font-mono">{formatCompact(creator.marketCap)}</span>
-            <span className="text-muted-foreground">24h Vol</span>
-            <span className="text-right font-mono">{formatCompact(creator.volume24h)}</span>
-            <span className="text-muted-foreground">Holders</span>
-            <span className="text-right font-mono">{creator.uniqueHolders.toLocaleString('en-US')}</span>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
 
-function MarketGrid({ markets }: { markets: Market[] }) {
+function MarketGrid({
+  markets,
+  expandedId,
+  onCardClick,
+}: {
+  markets: Market[]
+  expandedId: string | null
+  onCardClick: (id: string) => void
+}) {
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {markets.map((market) => (
-        <div key={market.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
-          <div className="text-sm font-medium leading-snug">{market.title}</div>
-          <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-            <span>Yes {market.yesPercent}%</span>
-            <span>No {market.noPercent}%</span>
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+      {markets.map((market) => {
+        const expanded = expandedId === market.id
+        return (
+          <div key={market.id} className="overflow-hidden rounded-xl border border-border bg-card">
+            <button
+              type="button"
+              onClick={() => onCardClick(market.id)}
+              className={cn(
+                'w-full p-3 text-left transition-colors sm:p-4',
+                expanded && 'bg-accent/50',
+              )}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="text-sm font-medium leading-snug">{market.title}</div>
+                </div>
+                <AssetLink type="markets" id={market.id} />
+              </div>
+              <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span>Yes {market.yesPercent}%</span>
+                <span>No {market.noPercent}%</span>
+              </div>
+              <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                <div className="h-full rounded-full bg-[#22c55e]" style={{ width: `${market.yesPercent}%` }} />
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <span className="text-muted-foreground">Volume</span>
+                <span className="text-right font-mono">{formatCompact(market.volume)}</span>
+                <span className="text-muted-foreground">Expires</span>
+                <span className="text-right font-mono">{formatExpiry(market.expiry)}</span>
+              </div>
+            </button>
+            {expanded && (
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+                <InlineMarketChart market={market} />
+              </div>
+            )}
           </div>
-          <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-[#22c55e]" style={{ width: `${market.yesPercent}%` }} />
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-            <span className="text-muted-foreground">Volume</span>
-            <span className="text-right font-mono">{formatCompact(market.volume)}</span>
-            <span className="text-muted-foreground">Expires</span>
-            <span className="text-right font-mono">{formatExpiry(market.expiry)}</span>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
 
-function MusicGrid({ songs, isLoading }: { songs: Song[]; isLoading: boolean }) {
+function MusicGrid({
+  songs,
+  isLoading,
+  expandedId,
+  onCardClick,
+}: {
+  songs: Song[]
+  isLoading: boolean
+  expandedId: string | null
+  onCardClick: (id: string) => void
+}) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
@@ -990,24 +1130,44 @@ function MusicGrid({ songs, isLoading }: { songs: Song[]; isLoading: boolean }) 
     )
   }
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {songs.map((song) => (
-        <div key={song.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
-          <div className="flex items-start gap-3">
-            <img src={imageUrl(song.image_ipfs_cid)} alt="" className="size-14 rounded-md object-cover" />
-            <div className="min-w-0">
-              <div className="truncate text-sm font-medium">{song.title}</div>
-              <div className="truncate text-xs text-muted-foreground">{song.artist}</div>
-            </div>
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+      {songs.map((song) => {
+        const expanded = expandedId === song.id
+        return (
+          <div key={song.id} className="overflow-hidden rounded-xl border border-border bg-card">
+            <button
+              type="button"
+              onClick={() => onCardClick(song.id)}
+              className={cn(
+                'w-full p-3 text-left transition-colors sm:p-4',
+                expanded && 'bg-accent/50',
+              )}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 flex-1 gap-3">
+                  <img src={imageUrl(song.image_ipfs_cid)} alt="" className="size-14 shrink-0 rounded-md object-cover" />
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium">{song.title}</div>
+                    <div className="truncate text-xs text-muted-foreground">{song.artist}</div>
+                  </div>
+                </div>
+                <AssetLink type="music" id={song.id} />
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <span className="text-muted-foreground">Collections</span>
+                <span className="text-right font-mono">{song.collection_count}</span>
+                <span className="text-muted-foreground">Type</span>
+                <span className="text-right capitalize">{song.media_type}</span>
+              </div>
+            </button>
+            {expanded && (
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+                <InlineSongDetail song={song} />
+              </div>
+            )}
           </div>
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-            <span className="text-muted-foreground">Collections</span>
-            <span className="text-right font-mono">{song.collection_count}</span>
-            <span className="text-muted-foreground">Type</span>
-            <span className="text-right capitalize">{song.media_type}</span>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

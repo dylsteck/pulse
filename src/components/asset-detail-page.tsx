@@ -1,0 +1,369 @@
+import { useNavigate } from '@tanstack/react-router'
+import { ArrowLeft } from 'lucide-react'
+import { LivelineChart } from '@/components/trading/liveline-chart'
+import { useTokenPrice } from '@/hooks/use-token-price'
+import { useMarketOdds } from '@/hooks/use-market-odds'
+import { useTortoiseSongs, useAudioDetail } from '@/hooks/use-tortoise-songs'
+import { usePerpMarkets } from '@/hooks/use-perps'
+import { useZoraCreators } from '@/hooks/use-zora-creators'
+import { useLiveTokens } from '@/hooks/use-live-tokens'
+import { useLiveMarkets } from '@/hooks/use-live-markets'
+import { imageUrl, type Song } from '@/lib/tortoise'
+import type { CreatorToken } from '@/lib/zora/service'
+import type { Token } from '@/lib/mock/tokens'
+import type { Market } from '@/lib/mock/markets'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import { formatPerpPrice } from '@/lib/hyperliquid/service'
+import { cn } from '@/lib/utils'
+
+function formatCompact(v: number): string {
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`
+  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`
+  return `$${v}`
+}
+
+function formatPrice(price: number): string {
+  if (price >= 1000)
+    return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  if (price >= 1) return price.toFixed(4)
+  if (price >= 0.001) return price.toFixed(6)
+  return price.toFixed(8)
+}
+
+function formatExpiry(s: string): string {
+  return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function formatCreated(s: string): string {
+  return new Date(s).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const BACK_ROUTES: Record<string, string> = {
+  tokens: '/tokens',
+  markets: '/markets',
+  creators: '/creators',
+  music: '/music',
+  perps: '/perps',
+}
+
+export function AssetDetailPage({ type, id }: { type: string; id: string }) {
+  const navigate = useNavigate()
+  const backTo = BACK_ROUTES[type] ?? '/tokens'
+
+  return (
+    <div className="mx-auto flex min-h-[calc(100vh-37px)] max-w-2xl flex-col px-3 py-4 sm:px-6">
+      <button
+        type="button"
+        onClick={() => navigate({ to: backTo })}
+        className="mb-4 inline-flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+        aria-label="Back"
+      >
+        <ArrowLeft className="size-4" />
+        Back
+      </button>
+
+      {type === 'tokens' && <TokenDetail id={id} />}
+      {type === 'markets' && <MarketDetail id={id} />}
+      {type === 'creators' && <CreatorDetail id={id} />}
+      {type === 'music' && <MusicDetail id={id} />}
+      {type === 'perps' && <PerpDetail id={id} />}
+      {!['tokens', 'markets', 'creators', 'music', 'perps'].includes(type) && (
+        <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+          Unknown asset type
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TokenDetail({ id }: { id: string }) {
+  const { data: tokens } = useLiveTokens(100)
+  const token = tokens?.find((t) => t.id === id)
+  if (!token) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Token not found
+      </div>
+    )
+  }
+  return <TokenDetailContent token={token} />
+}
+
+function TokenDetailContent({ token }: { token: Token }) {
+  const { price, history } = useTokenPrice(token)
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+      <div className="mb-4 flex items-baseline justify-between">
+        <div>
+          <h1 className="font-mono text-lg font-semibold">{token.symbol}</h1>
+          <p className="text-sm text-muted-foreground">{token.name}</p>
+        </div>
+        <span
+          className={cn(
+            'text-sm font-mono tabular-nums',
+            token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+          )}
+        >
+          {token.change24h >= 0 ? '+' : ''}
+          {token.change24h.toFixed(2)}%
+        </span>
+      </div>
+      <div className="mb-6 font-mono text-2xl tabular-nums">${formatPrice(price)}</div>
+      <LivelineChart data={history} value={price} height={280} />
+      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span className="text-muted-foreground">Volume</span>
+          <p className="font-mono">{formatCompact(token.volume24h)}</p>
+        </div>
+        <div>
+          <span className="text-muted-foreground">Mkt Cap</span>
+          <p className="font-mono">{formatCompact(token.marketCap)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MarketDetail({ id }: { id: string }) {
+  const { data: markets } = useLiveMarkets(100)
+  const market = markets?.find((m) => m.id === id)
+  if (!market) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Market not found
+      </div>
+    )
+  }
+  return <MarketDetailContent market={market} />
+}
+
+function MarketDetailContent({ market }: { market: Market }) {
+  const { yesPercent, history } = useMarketOdds(market)
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+      <h1 className="mb-4 text-lg font-medium">{market.title}</h1>
+      <div className="mb-4 flex items-center justify-between text-sm">
+        <span className="text-muted-foreground">Yes {yesPercent.toFixed(1)}%</span>
+        <span className="font-mono font-semibold text-[#22c55e]">{yesPercent.toFixed(1)}% Yes</span>
+      </div>
+      <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-muted">
+        <div className="h-full rounded-full bg-[#22c55e]" style={{ width: `${yesPercent}%` }} />
+      </div>
+      <LivelineChart
+        data={history}
+        value={yesPercent}
+        height={280}
+        formatValue={(v) => `${v.toFixed(1)}%`}
+      />
+      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span className="text-muted-foreground">Volume</span>
+          <p className="font-mono">{formatCompact(market.volume)}</p>
+        </div>
+        <div>
+          <span className="text-muted-foreground">Expires</span>
+          <p className="font-mono">{formatExpiry(market.expiry)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CreatorDetail({ id }: { id: string }) {
+  const creatorsQuery = useZoraCreators(100)
+  const creator = creatorsQuery.items.find((c) => c.id === id)
+  if (creatorsQuery.isLoading || !creator) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        {creatorsQuery.isLoading ? 'Loading…' : 'Creator not found'}
+      </div>
+    )
+  }
+  return <CreatorDetailContent creator={creator} />
+}
+
+function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
+  if (creator.sparkline.length < 2) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="flex items-center gap-3">
+          {creator.imageUrl && (
+            <img src={creator.imageUrl} alt="" className="size-14 rounded-lg object-cover" />
+          )}
+          <div>
+            <h1 className="font-mono text-lg font-semibold">{creator.symbol}</h1>
+            <p className="text-sm text-muted-foreground">{creator.creatorHandle ?? creator.name}</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">No chart data available.</p>
+      </div>
+    )
+  }
+  const last = creator.sparkline.at(-1)!
+  const color = creator.marketCapDelta24h >= 0 ? '#22c55e' : '#ef4444'
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+      <div className="mb-4 flex items-center gap-3">
+        {creator.imageUrl && (
+          <img src={creator.imageUrl} alt="" className="size-14 rounded-lg object-cover" />
+        )}
+        <div>
+          <h1 className="font-mono text-lg font-semibold">{creator.symbol}</h1>
+          <p className="text-sm text-muted-foreground">{creator.creatorHandle ?? creator.name}</p>
+        </div>
+        <span
+          className={cn(
+            'ml-auto text-sm font-mono tabular-nums',
+            creator.marketCapDelta24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+          )}
+        >
+          {creator.marketCapDelta24h >= 0 ? '+' : ''}
+          {creator.marketCapDelta24h.toFixed(2)}%
+        </span>
+      </div>
+      <div className="mb-6 font-mono text-2xl tabular-nums">
+        ${last.value.toFixed(last.value >= 1 ? 4 : 8)}
+      </div>
+      <LivelineChart
+        data={creator.sparkline}
+        value={last.value}
+        height={280}
+        color={color}
+      />
+      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span className="text-muted-foreground">Mkt Cap</span>
+          <p className="font-mono">{formatCompact(creator.marketCap)}</p>
+        </div>
+        <div>
+          <span className="text-muted-foreground">24h Vol</span>
+          <p className="font-mono">{formatCompact(creator.volume24h)}</p>
+        </div>
+        <div>
+          <span className="text-muted-foreground">Holders</span>
+          <p className="font-mono">{creator.uniqueHolders.toLocaleString('en-US')}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function MusicDetail({ id }: { id: string }) {
+  const { data: songsData } = useTortoiseSongs()
+  const song = songsData?.songs.find((s) => s.id === id)
+  if (!song) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Song not found
+      </div>
+    )
+  }
+  return <MusicDetailContent song={song} />
+}
+
+function MusicDetailContent({ song }: { song: Song }) {
+  const { data: audio, isLoading } = useAudioDetail(song.url_slug)
+  const coverUrl = imageUrl(song.image_ipfs_cid)
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+      <div className="flex gap-4">
+        <img src={coverUrl} alt="" className="size-24 shrink-0 rounded-lg object-cover" />
+        <div className="min-w-0 flex-1">
+          <h1 className="text-lg font-medium">{song.title}</h1>
+          <p className="text-sm text-muted-foreground">{song.artist}</p>
+          <div className="mt-2 flex items-center gap-4 text-xs text-muted-foreground">
+            <span>{song.collection_count} collections</span>
+            {audio && <span>{audio.price} ETH</span>}
+          </div>
+          {isLoading ? (
+            <p className="mt-2 text-xs text-muted-foreground">Loading…</p>
+          ) : audio?.url ? (
+            <div className="mt-3">
+              <audio controls src={audio.url} className="w-full max-w-md" />
+            </div>
+          ) : null}
+          <a
+            href={`https://tortoise.studio/song/${song.url_slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-block text-xs font-medium text-foreground underline underline-offset-2 hover:no-underline"
+          >
+            Collect on Tortoise
+          </a>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PerpDetail({ id }: { id: string }) {
+  const { data: markets } = usePerpMarkets()
+  const market = markets?.find((m) => m.id === id)
+  if (!market) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Perp market not found
+      </div>
+    )
+  }
+  return <PerpDetailContent market={market} />
+}
+
+function buildPerpSeries(market: PerpMarketSnapshot): Array<{ time: number; value: number }> {
+  const now = Date.now()
+  const points: Array<{ time: number; value: number }> = []
+  const start = market.prevDayPx > 0 ? market.prevDayPx : market.markPx
+  const end = market.markPx
+  const span = Math.max(1, end - start)
+  for (let i = 0; i < 30; i++) {
+    const t = i / 29
+    const curve = start + span * t
+    const wobble = (Math.sin(i * 0.8) + Math.cos(i * 0.35)) * span * 0.08
+    points.push({
+      time: now - (29 - i) * 60_000,
+      value: Math.max(0.00000001, curve + wobble),
+    })
+  }
+  points[points.length - 1] = { time: now, value: end }
+  return points
+}
+
+function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
+  const history = buildPerpSeries(market)
+  const color = market.change24h >= 0 ? '#22c55e' : '#ef4444'
+  return (
+    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+      <div className="mb-4 flex items-baseline justify-between">
+        <h1 className="font-mono text-lg font-semibold">{market.coin} PERP</h1>
+        <span
+          className={cn(
+            'text-sm font-mono tabular-nums',
+            market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+          )}
+        >
+          {market.change24h >= 0 ? '+' : ''}
+          {market.change24h.toFixed(2)}%
+        </span>
+      </div>
+      <div className="mb-6 font-mono text-2xl tabular-nums">
+        ${formatPerpPrice(market, market.markPx)}
+      </div>
+      <LivelineChart data={history} value={market.markPx} height={280} color={color} />
+      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <span className="text-muted-foreground">Volume</span>
+          <p className="font-mono">{formatCompact(market.volume24h)}</p>
+        </div>
+        <div>
+          <span className="text-muted-foreground">Funding</span>
+          <p className="font-mono">{(market.funding * 100).toFixed(4)}%</p>
+        </div>
+        <div>
+          <span className="text-muted-foreground">Open Interest</span>
+          <p className="font-mono">{formatCompact(market.openInterest)}</p>
+        </div>
+      </div>
+    </div>
+  )
+}

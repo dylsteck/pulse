@@ -15,6 +15,7 @@ import { Route as MusicRouteImport } from './routes/music'
 import { Route as MarketsRouteImport } from './routes/markets'
 import { Route as CreatorsRouteImport } from './routes/creators'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AssetTypeIdRouteImport } from './routes/asset.$type.$id'
 
 const TokensRoute = TokensRouteImport.update({
   id: '/tokens',
@@ -46,6 +47,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssetTypeIdRoute = AssetTypeIdRouteImport.update({
+  id: '/asset/$type/$id',
+  path: '/asset/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
+  '/asset/$type/$id': typeof AssetTypeIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
+  '/asset/$type/$id': typeof AssetTypeIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,12 +79,27 @@ export interface FileRoutesById {
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
+  '/asset/$type/$id': typeof AssetTypeIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/creators' | '/markets' | '/music' | '/perps' | '/tokens'
+  fullPaths:
+    | '/'
+    | '/creators'
+    | '/markets'
+    | '/music'
+    | '/perps'
+    | '/tokens'
+    | '/asset/$type/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/creators' | '/markets' | '/music' | '/perps' | '/tokens'
+  to:
+    | '/'
+    | '/creators'
+    | '/markets'
+    | '/music'
+    | '/perps'
+    | '/tokens'
+    | '/asset/$type/$id'
   id:
     | '__root__'
     | '/'
@@ -85,6 +108,7 @@ export interface FileRouteTypes {
     | '/music'
     | '/perps'
     | '/tokens'
+    | '/asset/$type/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,6 +118,7 @@ export interface RootRouteChildren {
   MusicRoute: typeof MusicRoute
   PerpsRoute: typeof PerpsRoute
   TokensRoute: typeof TokensRoute
+  AssetTypeIdRoute: typeof AssetTypeIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -140,6 +165,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/asset/$type/$id': {
+      id: '/asset/$type/$id'
+      path: '/asset/$type/$id'
+      fullPath: '/asset/$type/$id'
+      preLoaderRoute: typeof AssetTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -150,6 +182,7 @@ const rootRouteChildren: RootRouteChildren = {
   MusicRoute: MusicRoute,
   PerpsRoute: PerpsRoute,
   TokensRoute: TokensRoute,
+  AssetTypeIdRoute: AssetTypeIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

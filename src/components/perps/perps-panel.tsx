@@ -1,4 +1,6 @@
 import { useMemo } from 'react'
+import { Link } from '@tanstack/react-router'
+import { ArrowUpRight } from 'lucide-react'
 import { LivelineChart } from '@/components/trading/liveline-chart'
 import { cn } from '@/lib/utils'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
@@ -19,6 +21,7 @@ interface PerpsPanelProps {
   expandedId: string | null
   rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
   onRowClick: (index: number) => void
+  onCardClick?: (id: string) => void
 }
 
 export function PerpsPanel({
@@ -29,6 +32,7 @@ export function PerpsPanel({
   expandedId,
   rowRefs,
   onRowClick,
+  onCardClick,
 }: PerpsPanelProps) {
   if (isLoading) {
     return (
@@ -48,7 +52,7 @@ export function PerpsPanel({
 
   return (
     <div className="space-y-3">
-{layout === 'list' ? (
+      {layout === 'list' ? (
         <PerpsTable
           markets={markets}
           selectedIndex={selectedIndex}
@@ -57,7 +61,11 @@ export function PerpsPanel({
           onRowClick={onRowClick}
         />
       ) : (
-        <PerpsGrid markets={markets} />
+        <PerpsGrid
+          markets={markets}
+          expandedId={expandedId}
+          onCardClick={onCardClick ?? (() => {})}
+        />
       )}
     </div>
   )
@@ -103,8 +111,8 @@ function PerpsTable({
 }) {
   const gridCols = 'grid-cols-[1.1fr_1fr_0.8fr_0.9fr_0.8fr_0.8fr_32px]'
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
-      <div className={cn('sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-4 py-2 sm:px-6', gridCols)}>
+    <div className="w-full overflow-hidden rounded-xl border border-border">
+      <div className={cn('sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6', gridCols)}>
         <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Perp</span>
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Mark</span>
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">24h %</span>
@@ -125,7 +133,7 @@ function PerpsTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-4 py-3 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-4 border-l-2 px-3 py-3 text-left transition-colors sm:px-6',
                 gridCols,
                 selected ? 'border-l-foreground bg-accent' : 'border-l-transparent hover:bg-accent/40',
               )}
@@ -151,10 +159,21 @@ function PerpsTable({
                 {(market.funding * 100).toFixed(4)}%
               </span>
               <span className="text-right font-mono text-xs tabular-nums text-muted-foreground">{formatCompact(market.openInterest)}</span>
-              <span />
+              <span className="flex justify-end pr-1">
+                <Link
+                  to="/asset/$type/$id"
+                  params={{ type: 'perps', id: market.id }}
+                  className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  aria-label="View details"
+                  title="View details"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ArrowUpRight className="size-3.5" />
+                </Link>
+              </span>
             </button>
             {expanded && (
-              <div className="border-t border-border bg-muted/30 px-4 py-4 sm:px-6">
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
                 <InlinePerpChart market={market} />
               </div>
             )}
@@ -182,32 +201,67 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
   )
 }
 
-function PerpsGrid({ markets }: { markets: PerpMarketSnapshot[] }) {
+function PerpsGrid({
+  markets,
+  expandedId,
+  onCardClick,
+}: {
+  markets: PerpMarketSnapshot[]
+  expandedId: string | null
+  onCardClick: (id: string) => void
+}) {
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
-      {markets.map((market) => (
-        <div key={market.id} className="rounded-xl border border-border bg-card p-3 sm:p-4">
-          <div className="flex items-baseline justify-between">
-            <div className="font-mono text-sm font-semibold">{market.coin} PERP</div>
-            <span
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+      {markets.map((market) => {
+        const expanded = expandedId === market.id
+        return (
+          <div key={market.id} className="overflow-hidden rounded-xl border border-border bg-card">
+            <button
+              type="button"
+              onClick={() => onCardClick(market.id)}
               className={cn(
-                'text-xs font-mono tabular-nums',
-                market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                'w-full p-3 text-left transition-colors sm:p-4',
+                expanded && 'bg-accent/50',
               )}
             >
-              {market.change24h >= 0 ? '+' : ''}
-              {market.change24h.toFixed(2)}%
-            </span>
+              <div className="flex items-start justify-between gap-2">
+                <div className="font-mono text-sm font-semibold">{market.coin} PERP</div>
+                <Link
+                  to="/asset/$type/$id"
+                  params={{ type: 'perps', id: market.id }}
+                  className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  aria-label="View details"
+                  title="View details"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ArrowUpRight className="size-3.5" />
+                </Link>
+              </div>
+              <div
+                className={cn(
+                  'mt-2 text-xs font-mono tabular-nums',
+                  market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                )}
+              >
+                {market.change24h >= 0 ? '+' : ''}
+                {market.change24h.toFixed(2)}%
+              </div>
+              <div className="mt-3 font-mono text-lg tabular-nums">${formatPerpPrice(market, market.markPx)}</div>
+              <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+                <span className="text-muted-foreground">Volume</span>
+                <span className="text-right font-mono">{formatCompact(market.volume24h)}</span>
+                <span className="text-muted-foreground">Funding</span>
+                <span className="text-right font-mono">{(market.funding * 100).toFixed(4)}%</span>
+              </div>
+            </button>
+            {expanded && (
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-4">
+                <InlinePerpChart market={market} />
+              </div>
+            )}
           </div>
-          <div className="mt-3 font-mono text-lg tabular-nums">${formatPerpPrice(market, market.markPx)}</div>
-          <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-            <span className="text-muted-foreground">Volume</span>
-            <span className="text-right font-mono">{formatCompact(market.volume24h)}</span>
-            <span className="text-muted-foreground">Funding</span>
-            <span className="text-right font-mono">{(market.funding * 100).toFixed(4)}%</span>
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
