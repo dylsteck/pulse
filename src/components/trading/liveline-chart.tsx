@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
 
@@ -17,8 +17,25 @@ export const WINDOW_LABEL_TO_SECS: Record<string, number> = Object.fromEntries(
   TIME_WINDOWS.map((w) => [w.label, w.secs]),
 )
 
+/** Ensure chart has at least 2 points - Liveline requires this to render a line */
+function ensureMinChartData(
+  data: Array<{ time: number; value: number }>,
+  currentValue: number,
+): Array<{ time: number; value: number }> {
+  if (data.length >= 2) return data
+  const last = data[0]
+  const val = last?.value ?? currentValue
+  const t = last?.time ?? Date.now() / 1000
+  const isSeconds = t < 1e10
+  const oneHour = isSeconds ? 3600 : 3600_000
+  return [
+    { time: t - oneHour, value: val },
+    { time: t, value: currentValue },
+  ]
+}
+
 interface LivelineChartProps {
-  data: { time: number; value: number }[]
+  data: Array<{ time: number; value: number }>
   value: number
   height?: number
   color?: string
@@ -44,14 +61,15 @@ export function LivelineChart({
     setMounted(true)
   }, [])
 
+  const chartData = ensureMinChartData(data, value)
   const dataSpanSecs =
-    data.length >= 2
-      ? Math.abs(data[data.length - 1]!.time - data[0]!.time)
+    chartData.length >= 2
+      ? Math.abs(chartData[chartData.length - 1].time - chartData[0].time)
       : 3600
-  const spanSecs = dataSpanSecs > 1e9 ? dataSpanSecs / 1000 : dataSpanSecs
+  const spanSecs = dataSpanSecs > 1e6 ? dataSpanSecs / 1000 : dataSpanSecs
   const defaultWindow =
     TIME_WINDOWS.find((w) => w.secs >= spanSecs)?.secs ??
-    TIME_WINDOWS[TIME_WINDOWS.length - 1]!.secs
+    TIME_WINDOWS[TIME_WINDOWS.length - 1].secs
 
   const resolvedColor = color ?? (isDark ? '#3b82f6' : '#111111')
 
@@ -62,7 +80,7 @@ export function LivelineChart({
     >
       {mounted && (
         <Liveline
-          data={data}
+          data={chartData}
           value={value}
           color={resolvedColor}
           theme={isDark ? 'dark' : 'light'}
@@ -89,7 +107,7 @@ export function SparklineChart({
   color,
   height = 40,
 }: {
-  data: { time: number; value: number }[]
+  data: Array<{ time: number; value: number }>
   value: number
   color?: string
   height?: number

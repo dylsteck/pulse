@@ -1,26 +1,26 @@
-import { useState, useRef, useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { ArrowLeft } from 'lucide-react'
+import type { CreatorToken } from '@/lib/zora/service'
+import type { Market, Token  } from '@/lib/types'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import type {Song} from '@/lib/tortoise';
 import {
   LivelineChart,
-  WINDOW_SECS_TO_LABEL,
   WINDOW_LABEL_TO_SECS,
+  WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { useMarketOdds } from '@/hooks/use-market-odds'
-import { useTortoiseSongs, useAudioDetail } from '@/hooks/use-tortoise-songs'
+import { useAudioDetail, useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { fetchCodexTokenByAddress } from '@/lib/codex'
 import { fetchPolymarketEventById } from '@/lib/polymarket'
 import { FadeImage } from '@/components/ui/fade-image'
-import { imageUrl, type Song } from '@/lib/tortoise'
-import type { CreatorToken } from '@/lib/zora/service'
-import type { Token } from '@/lib/types'
-import type { Market } from '@/lib/types'
-import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import {  imageUrl } from '@/lib/tortoise'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { cn } from '@/lib/utils'
 
@@ -141,7 +141,7 @@ function TokenDetailContent({ token }: { token: Token }) {
   const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
   const chartData = bars.length >= 2 ? bars : token.priceHistory
 
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel]!)
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
     windowSecsRef.current = secs
@@ -179,7 +179,7 @@ function TokenDetailContent({ token }: { token: Token }) {
       <div className="mb-6 font-mono text-2xl tabular-nums">
         ${formatPrice(price)}
       </div>
-      {isLoading && bars.length === 0 ? (
+      {isLoading && chartData.length === 0 ? (
         <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
       ) : (
         <LivelineChart

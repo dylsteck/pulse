@@ -21,7 +21,7 @@ const BASE_NETWORK_ID = 8453
 
 const fetchCodexBaseTokensServer = createServerFn({ method: 'POST' })
   .inputValidator((input: { limit: number; offset: number }) => input)
-  .handler(async ({ data }): Promise<Token[]> => {
+  .handler(async ({ data }): Promise<Array<Token>> => {
     if (!process.env.CODEX_API_KEY) {
       throw new Error('Missing CODEX_API_KEY')
     }
@@ -74,7 +74,7 @@ const fetchCodexBaseTokensServer = createServerFn({ method: 'POST' })
       errors?: Array<{ message: string }>
       data?: {
         filterTokens?: {
-          results?: CodexTokenResult[]
+          results?: Array<CodexTokenResult>
         }
       }
     }
@@ -114,7 +114,7 @@ const fetchCodexBaseTokensServer = createServerFn({ method: 'POST' })
 export async function fetchCodexBaseTokens(
   limit = 50,
   offset = 0,
-): Promise<Token[]> {
+): Promise<Array<Token>> {
   return fetchCodexBaseTokensServer({ data: { limit, offset } })
 }
 
@@ -173,7 +173,7 @@ const fetchCodexTokenByAddressServer = createServerFn({ method: 'POST' })
       errors?: Array<{ message: string }>
       data?: {
         filterTokens?: {
-          results?: CodexTokenResult[]
+          results?: Array<CodexTokenResult>
         }
       }
     }
@@ -221,7 +221,7 @@ export interface BarDataPoint {
 }
 
 export interface BarsResponse {
-  bars: BarDataPoint[]
+  bars: Array<BarDataPoint>
   status: string
 }
 
@@ -276,7 +276,7 @@ const fetchCodexBarsServer = createServerFn({ method: 'POST' })
       body: JSON.stringify({
         query,
         variables: {
-          symbol: `${data.address}:${BASE_NETWORK_ID}`,
+          symbol: `${BASE_NETWORK_ID}:${data.address}`,
           from,
           to: now,
           resolution,
@@ -292,8 +292,8 @@ const fetchCodexBarsServer = createServerFn({ method: 'POST' })
       errors?: Array<{ message: string }>
       data?: {
         getTokenBars?: {
-          c: number[] | null
-          t: number[] | null
+          c: Array<number> | null
+          t: Array<number> | null
           s: string
         }
       }
@@ -315,7 +315,7 @@ const fetchCodexBarsServer = createServerFn({ method: 'POST' })
       return { bars: [], status: result?.s ?? 'no_data' }
     }
 
-    const bars: BarDataPoint[] = result.t.map((timestamp, i) => ({
+    const bars: Array<BarDataPoint> = result.t.map((timestamp, i) => ({
       time: timestamp,
       value: result.c![i] ?? 0,
     }))
