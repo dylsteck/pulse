@@ -3,55 +3,73 @@ import { Link } from '@tanstack/react-router'
 import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
+import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
+import { formatCompact } from '@/lib/format'
+import type { Market } from '@/lib/types'
 
 const ACCENT_COLOR = '#0066ff'
 const HERO_CHART_PADDING = { top: 4, right: 16, bottom: 0, left: 0 } as const
 
-interface Asset {
-  id: string
-  symbol: string
-  name: string
-  price: number
-  change: number
-  data: { time: number; value: number }[]
-  imageUrl?: string
-}
+type CarouselItem =
+  | {
+      kind: 'token'
+      id: string
+      symbol: string
+      name: string
+      price: number
+      change: number
+      data: { time: number; value: number }[]
+      imageUrl?: string
+    }
+  | { kind: 'market'; market: Market }
 
 export function HeroBanner() {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
 
   const { data: tokens } = useLiveTokens(10)
+  const { data: markets } = useLiveMarkets()
 
-  const assets: Asset[] = useMemo(() => {
-    if (!tokens) return []
-    return tokens.map((t) => ({
-      id: t.id,
-      symbol: t.symbol,
-      name: t.name,
-      price: t.price,
-      change: t.change24h,
-      data: t.priceHistory,
-      imageUrl: t.imageUrl,
-    }))
-  }, [tokens])
+  const carouselItems: CarouselItem[] = useMemo(() => {
+    const tokenItems: CarouselItem[] = (tokens ?? [])
+      .filter((t) => t.priceHistory.length >= 2)
+      .map((t) => ({
+        kind: 'token',
+        id: t.id,
+        symbol: t.symbol,
+        name: t.name,
+        price: t.price,
+        change: t.change24h,
+        data: t.priceHistory,
+        imageUrl: t.imageUrl,
+      }))
+
+    const marketItems: CarouselItem[] = (markets ?? [])
+      .slice(0, 6)
+      .map((m) => ({ kind: 'market', market: m }))
+
+    const merged: CarouselItem[] = []
+    const maxLen = Math.max(tokenItems.length, marketItems.length)
+    for (let i = 0; i < maxLen; i++) {
+      if (i < tokenItems.length) merged.push(tokenItems[i]!)
+      if (i < marketItems.length) merged.push(marketItems[i]!)
+    }
+    return merged
+  }, [tokens, markets])
 
   const [currentIndex, setCurrentIndex] = useState(0)
 
-  const readyCount = assets.filter((a) => a.data.length >= 2).length
-
   useEffect(() => {
-    if (readyCount === 0) return
+    if (carouselItems.length === 0) return
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % readyCount)
+      setCurrentIndex((prev) => (prev + 1) % carouselItems.length)
     }, 5000)
     return () => clearInterval(interval)
-  }, [readyCount])
+  }, [carouselItems.length])
 
-  const readyAssets = assets.filter((a) => a.data.length >= 2)
-  const currentAsset = readyAssets[currentIndex % readyAssets.length]
+  const currentItem = carouselItems[currentIndex % carouselItems.length]
 
   return (
     <div className="relative mb-4 w-full overflow-hidden">
@@ -66,25 +84,44 @@ export function HeroBanner() {
           </p>
         </div>
 
-        {currentAsset && (
-          <Link
-            to="/asset/$type/$id"
-            params={{ type: 'tokens', id: currentAsset.id }}
-            className="hidden w-1/2 max-w-lg sm:block"
-          >
-            <AssetCard
-              key={currentAsset.id}
-              asset={currentAsset}
-              isDark={isDark}
-            />
-          </Link>
+        {currentItem && (
+          <div className="hidden w-1/2 max-w-lg sm:block">
+            {currentItem.kind === 'token' ? (
+              <Link
+                to="/asset/$type/$id"
+                params={{ type: 'tokens', id: currentItem.id }}
+              >
+                <AssetCard
+                  key={currentItem.id}
+                  asset={currentItem}
+                  isDark={isDark}
+                />
+              </Link>
+            ) : (
+              <Link
+                to="/asset/$type/$id"
+                params={{ type: 'markets', id: currentItem.market.id }}
+              >
+                <HeroMarketCard
+                  key={currentItem.market.id}
+                  market={currentItem.market}
+                />
+              </Link>
+            )}
+          </div>
         )}
       </div>
     </div>
   )
 }
 
-function AssetCard({ asset, isDark }: { asset: Asset; isDark: boolean }) {
+function AssetCard({
+  asset,
+  isDark,
+}: {
+  asset: Extract<CarouselItem, { kind: 'token' }>
+  isDark: boolean
+}) {
   const isPositive = asset.change >= 0
   const color = isPositive ? '#22c55e' : '#ef4444'
 
@@ -146,6 +183,58 @@ function AssetCard({ asset, isDark }: { asset: Asset; isDark: boolean }) {
           padding={HERO_CHART_PADDING}
           style={{ width: '100%', height: '100%' }}
         />
+      </div>
+    </div>
+  )
+}
+
+function HeroMarketCard({ market }: { market: Market }) {
+  const hasOutcomes = market.outcomes && market.outcomes.length > 0
+
+  return (
+    <div className="flex cursor-pointer flex-col gap-2 animate-in fade-in duration-500">
+      <div className="flex items-start gap-3">
+        {market.imageUrl && (
+          <FadeImage
+            src={market.imageUrl}
+            alt=""
+            wrapperClassName="size-9 shrink-0 rounded-lg"
+            className="size-9 rounded-lg object-cover"
+          />
+        )}
+        <div className="min-w-0 flex-1 pt-0.5">
+          <div className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
+            {market.title}
+          </div>
+        </div>
+      </div>
+
+      {hasOutcomes ? (
+        <div className="space-y-1">
+          {market.outcomes!.slice(0, 3).map((o) => (
+            <div key={o.name} className="flex items-center gap-2">
+              <span className="min-w-0 flex-1 truncate text-xs text-foreground">
+                {o.name}
+              </span>
+              <span className="shrink-0 text-xs font-medium tabular-nums text-foreground">
+                {Math.round(o.percent)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <div className="flex-1 rounded-lg bg-[#22c55e]/15 py-1.5 text-center text-xs font-semibold text-[#22c55e] dark:bg-[#22c55e]/20">
+            Yes {Math.round(market.yesPercent)}%
+          </div>
+          <div className="flex-1 rounded-lg bg-[#ef4444]/15 py-1.5 text-center text-xs font-semibold text-[#ef4444] dark:bg-[#ef4444]/20">
+            No {Math.round(market.noPercent)}%
+          </div>
+        </div>
+      )}
+
+      <div className="text-xs text-muted-foreground">
+        {formatCompact(market.volume)} Vol.
       </div>
     </div>
   )
