@@ -168,11 +168,15 @@ function TokenDetailContent({ token }: { token: Token }) {
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
-          <p className="">{formatCompact(token.volume24h)}</p>
+          <p className="">
+            {token.volume24h > 0 ? formatCompact(token.volume24h) : '—'}
+          </p>
         </div>
         <div>
           <span className="text-muted-foreground">Mkt Cap</span>
-          <p className="">{formatCompact(token.marketCap)}</p>
+          <p className="">
+            {token.marketCap > 0 ? formatCompact(token.marketCap) : '—'}
+          </p>
         </div>
       </div>
     </div>
@@ -368,8 +372,32 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
 }
 
 function MusicDetail({ id }: { id: string }) {
-  const { data: songsData } = useTortoiseSongs()
+  const { data: songsData, isLoading, isError } = useTortoiseSongs()
   const song = songsData?.songs.find((s) => s.id === id)
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="flex gap-4">
+          <div className="size-24 shrink-0 animate-pulse rounded-lg bg-muted" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="h-5 w-40 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+            <div className="h-3 w-32 animate-pulse rounded bg-muted" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Unable to load song
+      </div>
+    )
+  }
+
   if (!song) {
     return (
       <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
@@ -382,16 +410,22 @@ function MusicDetail({ id }: { id: string }) {
 
 function MusicDetailContent({ song }: { song: Song }) {
   const { data: audio, isLoading } = useAudioDetail(song.url_slug)
-  const coverUrl = imageUrl(song.image_ipfs_cid)
+  const coverUrl = song.image_ipfs_cid ? imageUrl(song.image_ipfs_cid) : null
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div className="flex gap-4">
-        <FadeImage
-          src={coverUrl}
-          alt=""
-          wrapperClassName="size-24 shrink-0 rounded-lg"
-          className="size-24 rounded-lg object-cover"
-        />
+        {coverUrl ? (
+          <FadeImage
+            src={coverUrl}
+            alt=""
+            wrapperClassName="size-24 shrink-0 rounded-lg"
+            className="size-24 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="flex size-24 shrink-0 items-center justify-center rounded-lg bg-muted text-2xl">
+            ♪
+          </div>
+        )}
         <div className="min-w-0 flex-1">
           <h1 className="text-lg font-medium">{song.title}</h1>
           <p className="text-sm text-muted-foreground">{song.artist}</p>
@@ -421,8 +455,38 @@ function MusicDetailContent({ song }: { song: Song }) {
 }
 
 function PerpDetail({ id }: { id: string }) {
-  const { data: markets } = usePerpMarkets()
+  const { data: markets, isLoading, isError } = usePerpMarkets()
   const market = markets?.find((m) => m.id === id)
+
+  if (isLoading) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="size-8 animate-pulse rounded-full bg-muted" />
+            <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="h-4 w-14 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="mb-6 h-7 w-32 animate-pulse rounded bg-muted" />
+        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+        <div className="mt-6 grid grid-cols-2 gap-4">
+          <div className="h-10 animate-pulse rounded bg-muted" />
+          <div className="h-10 animate-pulse rounded bg-muted" />
+          <div className="h-10 animate-pulse rounded bg-muted" />
+        </div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+        Unable to load perp market
+      </div>
+    )
+  }
+
   if (!market) {
     return (
       <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">

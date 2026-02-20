@@ -125,24 +125,22 @@ const fetchCodexTokenByAddressServer = createServerFn({ method: 'POST' })
       throw new Error('Missing CODEX_API_KEY')
     }
 
+    const addr = data.address.toLowerCase()
+
     const query = `
-      query TokenByAddress($filters: TokenFilters, $limit: Int!) {
-        filterTokens(filters: $filters, limit: $limit) {
-          results {
-            priceUSD
-            change24
-            volume24
-            marketCap
-            token {
-              address
-              symbol
-              name
-              networkId
-              info {
-                imageSmallUrl
-              }
-            }
+      query TokenByAddress($input: TokenInput!, $priceInputs: [GetPriceInput!]!) {
+        token(input: $input) {
+          address
+          symbol
+          name
+          networkId
+          info {
+            imageSmallUrl
           }
+        }
+        getTokenPrices(inputs: $priceInputs) {
+          address
+          priceUsd
         }
       }
     `
@@ -156,11 +154,8 @@ const fetchCodexTokenByAddressServer = createServerFn({ method: 'POST' })
       body: JSON.stringify({
         query,
         variables: {
-          limit: 1,
-          filters: {
-            network: [BASE_NETWORK_ID],
-            tokens: [`${BASE_NETWORK_ID}:${data.address}`],
-          },
+          input: { address: addr, networkId: BASE_NETWORK_ID },
+          priceInputs: [{ address: addr, networkId: BASE_NETWORK_ID }],
         },
       }),
     })
@@ -172,9 +167,14 @@ const fetchCodexTokenByAddressServer = createServerFn({ method: 'POST' })
     const json = (await res.json()) as {
       errors?: Array<{ message: string }>
       data?: {
-        filterTokens?: {
-          results?: Array<CodexTokenResult>
+        token?: {
+          address: string
+          symbol: string
+          name: string
+          networkId: number
+          info?: { imageSmallUrl?: string }
         }
+        getTokenPrices?: Array<{ address: string; priceUsd: number }>
       }
     }
 
@@ -184,26 +184,40 @@ const fetchCodexTokenByAddressServer = createServerFn({ method: 'POST' })
       )
     }
 
-    const result = json.data?.filterTokens?.results?.[0]
-    if (!result?.token?.address || result.token.networkId !== BASE_NETWORK_ID) {
-      return null
-    }
+    const tokenData = json.data?.token
+    if (!tokenData?.address) return null
 
-    const price = Number(result.priceUSD || 0)
-    const change24Decimal = Number(result.change24 || 0)
+    const priceEntry = json.data?.getTokenPrices?.[0]
+    const price = priceEntry?.priceUsd ?? 0
     const now = Date.now() / 1000
 
+    let change24h = 0
+    let volume24h = 0
+    let marketCap = 0
+    try {
+      const barsRes = await fetchBarsInternal(addr, '1D')
+      if (barsRes.bars.length >= 2) {
+        const firstPrice = barsRes.bars[0]!.value
+        const lastPrice = barsRes.bars.at(-1)!.value
+        if (firstPrice > 0) {
+          change24h = ((lastPrice - firstPrice) / firstPrice) * 100
+        }
+      }
+    } catch {
+      /* bars unavailable */
+    }
+
     return {
-      id: result.token.address.toLowerCase(),
-      name: result.token.name || result.token.symbol,
-      symbol: result.token.symbol,
-      address: result.token.address.toLowerCase(),
+      id: tokenData.address.toLowerCase(),
+      name: tokenData.name || tokenData.symbol,
+      symbol: tokenData.symbol,
+      address: tokenData.address.toLowerCase(),
       price,
-      change24h: change24Decimal * 100,
-      volume24h: Number(result.volume24 || 0),
-      marketCap: Number(result.marketCap || 0),
+      change24h,
+      volume24h,
+      marketCap,
       priceHistory: [{ time: now, value: price }],
-      imageUrl: result.token.info?.imageSmallUrl ?? undefined,
+      imageUrl: tokenData.info?.imageSmallUrl ?? undefined,
     } satisfies Token
   })
 
@@ -233,94 +247,97 @@ const RESOLUTION_MAP: Record<string, string> = {
   '1D': '60', // 60-minute bars over 1 day
 }
 
+const WINDOW_SECS_MAP: Record<string, number> = {
+  '15m': 900,
+  '1H': 3600,
+  '6H': 21600,
+  '1D': 86400,
+}
+
+async function fetchBarsInternal(
+  address: string,
+  windowLabel: string,
+): Promise<BarsResponse> {
+  if (!process.env.CODEX_API_KEY) {
+    throw new Error('Missing CODEX_API_KEY')
+  }
+
+  const resolution = RESOLUTION_MAP[windowLabel] ?? '15'
+  const windowSecs = WINDOW_SECS_MAP[windowLabel] ?? 3600
+  const now = Math.floor(Date.now() / 1000)
+  const from = now - windowSecs
+
+  const query = `
+    query GetTokenBars($symbol: String!, $from: Int!, $to: Int!, $resolution: String!) {
+      getTokenBars(
+        symbol: $symbol
+        from: $from
+        to: $to
+        resolution: $resolution
+        removeEmptyBars: true
+      ) {
+        c
+        t
+        s
+      }
+    }
+  `
+
+  const res = await fetch('https://graph.codex.io/graphql', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: process.env.CODEX_API_KEY,
+    },
+    body: JSON.stringify({
+      query,
+      variables: {
+        symbol: `${BASE_NETWORK_ID}:${address}`,
+        from,
+        to: now,
+        resolution,
+      },
+    }),
+  })
+
+  if (!res.ok) {
+    throw new Error(`Codex bars API error: ${res.status}`)
+  }
+
+  const json = (await res.json()) as {
+    errors?: Array<{ message: string }>
+    data?: {
+      getTokenBars?: {
+        c: Array<number> | null
+        t: Array<number> | null
+        s: string
+      }
+    }
+  }
+
+  if (json.errors?.length) {
+    throw new Error(
+      `Codex bars query failed: ${json.errors[0]?.message ?? 'Unknown error'}`,
+    )
+  }
+
+  const result = json.data?.getTokenBars
+  if (!result || result.s !== 'ok' || !result.c?.length || !result.t?.length) {
+    return { bars: [], status: result?.s ?? 'no_data' }
+  }
+
+  const bars: Array<BarDataPoint> = result.t.map((timestamp, i) => ({
+    time: timestamp,
+    value: result.c![i] ?? 0,
+  }))
+
+  return { bars, status: 'ok' }
+}
+
 const fetchCodexBarsServer = createServerFn({ method: 'POST' })
   .inputValidator((input: { address: string; windowLabel: string }) => input)
   .handler(async ({ data }): Promise<BarsResponse> => {
-    if (!process.env.CODEX_API_KEY) {
-      throw new Error('Missing CODEX_API_KEY')
-    }
-
-    const resolution = RESOLUTION_MAP[data.windowLabel] ?? '15'
-    const windowSecsMap: Record<string, number> = {
-      '15m': 900,
-      '1H': 3600,
-      '6H': 21600,
-      '1D': 86400,
-    }
-    const windowSecs = windowSecsMap[data.windowLabel] ?? 3600
-    const now = Math.floor(Date.now() / 1000)
-    const from = now - windowSecs
-
-    const query = `
-      query GetTokenBars($symbol: String!, $from: Int!, $to: Int!, $resolution: String!) {
-        getTokenBars(
-          symbol: $symbol
-          from: $from
-          to: $to
-          resolution: $resolution
-          removeEmptyBars: true
-        ) {
-          c
-          t
-          s
-        }
-      }
-    `
-
-    const res = await fetch('https://graph.codex.io/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: process.env.CODEX_API_KEY,
-      },
-      body: JSON.stringify({
-        query,
-        variables: {
-          symbol: `${BASE_NETWORK_ID}:${data.address}`,
-          from,
-          to: now,
-          resolution,
-        },
-      }),
-    })
-
-    if (!res.ok) {
-      throw new Error(`Codex bars API error: ${res.status}`)
-    }
-
-    const json = (await res.json()) as {
-      errors?: Array<{ message: string }>
-      data?: {
-        getTokenBars?: {
-          c: Array<number> | null
-          t: Array<number> | null
-          s: string
-        }
-      }
-    }
-
-    if (json.errors?.length) {
-      throw new Error(
-        `Codex bars query failed: ${json.errors[0]?.message ?? 'Unknown error'}`,
-      )
-    }
-
-    const result = json.data?.getTokenBars
-    if (
-      !result ||
-      result.s !== 'ok' ||
-      !result.c?.length ||
-      !result.t?.length
-    ) {
-      return { bars: [], status: result?.s ?? 'no_data' }
-    }
-
-    const bars: Array<BarDataPoint> = result.t.map((timestamp, i) => ({
-      time: timestamp,
-      value: result.c![i] ?? 0,
-    }))
-
-    return { bars, status: 'ok' }
+    return fetchBarsInternal(data.address, data.windowLabel)
   })
 
 export async function fetchCodexBars(
