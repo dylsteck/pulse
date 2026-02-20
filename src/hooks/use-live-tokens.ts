@@ -11,6 +11,7 @@ export function useLiveTokens(initialLimit = PAGE_SIZE) {
   const query = useQuery({
     queryKey: ['codex', 'base-tokens', limit],
     queryFn: () => fetchCodexBaseTokens(limit),
+    staleTime: 15_000,
     refetchInterval: 15_000,
   })
 

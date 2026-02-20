@@ -9,18 +9,12 @@ import {
 import { FadeImage } from '@/components/ui/fade-image'
 import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { cn } from '@/lib/utils'
+import { formatCompact } from '@/lib/format'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 
 function perpIconUrl(coin: string): string {
   return `https://app.hyperliquid.xyz/coins/${coin}.svg`
-}
-
-function formatCompact(v: number): string {
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`
-  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`
-  return `$${v.toFixed(0)}`
 }
 
 interface PerpsPanelProps {

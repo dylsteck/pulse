@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import type { Market } from '@/lib/types'
 
 export interface LiveOdds {
@@ -8,17 +8,12 @@ export interface LiveOdds {
 }
 
 export function useMarketOdds(market: Market): LiveOdds {
-  const [yesPercent, setYesPercent] = useState(market.yesPercent)
-  const [history, setHistory] = useState(market.priceHistory)
-
-  useEffect(() => {
-    setYesPercent(market.yesPercent)
-    setHistory(market.priceHistory)
-  }, [market.id, market.yesPercent, market.priceHistory])
-
-  return {
-    yesPercent,
-    noPercent: parseFloat((100 - yesPercent).toFixed(1)),
-    history,
-  }
+  return useMemo(
+    () => ({
+      yesPercent: market.yesPercent,
+      noPercent: parseFloat((100 - market.yesPercent).toFixed(1)),
+      history: market.priceHistory,
+    }),
+    [market.yesPercent, market.priceHistory],
+  )
 }

@@ -10,6 +10,7 @@ export function useLiveMarkets() {
     initialPageParam: 0,
     queryFn: ({ pageParam }) => fetchPolymarketEvents(PAGE_SIZE, pageParam),
     getNextPageParam: (lastPage) => lastPage.nextOffset,
+    staleTime: 15_000,
     refetchInterval: 15_000,
   })
 

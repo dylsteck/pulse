@@ -24,31 +24,7 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { imageUrl } from '@/lib/tortoise'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { cn } from '@/lib/utils'
-
-function formatCompact(v: number): string {
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`
-  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`
-  return `$${v}`
-}
-
-function formatPrice(price: number): string {
-  if (price >= 1000)
-    return price.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  if (price >= 1) return price.toFixed(4)
-  if (price >= 0.001) return price.toFixed(6)
-  return price.toFixed(8)
-}
-
-function formatExpiry(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
-}
+import { formatCompact, formatPrice, formatDate } from '@/lib/format'
 
 const BACK_ROUTES: Record<string, string> = {
   tokens: '/tokens',
@@ -280,7 +256,7 @@ function MarketDetailContent({ market }: { market: Market }) {
         </div>
         <div>
           <span className="text-muted-foreground">Expires</span>
-          <p className="">{formatExpiry(market.expiry)}</p>
+          <p className="">{formatDate(market.expiry)}</p>
         </div>
       </div>
     </div>

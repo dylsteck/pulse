@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 import type { Token } from '@/lib/types'
 
 export interface LivePrice {
@@ -7,13 +7,8 @@ export interface LivePrice {
 }
 
 export function useTokenPrice(token: Token): LivePrice {
-  const [price, setPrice] = useState(token.price)
-  const [history, setHistory] = useState(token.priceHistory)
-
-  useEffect(() => {
-    setPrice(token.price)
-    setHistory(token.priceHistory)
-  }, [token.id, token.price, token.priceHistory])
-
-  return { price, history }
+  return useMemo(
+    () => ({ price: token.price, history: token.priceHistory }),
+    [token.price, token.priceHistory],
+  )
 }

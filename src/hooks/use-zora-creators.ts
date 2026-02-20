@@ -12,6 +12,7 @@ export function useZoraCreators(pageSize = 20) {
         after: pageParam,
       }),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+    staleTime: 60_000,
   })
 
   const items = useMemo(

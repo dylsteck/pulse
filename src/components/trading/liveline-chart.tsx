@@ -17,7 +17,10 @@ export const WINDOW_LABEL_TO_SECS: Record<string, number> = Object.fromEntries(
   TIME_WINDOWS.map((w) => [w.label, w.secs]),
 )
 
-/** Ensure chart has at least 2 points - Liveline requires this to render a line */
+const LIVELINE_PADDING = { top: 12, right: 80, bottom: 40, left: 12 } as const
+const SPARKLINE_PADDING = { top: 2, right: 2, bottom: 2, left: 2 } as const
+const FULL_SIZE_STYLE = { width: '100%', height: '100%' } as const
+
 function ensureMinChartData(
   data: Array<{ time: number; value: number }>,
   currentValue: number,
@@ -92,9 +95,9 @@ export function LivelineChart({
           momentum
           fill
           grid
-          padding={{ top: 12, right: 80, bottom: 40, left: 12 }}
+          padding={LIVELINE_PADDING}
           {...(formatValue ? { formatValue } : {})}
-          style={{ width: '100%', height: '100%' }}
+          style={FULL_SIZE_STYLE}
         />
       )}
     </div>
@@ -137,8 +140,8 @@ export function SparklineChart({
         pulse={false}
         fill
         momentum={false}
-        padding={{ top: 2, right: 2, bottom: 2, left: 2 }}
-        style={{ width: '100%', height: '100%' }}
+        padding={SPARKLINE_PADDING}
+        style={FULL_SIZE_STYLE}
       />
     </div>
   )

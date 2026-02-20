@@ -7,6 +7,7 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 
 const ACCENT_COLOR = '#0066ff'
+const HERO_CHART_PADDING = { top: 4, right: 16, bottom: 0, left: 0 } as const
 
 interface Asset {
   id: string
@@ -142,7 +143,7 @@ function AssetCard({ asset, isDark }: { asset: Asset; isDark: boolean }) {
           pulse
           fill
           momentum
-          padding={{ top: 4, right: 16, bottom: 0, left: 0 }}
+          padding={HERO_CHART_PADDING}
           style={{ width: '100%', height: '100%' }}
         />
       </div>

@@ -5,6 +5,7 @@ export function useTortoiseSongs(page = 1, limit = 20) {
   return useQuery({
     queryKey: ['tortoise', 'trending', page, limit],
     queryFn: () => fetchTrendingSongs('30d', page, limit),
+    staleTime: 60_000,
   })
 }
 

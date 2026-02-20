@@ -29,39 +29,8 @@ import type { Market } from '@/lib/types'
 import { imageUrl, type Song } from '@/lib/tortoise'
 import type { CreatorToken } from '@/lib/zora/service'
 import { cn } from '@/lib/utils'
+import { formatCompact, formatPrice, formatDate } from '@/lib/format'
 import { FadeImage } from '@/components/ui/fade-image'
-
-function formatCompact(v: number): string {
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`
-  if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`
-  return `$${v}`
-}
-
-function formatPrice(price: number): string {
-  if (price >= 1000)
-    return price.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  if (price >= 1) return price.toFixed(4)
-  if (price >= 0.001) return price.toFixed(6)
-  return price.toFixed(8)
-}
-
-function formatExpiry(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
-}
-
-function formatCreated(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
-}
 
 const TAB_ICONS: Record<
   ViewMode,
@@ -125,8 +94,11 @@ export function UnifiedList({
   const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const marketsLoadMoreRef = useRef<HTMLDivElement | null>(null)
-  const { data: songsData } = useTortoiseSongs()
-  const { data: perpMarkets, isLoading: isPerpsLoading } = usePerpMarkets()
+  const songsQuery = useTortoiseSongs()
+  const songsData = songsQuery.data
+  const perpsQuery = usePerpMarkets()
+  const perpMarkets = perpsQuery.data
+  const isPerpsLoading = perpsQuery.isLoading
   const creatorsQuery = useZoraCreators(20)
   const creators = creatorsQuery.items
   const liveTokensQuery = useLiveTokens()
@@ -402,27 +374,61 @@ export function UnifiedList({
               />
             )
           ) : mode === 'creators' ? (
-            <CreatorsTable
-              creators={creators}
-              isLoading={creatorsQuery.isLoading}
-              selectedIndex={selectedIndex}
-              expandedId={expandedId}
-              rowRefs={rowRefs}
-              onRowClick={handleRowClick}
-            />
+            creatorsQuery.isLoading ? (
+              <LoadingPanel label="Loading creators..." />
+            ) : creatorsQuery.error ? (
+              <ErrorPanel
+                label={
+                  creatorsQuery.error instanceof Error
+                    ? creatorsQuery.error.message
+                    : 'Failed to load creator data.'
+                }
+              />
+            ) : (
+              <CreatorsTable
+                creators={creators}
+                isLoading={false}
+                selectedIndex={selectedIndex}
+                expandedId={expandedId}
+                rowRefs={rowRefs}
+                onRowClick={handleRowClick}
+              />
+            )
           ) : mode === 'music' ? (
-            <MusicTable
-              songs={songsData?.songs ?? []}
-              isLoading={!songsData}
-              selectedIndex={selectedIndex}
-              expandedId={expandedId}
-              rowRefs={rowRefs}
-              onRowClick={handleRowClick}
+            songsQuery.isLoading ? (
+              <LoadingPanel label="Loading music..." />
+            ) : songsQuery.error ? (
+              <ErrorPanel
+                label={
+                  songsQuery.error instanceof Error
+                    ? songsQuery.error.message
+                    : 'Failed to load music data.'
+                }
+              />
+            ) : (
+              <MusicTable
+                songs={songsData?.songs ?? []}
+                isLoading={false}
+                selectedIndex={selectedIndex}
+                expandedId={expandedId}
+                rowRefs={rowRefs}
+                onRowClick={handleRowClick}
+              />
+            )
+          ) : isPerpsLoading ? (
+            <LoadingPanel label="Loading perps..." />
+          ) : perpsQuery.error ? (
+            <ErrorPanel
+              label={
+                perpsQuery.error instanceof Error
+                  ? perpsQuery.error.message
+                  : 'Failed to load perps data.'
+              }
             />
           ) : (
             <PerpsPanel
               markets={perpMarkets ?? []}
-              isLoading={isPerpsLoading}
+              isLoading={false}
               layout="list"
               selectedIndex={selectedIndex}
               expandedId={expandedId}
@@ -459,16 +465,47 @@ export function UnifiedList({
             <MarketGrid markets={liveMarkets} />
           )
         ) : mode === 'creators' ? (
-          <CreatorsGrid
-            creators={creators}
-            isLoading={creatorsQuery.isLoading}
-          />
+          creatorsQuery.isLoading ? (
+            <LoadingPanel label="Loading creators..." />
+          ) : creatorsQuery.error ? (
+            <ErrorPanel
+              label={
+                creatorsQuery.error instanceof Error
+                  ? creatorsQuery.error.message
+                  : 'Failed to load creator data.'
+              }
+            />
+          ) : (
+            <CreatorsGrid creators={creators} isLoading={false} />
+          )
         ) : mode === 'music' ? (
-          <MusicGrid songs={songsData?.songs ?? []} isLoading={!songsData} />
+          songsQuery.isLoading ? (
+            <LoadingPanel label="Loading music..." />
+          ) : songsQuery.error ? (
+            <ErrorPanel
+              label={
+                songsQuery.error instanceof Error
+                  ? songsQuery.error.message
+                  : 'Failed to load music data.'
+              }
+            />
+          ) : (
+            <MusicGrid songs={songsData?.songs ?? []} isLoading={false} />
+          )
+        ) : isPerpsLoading ? (
+          <LoadingPanel label="Loading perps..." />
+        ) : perpsQuery.error ? (
+          <ErrorPanel
+            label={
+              perpsQuery.error instanceof Error
+                ? perpsQuery.error.message
+                : 'Failed to load perps data.'
+            }
+          />
         ) : (
           <PerpsPanel
             markets={perpMarkets ?? []}
-            isLoading={isPerpsLoading}
+            isLoading={false}
             layout="grid"
             selectedIndex={selectedIndex}
             expandedId={expandedId}
@@ -745,7 +782,7 @@ function MarketTable({
                 {formatCompact(market.volume)}
               </span>
               <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatExpiry(market.expiry)}
+                {formatDate(market.expiry)}
               </span>
             </button>
 
@@ -888,7 +925,7 @@ function MusicTable({
                 {song.media_type}
               </span>
               <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCreated(song.created_at)}
+                {formatDate(song.created_at)}
               </span>
             </button>
 
