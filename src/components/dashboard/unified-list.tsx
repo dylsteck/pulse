@@ -6,6 +6,7 @@ import {
   WINDOW_SECS_TO_LABEL,
   WINDOW_LABEL_TO_SECS,
 } from '@/components/trading/liveline-chart'
+import { HeroBanner } from '@/components/dashboard/hero-banner'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { useMarketOdds } from '@/hooks/use-market-odds'
@@ -327,6 +328,8 @@ export function UnifiedList({
           </button>
         </div>
       </div>
+
+      <HeroBanner />
 
       <div
         className={cn(
