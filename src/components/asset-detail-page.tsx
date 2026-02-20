@@ -15,6 +15,7 @@ import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { useMarketOdds } from '@/hooks/use-market-odds'
+import { useMarketHistory } from '@/hooks/use-market-history'
 import { useAudioDetail, useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
@@ -119,6 +120,7 @@ function TokenDetailContent({ token }: { token: Token }) {
   const chartData = bars.length >= 2 ? bars : token.priceHistory
 
   const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
     windowSecsRef.current = secs
@@ -229,7 +231,30 @@ function MarketDetail({ id }: { id: string }) {
 }
 
 function MarketDetailContent({ market }: { market: Market }) {
-  const { yesPercent, history } = useMarketOdds(market)
+  const { yesPercent } = useMarketOdds(market)
+  const [windowLabel, setWindowLabel] = useState('1D')
+  const { data: history, isLoading } = useMarketHistory(
+    market.clobTokenId,
+    windowLabel,
+  )
+
+  const chartData =
+    history.length >= 2
+      ? history
+      : [
+          { time: Date.now() / 1000 - 60, value: yesPercent },
+          { time: Date.now() / 1000, value: yesPercent },
+        ]
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <h1 className="mb-4 text-lg font-medium">{market.title}</h1>
@@ -247,12 +272,18 @@ function MarketDetailContent({ market }: { market: Market }) {
           style={{ width: `${yesPercent}%` }}
         />
       </div>
-      <LivelineChart
-        data={history}
-        value={yesPercent}
-        height={280}
-        formatValue={(v) => `${v.toFixed(1)}%`}
-      />
+      {isLoading && history.length === 0 ? (
+        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+      ) : (
+        <LivelineChart
+          data={chartData}
+          value={yesPercent}
+          height={280}
+          formatValue={(v) => `${v.toFixed(1)}%`}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+        />
+      )}
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
@@ -295,6 +326,7 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
         : []
 
   const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
     windowSecsRef.current = secs
@@ -507,6 +539,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
   const chartData = candles.length >= 2 ? candles : []
 
   const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
     windowSecsRef.current = secs

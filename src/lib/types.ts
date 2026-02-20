@@ -26,4 +26,5 @@ export interface Market {
   priceHistory: { time: number; value: number }[]
   imageUrl?: string
   outcomes?: MarketOutcome[]
+  clobTokenId?: string
 }

@@ -85,10 +85,10 @@ function normalizeSparkline(
   if (!points || points.length === 0) return []
   return points
     .map((point) => {
-      const time = Date.parse(point.timestamp)
+      const timeMs = Date.parse(point.timestamp)
       const value = Number(point.closePrice)
-      if (!Number.isFinite(time) || !Number.isFinite(value)) return null
-      return { time, value }
+      if (!Number.isFinite(timeMs) || !Number.isFinite(value)) return null
+      return { time: Math.floor(timeMs / 1000), value }
     })
     .filter((point): point is { time: number; value: number } => point !== null)
 }

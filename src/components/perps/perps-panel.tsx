@@ -203,6 +203,7 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
   const chartData = candles.length >= 2 ? candles : []
 
   const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
     windowSecsRef.current = secs

@@ -6,6 +6,7 @@ interface PolymarketMarket {
   outcomes?: string
   outcomePrices?: string
   groupItemTitle?: string
+  clobTokenIds?: string
 }
 
 interface PolymarketEvent {
@@ -29,6 +30,17 @@ function parseOutcomePrices(
     const no = Number(parsed[1])
     if (!Number.isFinite(yes) || !Number.isFinite(no)) return null
     return [yes, no]
+  } catch {
+    return null
+  }
+}
+
+function parseClobTokenIds(value: string | undefined): string[] | null {
+  if (!value) return null
+  try {
+    const parsed = JSON.parse(value) as string[]
+    if (!Array.isArray(parsed) || parsed.length === 0) return null
+    return parsed
   } catch {
     return null
   }
@@ -138,6 +150,7 @@ const fetchPolymarketEventsServer = createServerFn({ method: 'POST' })
         const noPercent =
           Math.round(Math.max(0, Math.min(100, prices[1] * 100)) * 100) / 100
         const outcomes = extractOutcomes(event.markets ?? [])
+        const clobIds = parseClobTokenIds(firstMarket?.clobTokenIds)
         return {
           id: String(event.id),
           title: event.title,
@@ -148,6 +161,7 @@ const fetchPolymarketEventsServer = createServerFn({ method: 'POST' })
           priceHistory: [{ time: now, value: yesPercent }],
           imageUrl: event.image,
           outcomes: outcomes.length > 0 ? outcomes : undefined,
+          clobTokenId: clobIds?.[0],
         }
       })
       .filter((market): market is Market => market !== null)
@@ -181,6 +195,7 @@ const fetchPolymarketEventByIdServer = createServerFn({ method: 'POST' })
     const noPercent =
       Math.round(Math.max(0, Math.min(100, prices[1] * 100)) * 100) / 100
     const outcomes = extractOutcomes(event.markets ?? [])
+    const clobIds = parseClobTokenIds(firstMarket?.clobTokenIds)
 
     return {
       id: String(event.id),
@@ -192,6 +207,7 @@ const fetchPolymarketEventByIdServer = createServerFn({ method: 'POST' })
       priceHistory: [{ time: now, value: yesPercent }],
       imageUrl: event.image,
       outcomes: outcomes.length > 0 ? outcomes : undefined,
+      clobTokenId: clobIds?.[0],
     }
   })
 
@@ -199,4 +215,45 @@ export async function fetchPolymarketEventById(
   id: string,
 ): Promise<Market | null> {
   return fetchPolymarketEventByIdServer({ data: { id } })
+}
+
+const CLOB_INTERVAL_MAP: Record<string, string> = {
+  '15m': '1h',
+  '1H': '6h',
+  '6H': '1d',
+  '1D': '1w',
+}
+
+const fetchPolymarketPriceHistoryServer = createServerFn({ method: 'POST' })
+  .inputValidator(
+    (input: { clobTokenId: string; windowLabel: string }) => input,
+  )
+  .handler(async ({ data }): Promise<{ time: number; value: number }[]> => {
+    const interval = CLOB_INTERVAL_MAP[data.windowLabel] ?? '1d'
+    const params = new URLSearchParams({
+      market: data.clobTokenId,
+      interval,
+      fidelity: '1',
+    })
+    const res = await fetch(
+      `https://clob.polymarket.com/prices-history?${params.toString()}`,
+    )
+    if (!res.ok) return []
+    const json = (await res.json()) as {
+      history?: { t: number; p: number }[]
+    }
+    if (!json.history || json.history.length === 0) return []
+    return json.history.map((pt) => ({
+      time: pt.t,
+      value: Math.round(pt.p * 100 * 100) / 100,
+    }))
+  })
+
+export async function fetchPolymarketPriceHistory(
+  clobTokenId: string,
+  windowLabel: string,
+): Promise<{ time: number; value: number }[]> {
+  return fetchPolymarketPriceHistoryServer({
+    data: { clobTokenId, windowLabel },
+  })
 }

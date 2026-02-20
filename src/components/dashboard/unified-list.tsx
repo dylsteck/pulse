@@ -18,6 +18,7 @@ import { HeroBanner } from '@/components/dashboard/hero-banner'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { useMarketOdds } from '@/hooks/use-market-odds'
+import { useMarketHistory } from '@/hooks/use-market-history'
 import { useTortoiseSongs, useAudioDetail } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
@@ -670,9 +671,8 @@ function InlineTokenChart({ token }: { token: Token }) {
   const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
   const chartData = bars.length >= 2 ? bars : token.priceHistory
 
-  // Guard against Liveline firing onWindowChange on mount/data-change
-  // which causes the timeframe to snap back to default
   const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel]!)
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]!
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
     windowSecsRef.current = secs
@@ -799,20 +799,29 @@ function MarketTable({
 }
 
 function InlineMarketChart({ market }: { market: Market }) {
-  const { yesPercent, history } = useMarketOdds(market)
+  const { yesPercent } = useMarketOdds(market)
+  const [windowLabel, setWindowLabel] = useState('1D')
+  const { data: history, isLoading } = useMarketHistory(
+    market.clobTokenId,
+    windowLabel,
+  )
 
   const chartData =
     history.length >= 2
       ? history
-      : history.length === 1
-        ? [
-            { time: history[0]!.time - 60, value: history[0]!.value },
-            history[0]!,
-          ]
-        : [
-            { time: Date.now() / 1000 - 60, value: yesPercent },
-            { time: Date.now() / 1000, value: yesPercent },
-          ]
+      : [
+          { time: Date.now() / 1000 - 60, value: yesPercent },
+          { time: Date.now() / 1000, value: yesPercent },
+        ]
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
@@ -822,12 +831,18 @@ function InlineMarketChart({ market }: { market: Market }) {
           {Math.round(yesPercent)}% Yes
         </span>
       </div>
-      <LivelineChart
-        data={chartData}
-        value={yesPercent}
-        height={220}
-        formatValue={(v) => `${Math.round(v)}%`}
-      />
+      {isLoading && history.length === 0 ? (
+        <div className="h-[220px] w-full animate-pulse rounded-lg bg-muted" />
+      ) : (
+        <LivelineChart
+          data={chartData}
+          value={yesPercent}
+          height={220}
+          formatValue={(v) => `${Math.round(v)}%`}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+        />
+      )}
     </div>
   )
 }
@@ -1126,6 +1141,7 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
         : []
 
   const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
     windowSecsRef.current = secs
