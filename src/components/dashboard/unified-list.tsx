@@ -269,6 +269,7 @@ export function UnifiedList({
 
   return (
     <div className="mx-auto flex h-[calc(100vh-37px)] w-full max-w-6xl flex-col py-2 sm:px-6">
+      <HeroBanner />
       <div className="mb-2 flex items-end justify-between gap-2 px-2 sm:px-0">
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
           {(
@@ -328,8 +329,6 @@ export function UnifiedList({
           </button>
         </div>
       </div>
-
-      <HeroBanner />
 
       <div
         className={cn(

@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
+import { Link } from '@tanstack/react-router'
 import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
@@ -51,8 +52,8 @@ export function HeroBanner() {
   if (!currentAsset) return null
 
   return (
-    <div className="relative mb-4 w-full overflow-hidden border border-border bg-card sm:rounded-xl">
-      <div className="flex items-center gap-6 p-4 sm:p-5">
+    <div className="relative mb-4 w-full overflow-hidden bg-card">
+      <div className="flex items-center gap-6 px-2 py-2 sm:px-0 sm:py-3">
         <div className="flex-1">
           <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
             Stay on the <span style={{ color: ACCENT_COLOR }}>pulse</span> of
@@ -63,13 +64,17 @@ export function HeroBanner() {
           </p>
         </div>
 
-        <div className="hidden w-1/2 max-w-md sm:block">
+        <Link
+          to="/asset/$type/$id"
+          params={{ type: 'token', id: currentAsset.id }}
+          className="hidden w-1/2 max-w-md sm:block"
+        >
           <AssetCard
             key={currentAsset.id}
             asset={currentAsset}
             isDark={isDark}
           />
-        </div>
+        </Link>
       </div>
     </div>
   )
@@ -90,7 +95,7 @@ function AssetCard({ asset, isDark }: { asset: Asset; isDark: boolean }) {
   }, [asset.data, asset.price])
 
   return (
-    <div className="flex h-full items-center gap-4 overflow-hidden rounded-lg border border-border bg-background p-3 transition-all animate-in fade-in duration-500">
+    <div className="flex h-full cursor-pointer items-center gap-4 overflow-hidden rounded-lg border border-border bg-background p-3 transition-all animate-in fade-in duration-500 hover:border-foreground/20">
       <div className="flex min-w-0 flex-1 items-center gap-3">
         {asset.imageUrl && (
           <FadeImage
