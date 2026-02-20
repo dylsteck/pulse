@@ -39,15 +39,18 @@ export function HeroBanner() {
 
   const [currentIndex, setCurrentIndex] = useState(0)
 
+  const readyCount = assets.filter((a) => a.data.length >= 2).length
+
   useEffect(() => {
-    if (assets.length === 0) return
+    if (readyCount === 0) return
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % assets.length)
+      setCurrentIndex((prev) => (prev + 1) % readyCount)
     }, 5000)
     return () => clearInterval(interval)
-  }, [assets.length])
+  }, [readyCount])
 
-  const currentAsset = assets[currentIndex]
+  const readyAssets = assets.filter((a) => a.data.length >= 2)
+  const currentAsset = readyAssets[currentIndex % readyAssets.length]
 
   if (!currentAsset) return null
 
@@ -66,7 +69,7 @@ export function HeroBanner() {
 
         <Link
           to="/asset/$type/$id"
-          params={{ type: 'token', id: currentAsset.id }}
+          params={{ type: 'tokens', id: currentAsset.id }}
           className="hidden w-1/2 max-w-lg sm:block"
         >
           <AssetCard

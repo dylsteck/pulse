@@ -1,10 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { ArrowLeft } from 'lucide-react'
 import type { CreatorToken } from '@/lib/zora/service'
 import type { Market, Token } from '@/lib/types'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import { ArrowLeft } from 'lucide-react'
 import type { Song } from '@/lib/tortoise'
 import {
   LivelineChart,

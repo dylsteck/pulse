@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { MoonIcon, SunIcon } from 'lucide-react'
 import { WalletButton } from '@/components/wallet/wallet-button'
 import { useWallet } from '@/hooks/use-wallet'
@@ -10,7 +11,9 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 bg-background pt-1.5">
       <div className="mx-auto flex h-9 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <span className="text-sm font-semibold text-foreground">Pulse</span>
+        <Link to="/" className="text-sm font-semibold text-foreground">
+          Pulse
+        </Link>
         <div className="flex items-center gap-2">
           <button
             onClick={toggleTheme}

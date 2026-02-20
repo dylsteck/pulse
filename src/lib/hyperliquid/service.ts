@@ -25,7 +25,6 @@ import { OrderBatchQueue } from '@/lib/hyperliquid/batch-queue'
 import { ScheduleCancelHeartbeat } from '@/lib/hyperliquid/heartbeat'
 import { toHyperliquidWallet } from '@/lib/hyperliquid/signer'
 import type { WalletClient } from 'viem'
-import { formatPrice } from '@nktkas/hyperliquid/utils'
 
 export interface PerpMarketSnapshot {
   id: string
@@ -340,7 +339,11 @@ export function formatPerpPrice(
   market: PerpMarketSnapshot,
   price: number,
 ): string {
-  return formatPrice(price, market.szDecimals, 'perp')
+  const maxDecimals = price >= 1000 ? 0 : price >= 1 ? 2 : market.szDecimals
+  return price.toLocaleString('en-US', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: maxDecimals,
+  })
 }
 
 export interface PerpCandleDataPoint {
@@ -389,7 +392,7 @@ const fetchHyperliquidCandlesServer = createServerFn({ method: 'POST' })
       }
 
       const candles: PerpCandleDataPoint[] = result.map((candle) => ({
-        time: candle.t,
+        time: candle.t / 1000,
         value: Number(candle.c),
       }))
 
