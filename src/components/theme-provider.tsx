@@ -7,24 +7,37 @@ const ThemeContext = createContext<{
   toggleTheme: () => void
 }>({ theme: 'light', toggleTheme: () => {} })
 
+function getSystemTheme(): Theme {
+  if (typeof window === 'undefined') return 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')
+  const [mounted, setMounted] = useState(false)
 
-  // Read persisted preference on mount
   useEffect(() => {
     const stored = localStorage.getItem('pulse-theme') as Theme | null
-    if (stored === 'dark' || stored === 'light') setTheme(stored)
+    setTheme(
+      stored === 'dark' || stored === 'light' ? stored : getSystemTheme(),
+    )
+    setMounted(true)
   }, [])
 
-  // Apply class to <html> and persist
   useEffect(() => {
+    if (!mounted) return
     document.documentElement.classList.toggle('dark', theme === 'dark')
     localStorage.setItem('pulse-theme', theme)
-  }, [theme])
+  }, [theme, mounted])
 
   return (
     <ThemeContext.Provider
-      value={{ theme, toggleTheme: () => setTheme((t) => (t === 'light' ? 'dark' : 'light')) }}
+      value={{
+        theme: mounted ? theme : 'light',
+        toggleTheme: () => setTheme((t) => (t === 'light' ? 'dark' : 'light')),
+      }}
     >
       {children}
     </ThemeContext.Provider>

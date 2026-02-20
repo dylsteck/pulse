@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import { MoonIcon, SunIcon } from 'lucide-react'
-import { WalletButton } from '@/components/wallet/wallet-button'
-import { useWallet } from '@/hooks/use-wallet'
+// import { WalletButton } from '@/components/wallet/wallet-button'
+// import { useWallet } from '@/hooks/use-wallet'
 import { useTheme } from '@/components/theme-provider'
 
 export function Header() {
-  const wallet = useWallet()
+  // const wallet = useWallet()
   const { theme, toggleTheme } = useTheme()
 
   return (
@@ -26,7 +26,7 @@ export function Header() {
               <MoonIcon className="size-4" />
             )}
           </button>
-          <WalletButton wallet={wallet} />
+          {/* <WalletButton wallet={wallet} /> */}
         </div>
       </div>
     </header>

@@ -52,8 +52,6 @@ export function HeroBanner() {
   const readyAssets = assets.filter((a) => a.data.length >= 2)
   const currentAsset = readyAssets[currentIndex % readyAssets.length]
 
-  if (!currentAsset) return null
-
   return (
     <div className="relative mb-4 w-full overflow-hidden">
       <div className="flex items-start gap-6 px-2 py-2 sm:px-0 sm:py-3">
@@ -67,17 +65,19 @@ export function HeroBanner() {
           </p>
         </div>
 
-        <Link
-          to="/asset/$type/$id"
-          params={{ type: 'tokens', id: currentAsset.id }}
-          className="hidden w-1/2 max-w-lg sm:block"
-        >
-          <AssetCard
-            key={currentAsset.id}
-            asset={currentAsset}
-            isDark={isDark}
-          />
-        </Link>
+        {currentAsset && (
+          <Link
+            to="/asset/$type/$id"
+            params={{ type: 'tokens', id: currentAsset.id }}
+            className="hidden w-1/2 max-w-lg sm:block"
+          >
+            <AssetCard
+              key={currentAsset.id}
+              asset={currentAsset}
+              isDark={isDark}
+            />
+          </Link>
+        )}
       </div>
     </div>
   )

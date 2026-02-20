@@ -356,7 +356,7 @@ export function UnifiedList({
       <div
         ref={scrollRef}
         className={cn(
-          'flex-1 overflow-y-auto scrollbar-none',
+          'min-h-0 flex-1 overflow-y-auto scrollbar-none',
           layout === 'grid' && 'px-2 sm:px-0',
         )}
       >
