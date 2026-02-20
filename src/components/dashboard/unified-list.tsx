@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from '@tanstack/react-router'
-import { LayoutGridIcon, Rows3Icon } from 'lucide-react'
+import {
+  LayoutGridIcon,
+  Rows3Icon,
+  CoinsIcon,
+  TrendingUpIcon,
+  SparklesIcon,
+  MusicIcon,
+  ArrowUpDownIcon,
+} from 'lucide-react'
 import {
   LivelineChart,
   WINDOW_SECS_TO_LABEL,
@@ -53,6 +61,17 @@ function formatCreated(s: string): string {
     month: 'short',
     day: 'numeric',
   })
+}
+
+const TAB_ICONS: Record<
+  ViewMode,
+  React.ComponentType<{ className?: string }>
+> = {
+  tokens: CoinsIcon,
+  markets: TrendingUpIcon,
+  creators: SparklesIcon,
+  music: MusicIcon,
+  perps: ArrowUpDownIcon,
 }
 
 export type ViewMode = 'tokens' | 'markets' | 'creators' | 'music' | 'perps'
@@ -277,6 +296,7 @@ export function UnifiedList({
             ['tokens', 'markets', 'creators', 'music', 'perps'] as ViewMode[]
           ).map((tab) => {
             const active = mode === tab
+            const Icon = TAB_ICONS[tab]
             return (
               <button
                 key={tab}
@@ -288,12 +308,13 @@ export function UnifiedList({
                   scrollRef.current?.scrollTo(0, 0)
                 }}
                 className={cn(
-                  'shrink-0 text-sm font-medium capitalize transition-colors',
+                  'flex shrink-0 items-center gap-1.5 text-sm font-medium capitalize transition-colors',
                   active
                     ? 'text-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
+                <Icon className="size-3.5" />
                 {tab}
               </button>
             )

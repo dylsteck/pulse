@@ -53,8 +53,8 @@ export function HeroBanner() {
 
   return (
     <div className="relative mb-4 w-full overflow-hidden">
-      <div className="flex items-end gap-6 px-2 py-2 sm:px-0 sm:py-3">
-        <div className="flex-1 pb-2">
+      <div className="flex items-start gap-6 px-2 py-2 sm:px-0 sm:py-3">
+        <div className="flex-1 pt-1">
           <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
             Stay on the <span style={{ color: ACCENT_COLOR }}>pulse</span> of
             crypto

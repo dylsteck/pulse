@@ -8,7 +8,7 @@ export function Header() {
   const { theme, toggleTheme } = useTheme()
 
   return (
-    <header className="sticky top-0 z-30 bg-background">
+    <header className="sticky top-0 z-30 bg-background pt-1.5">
       <div className="mx-auto flex h-9 max-w-6xl items-center justify-between px-4 sm:px-6">
         <span className="text-sm font-semibold text-foreground">Pulse</span>
         <div className="flex items-center gap-2">
@@ -17,7 +17,11 @@ export function Header() {
             aria-label="Toggle theme"
             className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground"
           >
-            {theme === 'dark' ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
+            {theme === 'dark' ? (
+              <SunIcon className="size-4" />
+            ) : (
+              <MoonIcon className="size-4" />
+            )}
           </button>
           <WalletButton wallet={wallet} />
         </div>
