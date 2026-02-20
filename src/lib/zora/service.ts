@@ -79,7 +79,9 @@ function toNumber(value: string | number | null | undefined): number {
   return Number.isFinite(parsed) ? parsed : 0
 }
 
-function normalizeSparkline(points: GraphqlSparkPoint[] | null | undefined): Array<{ time: number; value: number }> {
+function normalizeSparkline(
+  points: GraphqlSparkPoint[] | null | undefined,
+): Array<{ time: number; value: number }> {
   if (!points || points.length === 0) return []
   return points
     .map((point) => {
@@ -106,6 +108,7 @@ function mapNodeToToken(node: GraphqlExploreNode): CreatorToken {
     createdAt: node.createdAt ?? null,
     creatorHandle: node.creatorProfile?.handle ?? null,
     imageUrl:
+      node.creatorProfile?.avatar?.downloadableUri ??
       node.mediaContent?.previewImage?.downloadableUri ??
       node.mediaContent?.downloadableUri ??
       null,
@@ -119,7 +122,9 @@ const fetchCreatorsPageServer = createServerFn({ method: 'POST' })
     const first = Math.max(1, Math.min(data.first ?? 20, 50))
     const after = data.after ?? null
 
-    const operationName = after ? 'TrendingAllPaginationQuery' : 'TrendingAllQuery'
+    const operationName = after
+      ? 'TrendingAllPaginationQuery'
+      : 'TrendingAllQuery'
     const hash = after ? PAGINATION_TRENDING_HASH : INITIAL_TRENDING_HASH
 
     const payload = {
@@ -156,6 +161,9 @@ const fetchCreatorsPageServer = createServerFn({ method: 'POST' })
     }
   })
 
-export async function fetchCreatorsPage(params?: { first?: number; after?: string | null }): Promise<CreatorsPage> {
+export async function fetchCreatorsPage(params?: {
+  first?: number
+  after?: string | null
+}): Promise<CreatorsPage> {
   return fetchCreatorsPageServer({ data: params ?? {} })
 }

@@ -13,6 +13,7 @@ import {
 } from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
+import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useAudioDetail, useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
@@ -300,33 +301,30 @@ function CreatorDetail({ id }: { id: string }) {
 }
 
 function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
-  if (creator.sparkline.length < 2) {
-    return (
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="flex items-center gap-3">
-          {creator.imageUrl && (
-            <FadeImage
-              src={creator.imageUrl}
-              alt=""
-              wrapperClassName="size-14 rounded-lg"
-              className="size-14 rounded-lg object-cover"
-            />
-          )}
-          <div>
-            <h1 className="text-lg font-semibold">{creator.symbol}</h1>
-            <p className="text-sm text-muted-foreground">
-              {creator.creatorHandle ?? creator.name}
-            </p>
-          </div>
-        </div>
-        <p className="mt-4 text-sm text-muted-foreground">
-          No chart data available.
-        </p>
-      </div>
-    )
-  }
-  const last = creator.sparkline.at(-1)!
+  const [windowLabel, setWindowLabel] = useState('15m')
+  const { data: bars, isLoading: barsLoading } = useTokenBars(
+    creator.address,
+    windowLabel,
+  )
+  // Prefer Codex bars over Zora sparkline
+  const chartData =
+    bars.length >= 2
+      ? bars
+      : creator.sparkline.length >= 2
+        ? creator.sparkline
+        : []
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
+
+  const lastValue = chartData.at(-1)?.value ?? 0
   const color = creator.marketCapDelta24h >= 0 ? '#22c55e' : '#ef4444'
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div className="mb-4 flex items-center gap-3">
@@ -357,14 +355,24 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
         </span>
       </div>
       <div className="mb-6 text-2xl tabular-nums">
-        ${last.value.toFixed(last.value >= 1 ? 4 : 8)}
+        ${lastValue.toFixed(lastValue >= 1 ? 4 : 8)}
       </div>
-      <LivelineChart
-        data={creator.sparkline}
-        value={last.value}
-        height={280}
-        color={color}
-      />
+      {barsLoading && chartData.length === 0 ? (
+        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+      ) : chartData.length >= 2 ? (
+        <LivelineChart
+          data={chartData}
+          value={lastValue}
+          height={280}
+          color={color}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+        />
+      ) : (
+        <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
+          No chart data available
+        </div>
+      )}
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Mkt Cap</span>
@@ -449,30 +457,25 @@ function PerpDetail({ id }: { id: string }) {
   return <PerpDetailContent market={market} />
 }
 
-function buildPerpSeries(
-  market: PerpMarketSnapshot,
-): Array<{ time: number; value: number }> {
-  const now = Date.now()
-  const points: Array<{ time: number; value: number }> = []
-  const start = market.prevDayPx > 0 ? market.prevDayPx : market.markPx
-  const end = market.markPx
-  const span = Math.max(1, end - start)
-  for (let i = 0; i < 30; i++) {
-    const t = i / 29
-    const curve = start + span * t
-    const wobble = (Math.sin(i * 0.8) + Math.cos(i * 0.35)) * span * 0.08
-    points.push({
-      time: now - (29 - i) * 60_000,
-      value: Math.max(0.00000001, curve + wobble),
-    })
-  }
-  points[points.length - 1] = { time: now, value: end }
-  return points
-}
-
 function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
-  const history = buildPerpSeries(market)
+  const [windowLabel, setWindowLabel] = useState('15m')
+  const { data: candles, isLoading } = useHyperliquidCandles(
+    market.coin,
+    windowLabel,
+  )
+
+  const chartData = candles.length >= 2 ? candles : []
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
+
   const color = market.change24h >= 0 ? '#22c55e' : '#ef4444'
+
   return (
     <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
       <div className="mb-4 flex items-center justify-between">
@@ -498,12 +501,22 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
       <div className="mb-6 text-2xl tabular-nums">
         ${formatPerpPrice(market, market.markPx)}
       </div>
-      <LivelineChart
-        data={history}
-        value={market.markPx}
-        height={280}
-        color={color}
-      />
+      {isLoading && chartData.length === 0 ? (
+        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+      ) : chartData.length >= 2 ? (
+        <LivelineChart
+          data={chartData}
+          value={market.markPx}
+          height={280}
+          color={color}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+        />
+      ) : (
+        <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
+          No chart data available
+        </div>
+      )}
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>

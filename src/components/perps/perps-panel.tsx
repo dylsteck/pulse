@@ -1,8 +1,13 @@
-import { useMemo } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight } from 'lucide-react'
-import { LivelineChart } from '@/components/trading/liveline-chart'
+import {
+  LivelineChart,
+  WINDOW_LABEL_TO_SECS,
+  WINDOW_SECS_TO_LABEL,
+} from '@/components/trading/liveline-chart'
 import { FadeImage } from '@/components/ui/fade-image'
+import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { cn } from '@/lib/utils'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
@@ -68,33 +73,6 @@ export function PerpsPanel({
       )}
     </div>
   )
-}
-
-function buildPerpSeries(
-  market: PerpMarketSnapshot,
-): Array<{ time: number; value: number }> {
-  const now = Date.now()
-  const points: Array<{ time: number; value: number }> = []
-  const start = market.prevDayPx > 0 ? market.prevDayPx : market.markPx
-  const end = market.markPx
-  const span = Math.max(1, end - start)
-
-  for (let i = 0; i < 30; i++) {
-    const t = i / 29
-    const curve = start + span * t
-    const wobble = (Math.sin(i * 0.8) + Math.cos(i * 0.35)) * span * 0.08
-    points.push({
-      time: now - (29 - i) * 60_000,
-      value: Math.max(0.00000001, curve + wobble),
-    })
-  }
-
-  points[points.length - 1] = {
-    time: now,
-    value: end,
-  }
-
-  return points
 }
 
 function PerpsTable({
@@ -222,7 +200,22 @@ function PerpsTable({
 }
 
 function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
-  const history = useMemo(() => buildPerpSeries(market), [market])
+  const [windowLabel, setWindowLabel] = useState('15m')
+  const { data: candles, isLoading } = useHyperliquidCandles(
+    market.coin,
+    windowLabel,
+  )
+
+  const chartData = candles.length >= 2 ? candles : []
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
+
   const color = market.change24h >= 0 ? '#22c55e' : '#ef4444'
 
   return (
@@ -233,12 +226,22 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
           ${formatPerpPrice(market, market.markPx)}
         </span>
       </div>
-      <LivelineChart
-        data={history}
-        value={market.markPx}
-        height={220}
-        color={color}
-      />
+      {isLoading && chartData.length === 0 ? (
+        <div className="h-[220px] w-full animate-pulse rounded-lg bg-muted" />
+      ) : chartData.length >= 2 ? (
+        <LivelineChart
+          data={chartData}
+          value={market.markPx}
+          height={220}
+          color={color}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+        />
+      ) : (
+        <div className="flex h-[220px] items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+          No chart data available
+        </div>
+      )}
     </div>
   )
 }

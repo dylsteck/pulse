@@ -342,3 +342,66 @@ export function formatPerpPrice(
 ): string {
   return formatPrice(price, market.szDecimals, 'perp')
 }
+
+export interface PerpCandleDataPoint {
+  time: number
+  value: number
+}
+
+export interface PerpCandlesResponse {
+  candles: PerpCandleDataPoint[]
+  status: string
+}
+
+const PERP_INTERVAL_MAP: Record<string, '1m' | '15m' | '1h' | '4h' | '1d'> = {
+  '15m': '1m',
+  '1H': '1m',
+  '6H': '15m',
+  '1D': '1h',
+}
+
+const PERP_WINDOW_SECS: Record<string, number> = {
+  '15m': 900,
+  '1H': 3600,
+  '6H': 21600,
+  '1D': 86400,
+}
+
+const fetchHyperliquidCandlesServer = createServerFn({ method: 'POST' })
+  .inputValidator((input: { coin: string; windowLabel: string }) => input)
+  .handler(async ({ data }): Promise<PerpCandlesResponse> => {
+    const info = getHyperliquidInfoClient()
+    const interval = PERP_INTERVAL_MAP[data.windowLabel] ?? '15m'
+    const windowSecs = PERP_WINDOW_SECS[data.windowLabel] ?? 3600
+    const now = Date.now()
+    const startTime = now - windowSecs * 1000
+
+    try {
+      const result = await info.candleSnapshot({
+        coin: data.coin,
+        interval,
+        startTime,
+        endTime: now,
+      })
+
+      if (!result || result.length === 0) {
+        return { candles: [], status: 'no_data' }
+      }
+
+      const candles: PerpCandleDataPoint[] = result.map((candle) => ({
+        time: candle.t,
+        value: Number(candle.c),
+      }))
+
+      return { candles, status: 'ok' }
+    } catch {
+      return { candles: [], status: 'error' }
+    }
+  })
+
+export async function fetchHyperliquidCandles(
+  coin: string,
+  windowLabel: string,
+): Promise<PerpCandlesResponse> {
+  return fetchHyperliquidCandlesServer({ data: { coin, windowLabel } })
+}

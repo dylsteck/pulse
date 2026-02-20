@@ -1052,31 +1052,51 @@ function CreatorsTable({
 }
 
 function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
-  if (creator.sparkline.length < 2) {
-    return (
-      <div className="rounded-lg border border-border bg-card p-4 text-xs text-muted-foreground">
-        No chart data available.
-      </div>
-    )
-  }
+  const [windowLabel, setWindowLabel] = useState('15m')
+  const { data: bars, isLoading } = useTokenBars(creator.address, windowLabel)
 
-  const last = creator.sparkline.at(-1)
-  if (!last) return null
+  const chartData =
+    bars.length >= 2
+      ? bars
+      : creator.sparkline.length >= 2
+        ? creator.sparkline
+        : []
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
+
+  const lastValue = chartData.at(-1)?.value ?? 0
+  const color = creator.marketCapDelta24h >= 0 ? '#22c55e' : '#ef4444'
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-sm font-semibold">{creator.symbol}</span>
         <span className="text-lg font-semibold tabular-nums">
-          ${last.value.toFixed(last.value >= 1 ? 4 : 8)}
+          ${lastValue.toFixed(lastValue >= 1 ? 4 : 8)}
         </span>
       </div>
-      <LivelineChart
-        data={creator.sparkline}
-        value={last.value}
-        height={220}
-        color={creator.marketCapDelta24h >= 0 ? '#22c55e' : '#ef4444'}
-      />
+      {isLoading && chartData.length === 0 ? (
+        <div className="h-[220px] w-full animate-pulse rounded-lg bg-muted" />
+      ) : chartData.length >= 2 ? (
+        <LivelineChart
+          data={chartData}
+          value={lastValue}
+          height={220}
+          color={color}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+        />
+      ) : (
+        <div className="flex h-[220px] items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
+          No chart data available
+        </div>
+      )}
     </div>
   )
 }
