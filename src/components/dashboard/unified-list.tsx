@@ -102,6 +102,7 @@ export function UnifiedList({
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
   const rowRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const scrollRef = useRef<HTMLDivElement | null>(null)
   const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const marketsLoadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -284,6 +285,7 @@ export function UnifiedList({
                   setMode(tab)
                   setExpandedId(null)
                   setSelectedIndex(0)
+                  scrollRef.current?.scrollTo(0, 0)
                 }}
                 className={cn(
                   'shrink-0 text-sm font-medium capitalize transition-colors',
@@ -331,6 +333,7 @@ export function UnifiedList({
       </div>
 
       <div
+        ref={scrollRef}
         className={cn(
           'flex-1 overflow-y-auto scrollbar-none',
           layout === 'grid' && 'px-2 sm:px-0',

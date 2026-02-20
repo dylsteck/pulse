@@ -11,10 +11,11 @@ function MarketsPage() {
     <UnifiedList
       initialMode="markets"
       onModeChange={(mode) => {
-        if (mode === 'tokens') navigate({ to: '/tokens' })
-        if (mode === 'creators') navigate({ to: '/creators' })
-        if (mode === 'music') navigate({ to: '/music' })
-        if (mode === 'perps') navigate({ to: '/perps' })
+        if (mode === 'tokens') navigate({ to: '/tokens', resetScroll: false })
+        if (mode === 'creators')
+          navigate({ to: '/creators', resetScroll: false })
+        if (mode === 'music') navigate({ to: '/music', resetScroll: false })
+        if (mode === 'perps') navigate({ to: '/perps', resetScroll: false })
       }}
     />
   )

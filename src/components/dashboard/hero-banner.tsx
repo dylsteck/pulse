@@ -52,9 +52,9 @@ export function HeroBanner() {
   if (!currentAsset) return null
 
   return (
-    <div className="relative mb-4 w-full overflow-hidden bg-card">
-      <div className="flex items-center gap-6 px-2 py-2 sm:px-0 sm:py-3">
-        <div className="flex-1">
+    <div className="relative mb-4 w-full overflow-hidden">
+      <div className="flex items-end gap-6 px-2 py-2 sm:px-0 sm:py-3">
+        <div className="flex-1 pb-2">
           <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
             Stay on the <span style={{ color: ACCENT_COLOR }}>pulse</span> of
             crypto
@@ -67,7 +67,7 @@ export function HeroBanner() {
         <Link
           to="/asset/$type/$id"
           params={{ type: 'token', id: currentAsset.id }}
-          className="hidden w-1/2 max-w-md sm:block"
+          className="hidden w-1/2 max-w-lg sm:block"
         >
           <AssetCard
             key={currentAsset.id}
@@ -95,43 +95,39 @@ function AssetCard({ asset, isDark }: { asset: Asset; isDark: boolean }) {
   }, [asset.data, asset.price])
 
   return (
-    <div className="flex h-full cursor-pointer items-center gap-4 overflow-hidden rounded-lg border border-border bg-background p-3 transition-all animate-in fade-in duration-500 hover:border-foreground/20">
-      <div className="flex min-w-0 flex-1 items-center gap-3">
+    <div className="flex cursor-pointer flex-col gap-1 animate-in fade-in duration-500">
+      <div className="flex items-baseline gap-2">
         {asset.imageUrl && (
           <FadeImage
             src={asset.imageUrl}
             alt=""
-            wrapperClassName="size-10 shrink-0 rounded-full"
-            className="size-10 rounded-full object-cover"
+            wrapperClassName="size-6 shrink-0 rounded-full"
+            className="size-6 rounded-full object-cover"
           />
         )}
-        <div className="min-w-0">
-          <div className="flex items-baseline gap-2">
-            <span className="text-sm font-bold text-foreground">
-              {asset.symbol}
-            </span>
-            <span
-              className={cn(
-                'text-xs tabular-nums',
-                isPositive ? 'text-green-500' : 'text-red-500',
-              )}
-            >
-              {isPositive ? '+' : ''}
-              {asset.change.toFixed(2)}%
-            </span>
-          </div>
-          <div className="text-lg font-semibold tabular-nums">
-            $
-            {asset.price < 1
-              ? asset.price.toFixed(4)
-              : asset.price.toLocaleString(undefined, {
-                  maximumFractionDigits: 2,
-                })}
-          </div>
-        </div>
+        <span className="text-sm font-bold text-foreground">
+          {asset.symbol}
+        </span>
+        <span
+          className={cn(
+            'text-xs tabular-nums',
+            isPositive ? 'text-green-500' : 'text-red-500',
+          )}
+        >
+          {isPositive ? '+' : ''}
+          {asset.change.toFixed(2)}%
+        </span>
+        <span className="text-sm font-semibold tabular-nums text-foreground">
+          $
+          {asset.price < 1
+            ? asset.price.toFixed(4)
+            : asset.price.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })}
+        </span>
       </div>
 
-      <div className="h-[50px] w-32 shrink-0">
+      <div className="h-[60px] w-full">
         <Liveline
           data={chartData}
           value={asset.price}
@@ -143,7 +139,7 @@ function AssetCard({ asset, isDark }: { asset: Asset; isDark: boolean }) {
           pulse
           fill
           momentum
-          padding={{ top: 4, right: 4, bottom: 4, left: 4 }}
+          padding={{ top: 4, right: 16, bottom: 0, left: 0 }}
           style={{ width: '100%', height: '100%' }}
         />
       </div>

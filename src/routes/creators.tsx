@@ -11,10 +11,10 @@ function CreatorsPage() {
     <UnifiedList
       initialMode="creators"
       onModeChange={(mode) => {
-        if (mode === 'tokens') navigate({ to: '/tokens' })
-        if (mode === 'markets') navigate({ to: '/markets' })
-        if (mode === 'music') navigate({ to: '/music' })
-        if (mode === 'perps') navigate({ to: '/perps' })
+        if (mode === 'tokens') navigate({ to: '/tokens', resetScroll: false })
+        if (mode === 'markets') navigate({ to: '/markets', resetScroll: false })
+        if (mode === 'music') navigate({ to: '/music', resetScroll: false })
+        if (mode === 'perps') navigate({ to: '/perps', resetScroll: false })
       }}
     />
   )

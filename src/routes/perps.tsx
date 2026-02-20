@@ -11,10 +11,11 @@ function PerpsPage() {
     <UnifiedList
       initialMode="perps"
       onModeChange={(mode) => {
-        if (mode === 'tokens') navigate({ to: '/tokens' })
-        if (mode === 'markets') navigate({ to: '/markets' })
-        if (mode === 'creators') navigate({ to: '/creators' })
-        if (mode === 'music') navigate({ to: '/music' })
+        if (mode === 'tokens') navigate({ to: '/tokens', resetScroll: false })
+        if (mode === 'markets') navigate({ to: '/markets', resetScroll: false })
+        if (mode === 'creators')
+          navigate({ to: '/creators', resetScroll: false })
+        if (mode === 'music') navigate({ to: '/music', resetScroll: false })
       }}
     />
   )
