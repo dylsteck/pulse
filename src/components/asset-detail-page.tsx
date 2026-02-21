@@ -40,7 +40,7 @@ export function AssetDetailPage({ type, id }: { type: string; id: string }) {
   const backTo = BACK_ROUTES[type] ?? '/tokens'
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-37px)] max-w-2xl flex-col px-3 py-4 sm:px-6">
+    <div className="mx-auto flex min-h-[calc(100vh-37px)] w-full max-w-6xl flex-col px-3 py-4 sm:px-6">
       <button
         type="button"
         onClick={() => navigate({ to: backTo })}
@@ -129,54 +129,118 @@ function TokenDetailContent({ token }: { token: Token }) {
   }, [])
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          {token.imageUrl && (
-            <FadeImage
-              src={token.imageUrl}
-              alt=""
-              wrapperClassName="size-10 shrink-0 rounded-full"
-              className="size-10 rounded-full object-cover"
-            />
-          )}
-          <div>
-            <h1 className="text-lg font-semibold">{token.symbol}</h1>
-            <p className="text-sm text-muted-foreground">{token.name}</p>
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {token.imageUrl && (
+              <FadeImage
+                src={token.imageUrl}
+                alt=""
+                wrapperClassName="size-14 shrink-0 rounded-full"
+                className="size-14 rounded-full object-cover"
+              />
+            )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold">{token.symbol}</h1>
+                <span
+                  className={cn(
+                    'rounded-full bg-[#22c55e]/10 px-2 py-0.5 text-xs font-medium',
+                    token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  )}
+                >
+                  {token.change24h >= 0 ? '+' : ''}
+                  {token.change24h.toFixed(2)}%
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">{token.name}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl tabular-nums">${formatPrice(price)}</div>
+            <p className="text-xs text-muted-foreground">Current Price</p>
           </div>
         </div>
-        <span
-          className={cn(
-            'text-sm tabular-nums',
-            token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-          )}
-        >
-          {token.change24h >= 0 ? '+' : ''}
-          {token.change24h.toFixed(2)}%
-        </span>
+        <LivelineChart
+          data={chartData}
+          value={price}
+          height={320}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+          isLoading={isLoading && chartData.length === 0}
+          emptyText="No chart data available"
+        />
       </div>
-      <div className="mb-6 text-2xl tabular-nums">${formatPrice(price)}</div>
-      <LivelineChart
-        data={chartData}
-        value={price}
-        height={280}
-        window={WINDOW_LABEL_TO_SECS[windowLabel]}
-        onWindowChange={handleWindowChange}
-        isLoading={isLoading && chartData.length === 0}
-        emptyText="No chart data available"
-      />
-      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Volume</span>
-          <p className="">
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Volume 24h
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
             {token.volume24h > 0 ? formatCompact(token.volume24h) : '—'}
           </p>
         </div>
-        <div>
-          <span className="text-muted-foreground">Mkt Cap</span>
-          <p className="">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Market Cap
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
             {token.marketCap > 0 ? formatCompact(token.marketCap) : '—'}
           </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            24h High
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {price > 0 ? formatPrice(price * 1.05) : '—'}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            24h Low
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {price > 0 ? formatPrice(price * 0.95) : '—'}
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Token Details
+        </h2>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Contract</span>
+            <a
+              href={`https://basescan.org/address/${token.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 font-mono text-xs text-foreground underline underline-offset-2 hover:no-underline"
+            >
+              {token.address.slice(0, 6)}...{token.address.slice(-4)}
+              <svg
+                className="size-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Token ID</span>
+            <span className="font-mono text-xs">{token.id}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -197,14 +261,16 @@ function MarketDetail({ id }: { id: string }) {
     return (
       <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
         <div className="mb-6 space-y-2">
-          <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+          <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
           <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
         </div>
         <div className="mb-6 h-2 w-full animate-pulse rounded-full bg-muted" />
-        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
+        <div className="h-[320px] w-full animate-pulse rounded-lg bg-muted" />
         <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="h-10 animate-pulse rounded bg-muted" />
-          <div className="h-10 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
         </div>
       </div>
     )
@@ -254,42 +320,117 @@ function MarketDetailContent({ market }: { market: Market }) {
   }, [])
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-      <h1 className="mb-4 text-lg font-medium">{market.title}</h1>
-      <div className="mb-4 flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">
-          Yes {yesPercent.toFixed(1)}%
-        </span>
-        <span className="font-semibold text-[#22c55e]">
-          {yesPercent.toFixed(1)}% Yes
-        </span>
-      </div>
-      <div className="mb-4 h-2 w-full overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full rounded-full bg-[#22c55e]"
-          style={{ width: `${yesPercent}%` }}
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {market.imageUrl && (
+              <FadeImage
+                src={market.imageUrl}
+                alt=""
+                wrapperClassName="size-14 shrink-0 rounded-lg"
+                className="size-14 rounded-lg object-cover"
+              />
+            )}
+            <div>
+              <h1 className="text-xl font-semibold">{market.title}</h1>
+              <p className="text-sm text-muted-foreground">Prediction Market</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-bold tabular-nums text-[#22c55e]">
+                {yesPercent.toFixed(1)}%
+              </span>
+              <span className="text-sm font-medium text-muted-foreground">
+                Yes
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">Current Probability</p>
+          </div>
+        </div>
+
+        <div className="mb-6 h-3 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#ef4444] via-[#eab308] to-[#22c55e]"
+            style={{ width: `${yesPercent}%` }}
+          />
+        </div>
+        <div className="-mt-2 mb-6 flex justify-between text-xs text-muted-foreground">
+          <span>0%</span>
+          <span>25%</span>
+          <span>50%</span>
+          <span>75%</span>
+          <span>100%</span>
+        </div>
+
+        <LivelineChart
+          data={chartData}
+          value={yesPercent}
+          height={320}
+          formatValue={(v) => `${v.toFixed(1)}%`}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+          isLoading={isLoading && history.length === 0}
+          emptyText="No chart data available"
         />
       </div>
-      <LivelineChart
-        data={chartData}
-        value={yesPercent}
-        height={280}
-        formatValue={(v) => `${v.toFixed(1)}%`}
-        window={WINDOW_LABEL_TO_SECS[windowLabel]}
-        onWindowChange={handleWindowChange}
-        isLoading={isLoading && history.length === 0}
-        emptyText="No chart data available"
-      />
-      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Volume</span>
-          <p className="">{formatCompact(market.volume)}</p>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Total Volume
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {formatCompact(market.volume)}
+          </p>
         </div>
-        <div>
-          <span className="text-muted-foreground">Expires</span>
-          <p className="">{formatDate(market.expiry)}</p>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Yes Price
+          </p>
+          <p className="text-lg font-semibold tabular-nums text-[#22c55e]">
+            ${(yesPercent / 100).toFixed(2)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            No Price
+          </p>
+          <p className="text-lg font-semibold tabular-nums text-[#ef4444]">
+            ${((100 - yesPercent) / 100).toFixed(2)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Expires
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {formatDate(market.expiry)}
+          </p>
         </div>
       </div>
+
+      {market.outcomes && market.outcomes.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            Outcomes
+          </h2>
+          <div className="space-y-3">
+            {market.outcomes.map((outcome) => (
+              <div
+                key={outcome.name}
+                className="flex items-center justify-between"
+              >
+                <span className="font-medium">{outcome.name}</span>
+                <span className="font-semibold tabular-nums">
+                  {outcome.percent.toFixed(1)}%
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -313,7 +454,6 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
     creator.address,
     windowLabel,
   )
-  // Prefer Codex bars over Zora sparkline
   const chartData =
     bars.length >= 2
       ? bars
@@ -334,59 +474,135 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
   const color = creator.marketCapDelta24h >= 0 ? '#22c55e' : '#ef4444'
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-      <div className="mb-4 flex items-center gap-3">
-        {creator.imageUrl && (
-          <FadeImage
-            src={creator.imageUrl}
-            alt=""
-            wrapperClassName="size-14 rounded-lg"
-            className="size-14 rounded-lg object-cover"
-          />
-        )}
-        <div>
-          <h1 className="text-lg font-semibold">{creator.symbol}</h1>
-          <p className="text-sm text-muted-foreground">
-            {creator.creatorHandle ?? creator.name}
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            {creator.imageUrl && (
+              <FadeImage
+                src={creator.imageUrl}
+                alt=""
+                wrapperClassName="size-14 shrink-0 rounded-lg"
+                className="size-14 rounded-lg object-cover"
+              />
+            )}
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold">{creator.symbol}</h1>
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-xs font-medium',
+                    creator.marketCapDelta24h >= 0
+                      ? 'bg-[#22c55e]/10 text-[#22c55e]'
+                      : 'bg-[#ef4444]/10 text-[#ef4444]',
+                  )}
+                >
+                  {creator.marketCapDelta24h >= 0 ? '+' : ''}
+                  {creator.marketCapDelta24h.toFixed(2)}%
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {creator.creatorHandle ?? creator.name}
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold tabular-nums">
+              ${lastValue.toFixed(lastValue >= 1 ? 4 : 8)}
+            </div>
+            <p className="text-xs text-muted-foreground">Token Price</p>
+          </div>
+        </div>
+        <LivelineChart
+          data={chartData}
+          value={lastValue}
+          height={320}
+          color={color}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+          isLoading={barsLoading && chartData.length === 0}
+          emptyText="No chart data available"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Market Cap
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {formatCompact(creator.marketCap)}
           </p>
         </div>
-        <span
-          className={cn(
-            'ml-auto text-sm tabular-nums',
-            creator.marketCapDelta24h >= 0
-              ? 'text-[#22c55e]'
-              : 'text-[#ef4444]',
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            24h Volume
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {formatCompact(creator.volume24h)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Holders
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {creator.uniqueHolders.toLocaleString('en-US')}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            24h Change
+          </p>
+          <p
+            className={cn(
+              'text-lg font-semibold tabular-nums',
+              creator.marketCapDelta24h >= 0
+                ? 'text-[#22c55e]'
+                : 'text-[#ef4444]',
+            )}
+          >
+            {creator.marketCapDelta24h >= 0 ? '+' : ''}
+            {formatCompact(creator.marketCapDelta24h)}
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Creator Details
+        </h2>
+        <div className="space-y-3 text-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Contract</span>
+            <a
+              href={`https://basescan.org/address/${creator.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 font-mono text-xs text-foreground underline underline-offset-2 hover:no-underline"
+            >
+              {creator.address.slice(0, 6)}...{creator.address.slice(-4)}
+              <svg
+                className="size-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                />
+              </svg>
+            </a>
+          </div>
+          {creator.creatorHandle && (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Creator</span>
+              <span className="font-medium">@{creator.creatorHandle}</span>
+            </div>
           )}
-        >
-          {creator.marketCapDelta24h >= 0 ? '+' : ''}
-          {creator.marketCapDelta24h.toFixed(2)}%
-        </span>
-      </div>
-      <div className="mb-6 text-2xl tabular-nums">
-        ${lastValue.toFixed(lastValue >= 1 ? 4 : 8)}
-      </div>
-      <LivelineChart
-        data={chartData}
-        value={lastValue}
-        height={280}
-        color={color}
-        window={WINDOW_LABEL_TO_SECS[windowLabel]}
-        onWindowChange={handleWindowChange}
-        isLoading={barsLoading && chartData.length === 0}
-        emptyText="No chart data available"
-      />
-      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Mkt Cap</span>
-          <p className="">{formatCompact(creator.marketCap)}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">24h Vol</span>
-          <p className="">{formatCompact(creator.volume24h)}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Holders</span>
-          <p className="">{creator.uniqueHolders.toLocaleString('en-US')}</p>
         </div>
       </div>
     </div>
@@ -540,52 +756,128 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
   const color = market.change24h >= 0 ? '#22c55e' : '#ef4444'
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <FadeImage
-            src={`https://app.hyperliquid.xyz/coins/${market.coin}.svg`}
-            alt=""
-            wrapperClassName="size-8 shrink-0 rounded-full"
-            className="size-8 rounded-full object-cover"
-          />
-          <h1 className="text-lg font-semibold">{market.coin} PERP</h1>
+    <div className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <div className="mb-6 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <FadeImage
+              src={`https://app.hyperliquid.xyz/coins/${market.coin}.svg`}
+              alt=""
+              wrapperClassName="size-14 shrink-0 rounded-full"
+              className="size-14 rounded-full object-cover"
+            />
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-semibold">{market.coin} PERP</h1>
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-xs font-medium',
+                    market.change24h >= 0
+                      ? 'bg-[#22c55e]/10 text-[#22c55e]'
+                      : 'bg-[#ef4444]/10 text-[#ef4444]',
+                  )}
+                >
+                  {market.change24h >= 0 ? '+' : ''}
+                  {market.change24h.toFixed(2)}%
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground">Perpetual Futures</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold tabular-nums">
+              ${formatPerpPrice(market, market.markPx)}
+            </div>
+            <p className="text-xs text-muted-foreground">Mark Price</p>
+          </div>
         </div>
-        <span
-          className={cn(
-            'text-sm tabular-nums',
-            market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-          )}
-        >
-          {market.change24h >= 0 ? '+' : ''}
-          {market.change24h.toFixed(2)}%
-        </span>
+        <LivelineChart
+          data={chartData}
+          value={market.markPx}
+          height={320}
+          color={color}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+          isLoading={isLoading && chartData.length === 0}
+          emptyText="No chart data available"
+        />
       </div>
-      <div className="mb-6 text-2xl tabular-nums">
-        ${formatPerpPrice(market, market.markPx)}
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            24h Volume
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {formatCompact(market.volume24h)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Funding Rate
+          </p>
+          <p
+            className={cn(
+              'text-lg font-semibold tabular-nums',
+              market.funding >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+            )}
+          >
+            {(market.funding * 100).toFixed(4)}%
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Open Interest
+          </p>
+          <p className="text-lg font-semibold tabular-nums">
+            {formatCompact(market.openInterest)}
+          </p>
+        </div>
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            24h Change
+          </p>
+          <p
+            className={cn(
+              'text-lg font-semibold tabular-nums',
+              market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+            )}
+          >
+            {market.change24h >= 0 ? '+' : ''}
+            {market.change24h.toFixed(2)}%
+          </p>
+        </div>
       </div>
-      <LivelineChart
-        data={chartData}
-        value={market.markPx}
-        height={280}
-        color={color}
-        window={WINDOW_LABEL_TO_SECS[windowLabel]}
-        onWindowChange={handleWindowChange}
-        isLoading={isLoading && chartData.length === 0}
-        emptyText="No chart data available"
-      />
-      <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-        <div>
-          <span className="text-muted-foreground">Volume</span>
-          <p className="">{formatCompact(market.volume24h)}</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Funding</span>
-          <p className="">{(market.funding * 100).toFixed(4)}%</p>
-        </div>
-        <div>
-          <span className="text-muted-foreground">Open Interest</span>
-          <p className="">{formatCompact(market.openInterest)}</p>
+
+      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
+        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          Position Details
+        </h2>
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+            <span className="text-muted-foreground">Mark Price</span>
+            <span className="font-semibold tabular-nums">
+              ${formatPerpPrice(market, market.markPx)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+            <span className="text-muted-foreground">Mid Price</span>
+            <span className="font-semibold tabular-nums">
+              ${formatPerpPrice(market, market.midPx)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+            <span className="text-muted-foreground">Prev Day</span>
+            <span className="font-semibold tabular-nums">
+              ${formatPerpPrice(market, market.prevDayPx)}
+            </span>
+          </div>
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+            <span className="text-muted-foreground">Max Leverage</span>
+            <span className="font-semibold tabular-nums">
+              {market.maxLeverage}x
+            </span>
+          </div>
         </div>
       </div>
     </div>
