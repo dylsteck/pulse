@@ -320,54 +320,55 @@ function MarketDetailContent({ market }: { market: Market }) {
   }, [])
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {market.imageUrl && (
-              <FadeImage
-                src={market.imageUrl}
-                alt=""
-                wrapperClassName="size-14 shrink-0 rounded-lg"
-                className="size-14 rounded-lg object-cover"
-              />
-            )}
-            <div>
-              <h1 className="text-xl font-semibold">{market.title}</h1>
-              <p className="text-sm text-muted-foreground">Prediction Market</p>
+    <div className="space-y-6">
+      <div className="rounded-2xl border border-border/50 bg-card/50 p-6 sm:p-8">
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1">
+            <h1 className="mb-3 text-2xl font-semibold leading-tight sm:text-3xl">
+              {market.title}
+            </h1>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+              {market.clobTokenId && (
+                <span className="font-mono text-xs">
+                  ID: {market.clobTokenId.slice(0, 8)}...
+                </span>
+              )}
+              <span>Ends {formatDate(market.expiry)}</span>
             </div>
           </div>
-          <div className="text-right">
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold tabular-nums text-[#22c55e]">
-                {yesPercent.toFixed(1)}%
+          <div className="flex shrink-0 gap-2">
+            <button
+              type="button"
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#22c55e]/15 px-4 py-2 transition-all hover:bg-[#22c55e]/25"
+            >
+              <span className="text-sm font-medium text-[#22c55e]">Yes</span>
+              <span className="font-semibold text-[#22c55e]">
+                {yesPercent.toFixed(0)}%
               </span>
-              <span className="text-sm font-medium text-muted-foreground">
-                Yes
+            </button>
+            <button
+              type="button"
+              className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#ef4444]/15 px-4 py-2 transition-all hover:bg-[#ef4444]/25"
+            >
+              <span className="text-sm font-medium text-[#ef4444]">No</span>
+              <span className="font-semibold text-[#ef4444]">
+                {(100 - yesPercent).toFixed(0)}%
               </span>
-            </div>
-            <p className="text-xs text-muted-foreground">Current Probability</p>
+            </button>
           </div>
         </div>
 
-        <div className="mb-6 h-3 w-full overflow-hidden rounded-full bg-muted">
+        <div className="mb-6 h-2 overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-[#ef4444] via-[#eab308] to-[#22c55e]"
+            className="h-full rounded-full bg-[#22c55e] transition-all"
             style={{ width: `${yesPercent}%` }}
           />
-        </div>
-        <div className="-mt-2 mb-6 flex justify-between text-xs text-muted-foreground">
-          <span>0%</span>
-          <span>25%</span>
-          <span>50%</span>
-          <span>75%</span>
-          <span>100%</span>
         </div>
 
         <LivelineChart
           data={chartData}
           value={yesPercent}
-          height={320}
+          height={280}
           formatValue={(v) => `${v.toFixed(1)}%`}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
@@ -376,51 +377,37 @@ function MarketDetailContent({ market }: { market: Market }) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Total Volume
-          </p>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <p className="mb-1 text-xs text-muted-foreground">Volume</p>
           <p className="text-lg font-semibold tabular-nums">
             {formatCompact(market.volume)}
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Yes Price
-          </p>
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <p className="mb-1 text-xs text-muted-foreground">Yes</p>
           <p className="text-lg font-semibold tabular-nums text-[#22c55e]">
             ${(yesPercent / 100).toFixed(2)}
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            No Price
-          </p>
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <p className="mb-1 text-xs text-muted-foreground">No</p>
           <p className="text-lg font-semibold tabular-nums text-[#ef4444]">
             ${((100 - yesPercent) / 100).toFixed(2)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Expires
-          </p>
-          <p className="text-lg font-semibold tabular-nums">
-            {formatDate(market.expiry)}
           </p>
         </div>
       </div>
 
       {market.outcomes && market.outcomes.length > 0 && (
-        <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Outcomes
+        <div className="rounded-xl border border-border/50 bg-card/30 p-6">
+          <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+            Other Outcomes
           </h2>
           <div className="space-y-3">
             {market.outcomes.map((outcome) => (
               <div
                 key={outcome.name}
-                className="flex items-center justify-between"
+                className="flex items-center justify-between rounded-lg bg-card/50 p-3"
               >
                 <span className="font-medium">{outcome.name}</span>
                 <span className="font-semibold tabular-nums">
