@@ -1,9 +1,8 @@
 # Pulse
 
-Fast, minimal trading interface for Base tokens, Polymarket prediction markets, Zora creator tokens, Tortoise music, and Hyperliquid perps. Light and dark mode, desktop and mobile.
+![Pulse screenshot Feb 2026](https://i.imgur.com/qTl14CF.png)
 
-[![Deploy on Railway](https://railway.com/button.svg)](https://railway.app/template/ZweBXA?referralCode=xsbY2R)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdylsteck%2Fpulse&env=CODEX_API_KEY)
+Pulse is a fast and minimal trading interface across many different asset: tokens, prediction markets, creator coins, music protocols, perps and more. The goal is both to have a simple interface getting the pulse of what's happening across all these assets, and also to be able to easily transact across them. Built by [@dylsteck](https://github.com/dylsteck)
 
 ## Stack
 
@@ -52,3 +51,12 @@ bun run dev      # dev server
 bun run build    # production build
 bun run check    # format + lint
 ```
+
+## Deploy
+
+Since this is a TanStack Start app, it should be simple to deploy across providers. For your convenience, you can click the buttons below to easily deploy to either Railway or Vercel.
+
+| Platform | |
+| -------- | - |
+| Railway  | [![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/x89o4H?referralCode=-vlTG4&utm_medium=integration&utm_source=template&utm_campaign=generic) |
+| Vercel   | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fdylsteck%2Fpulse&env=CODEX_API_KEY) |
