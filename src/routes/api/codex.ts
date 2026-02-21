@@ -15,7 +15,10 @@ export const Route = createFileRoute('/api/codex')({
         })
         return new Response(res.body, {
           status: res.status,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=60',
+          },
         })
       },
     },

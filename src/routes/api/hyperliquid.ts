@@ -1,13 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { json } from '@tanstack/react-start'
 import {
   getHyperliquidInfoClient,
   getHyperliquidSymbolConverter,
 } from '@/lib/hyperliquid/clients'
-import type {
-  PerpMarketSnapshot,
-  PerpCandlesResponse,
-} from '@/lib/hyperliquid/service'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 
 const PERP_INTERVAL_MAP: Record<string, '1m' | '15m' | '1h' | '4h' | '1d'> = {
   '15m': '1m',
@@ -77,7 +73,13 @@ export const Route = createFileRoute('/api/hyperliquid')({
               .filter((m): m is PerpMarketSnapshot => m !== null)
               .sort((a, b) => b.volume24h - a.volume24h)
 
-            return json(markets)
+            return new Response(JSON.stringify(markets), {
+              status: 200,
+              headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'public, max-age=30',
+              },
+            })
           }
 
           case 'candles': {
@@ -97,7 +99,16 @@ export const Route = createFileRoute('/api/hyperliquid')({
               })
 
               if (!result || result.length === 0) {
-                return json({ candles: [], status: 'no_data' } satisfies PerpCandlesResponse)
+                return new Response(
+                  JSON.stringify({ candles: [], status: 'no_data' }),
+                  {
+                    status: 200,
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Cache-Control': 'public, max-age=30',
+                    },
+                  },
+                )
               }
 
               const candles = result.map((candle) => ({
@@ -105,9 +116,24 @@ export const Route = createFileRoute('/api/hyperliquid')({
                 value: Number(candle.c),
               }))
 
-              return json({ candles, status: 'ok' } satisfies PerpCandlesResponse)
+              return new Response(JSON.stringify({ candles, status: 'ok' }), {
+                status: 200,
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Cache-Control': 'public, max-age=30',
+                },
+              })
             } catch {
-              return json({ candles: [], status: 'error' } satisfies PerpCandlesResponse)
+              return new Response(
+                JSON.stringify({ candles: [], status: 'error' }),
+                {
+                  status: 200,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'public, max-age=30',
+                  },
+                },
+              )
             }
           }
 
@@ -115,21 +141,30 @@ export const Route = createFileRoute('/api/hyperliquid')({
             const result = await info.clearinghouseState(
               params as Parameters<typeof info.clearinghouseState>[0],
             )
-            return json(result)
+            return new Response(JSON.stringify(result), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            })
           }
 
           case 'orders': {
             const result = await info.frontendOpenOrders(
               params as Parameters<typeof info.frontendOpenOrders>[0],
             )
-            return json(result)
+            return new Response(JSON.stringify(result), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            })
           }
 
           case 'fills': {
             const result = await info.userFills(
               params as Parameters<typeof info.userFills>[0],
             )
-            return json(result)
+            return new Response(JSON.stringify(result), {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            })
           }
 
           default:

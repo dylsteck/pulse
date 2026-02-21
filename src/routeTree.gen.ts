@@ -19,9 +19,10 @@ import { Route as ApiZoraRouteImport } from './routes/api/zora'
 import { Route as ApiHyperliquidRouteImport } from './routes/api/hyperliquid'
 import { Route as ApiCodexRouteImport } from './routes/api/codex'
 import { Route as AssetTypeIdRouteImport } from './routes/asset.$type.$id'
-import { Route as ApiTortoiseSplatRouteImport } from './routes/api/tortoise/$'
+import { Route as ApiTortoiseGetAudioRouteImport } from './routes/api/tortoise/getAudio'
 import { Route as ApiPolymarketHistoryRouteImport } from './routes/api/polymarket/history'
 import { Route as ApiPolymarketEventsRouteImport } from './routes/api/polymarket/events'
+import { Route as ApiTortoiseSongsTrendingRouteImport } from './routes/api/tortoise/songs/trending'
 
 const TokensRoute = TokensRouteImport.update({
   id: '/tokens',
@@ -73,9 +74,9 @@ const AssetTypeIdRoute = AssetTypeIdRouteImport.update({
   path: '/asset/$type/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTortoiseSplatRoute = ApiTortoiseSplatRouteImport.update({
-  id: '/api/tortoise/$',
-  path: '/api/tortoise/$',
+const ApiTortoiseGetAudioRoute = ApiTortoiseGetAudioRouteImport.update({
+  id: '/api/tortoise/getAudio',
+  path: '/api/tortoise/getAudio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPolymarketHistoryRoute = ApiPolymarketHistoryRouteImport.update({
@@ -88,6 +89,12 @@ const ApiPolymarketEventsRoute = ApiPolymarketEventsRouteImport.update({
   path: '/api/polymarket/events',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTortoiseSongsTrendingRoute =
+  ApiTortoiseSongsTrendingRouteImport.update({
+    id: '/api/tortoise/songs/trending',
+    path: '/api/tortoise/songs/trending',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -101,8 +108,9 @@ export interface FileRoutesByFullPath {
   '/api/zora': typeof ApiZoraRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
-  '/api/tortoise/$': typeof ApiTortoiseSplatRoute
+  '/api/tortoise/getAudio': typeof ApiTortoiseGetAudioRoute
   '/asset/$type/$id': typeof AssetTypeIdRoute
+  '/api/tortoise/songs/trending': typeof ApiTortoiseSongsTrendingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -116,8 +124,9 @@ export interface FileRoutesByTo {
   '/api/zora': typeof ApiZoraRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
-  '/api/tortoise/$': typeof ApiTortoiseSplatRoute
+  '/api/tortoise/getAudio': typeof ApiTortoiseGetAudioRoute
   '/asset/$type/$id': typeof AssetTypeIdRoute
+  '/api/tortoise/songs/trending': typeof ApiTortoiseSongsTrendingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -132,8 +141,9 @@ export interface FileRoutesById {
   '/api/zora': typeof ApiZoraRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
-  '/api/tortoise/$': typeof ApiTortoiseSplatRoute
+  '/api/tortoise/getAudio': typeof ApiTortoiseGetAudioRoute
   '/asset/$type/$id': typeof AssetTypeIdRoute
+  '/api/tortoise/songs/trending': typeof ApiTortoiseSongsTrendingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -149,8 +159,9 @@ export interface FileRouteTypes {
     | '/api/zora'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
-    | '/api/tortoise/$'
+    | '/api/tortoise/getAudio'
     | '/asset/$type/$id'
+    | '/api/tortoise/songs/trending'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -164,8 +175,9 @@ export interface FileRouteTypes {
     | '/api/zora'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
-    | '/api/tortoise/$'
+    | '/api/tortoise/getAudio'
     | '/asset/$type/$id'
+    | '/api/tortoise/songs/trending'
   id:
     | '__root__'
     | '/'
@@ -179,8 +191,9 @@ export interface FileRouteTypes {
     | '/api/zora'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
-    | '/api/tortoise/$'
+    | '/api/tortoise/getAudio'
     | '/asset/$type/$id'
+    | '/api/tortoise/songs/trending'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -195,8 +208,9 @@ export interface RootRouteChildren {
   ApiZoraRoute: typeof ApiZoraRoute
   ApiPolymarketEventsRoute: typeof ApiPolymarketEventsRoute
   ApiPolymarketHistoryRoute: typeof ApiPolymarketHistoryRoute
-  ApiTortoiseSplatRoute: typeof ApiTortoiseSplatRoute
+  ApiTortoiseGetAudioRoute: typeof ApiTortoiseGetAudioRoute
   AssetTypeIdRoute: typeof AssetTypeIdRoute
+  ApiTortoiseSongsTrendingRoute: typeof ApiTortoiseSongsTrendingRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -271,11 +285,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetTypeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tortoise/$': {
-      id: '/api/tortoise/$'
-      path: '/api/tortoise/$'
-      fullPath: '/api/tortoise/$'
-      preLoaderRoute: typeof ApiTortoiseSplatRouteImport
+    '/api/tortoise/getAudio': {
+      id: '/api/tortoise/getAudio'
+      path: '/api/tortoise/getAudio'
+      fullPath: '/api/tortoise/getAudio'
+      preLoaderRoute: typeof ApiTortoiseGetAudioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/polymarket/history': {
@@ -290,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/api/polymarket/events'
       fullPath: '/api/polymarket/events'
       preLoaderRoute: typeof ApiPolymarketEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tortoise/songs/trending': {
+      id: '/api/tortoise/songs/trending'
+      path: '/api/tortoise/songs/trending'
+      fullPath: '/api/tortoise/songs/trending'
+      preLoaderRoute: typeof ApiTortoiseSongsTrendingRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -307,8 +328,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiZoraRoute: ApiZoraRoute,
   ApiPolymarketEventsRoute: ApiPolymarketEventsRoute,
   ApiPolymarketHistoryRoute: ApiPolymarketHistoryRoute,
-  ApiTortoiseSplatRoute: ApiTortoiseSplatRoute,
+  ApiTortoiseGetAudioRoute: ApiTortoiseGetAudioRoute,
   AssetTypeIdRoute: AssetTypeIdRoute,
+  ApiTortoiseSongsTrendingRoute: ApiTortoiseSongsTrendingRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

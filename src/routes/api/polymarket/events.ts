@@ -18,7 +18,10 @@ export const Route = createFileRoute('/api/polymarket/events')({
         const res = await fetch(upstreamUrl)
         return new Response(res.body, {
           status: res.status,
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=15',
+          },
         })
       },
     },
