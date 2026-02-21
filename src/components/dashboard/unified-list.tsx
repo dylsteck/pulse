@@ -8,6 +8,7 @@ import {
   SparklesIcon,
   MusicIcon,
   ArrowUpDownIcon,
+  ArrowUpRight,
 } from 'lucide-react'
 import {
   LivelineChart,
@@ -627,7 +628,9 @@ function TokenTable({
                   />
                 )}
                 <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">{token.symbol}</div>
+                  <div className="truncate text-sm font-semibold">
+                    {token.symbol}
+                  </div>
                   <div className="truncate text-xs text-muted-foreground">
                     {token.name}
                   </div>
@@ -697,6 +700,14 @@ function InlineTokenChart({ token }: { token: Token }) {
         isLoading={isLoading && bars.length === 0}
         emptyText="No chart data available"
       />
+      <Link
+        to="/asset/$type/$id"
+        params={{ type: 'tokens', id: token.id }}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        View full page
+        <ArrowUpRight className="size-3" />
+      </Link>
     </div>
   )
 }
@@ -837,6 +848,14 @@ function InlineMarketChart({ market }: { market: Market }) {
         isLoading={isLoading && history.length === 0}
         emptyText="No chart data available"
       />
+      <Link
+        to="/asset/$type/$id"
+        params={{ type: 'markets', id: market.id }}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        View full page
+        <ArrowUpRight className="size-3" />
+      </Link>
     </div>
   )
 }
@@ -985,6 +1004,14 @@ function InlineSongDetail({ song }: { song: Song }) {
           >
             Collect on Tortoise
           </a>
+          <Link
+            to="/asset/$type/$id"
+            params={{ type: 'music', id: song.id }}
+            className="mt-2 ml-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            View full page
+            <ArrowUpRight className="size-3" />
+          </Link>
         </div>
       </div>
     </div>
@@ -1164,6 +1191,14 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
         isLoading={isLoading && chartData.length === 0}
         emptyText="No chart data available"
       />
+      <Link
+        to="/asset/$type/$id"
+        params={{ type: 'creators', id: creator.id }}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        View full page
+        <ArrowUpRight className="size-3" />
+      </Link>
     </div>
   )
 }
