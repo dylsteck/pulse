@@ -156,17 +156,15 @@ function TokenDetailContent({ token }: { token: Token }) {
         </span>
       </div>
       <div className="mb-6 text-2xl tabular-nums">${formatPrice(price)}</div>
-      {isLoading && chartData.length === 0 ? (
-        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
-      ) : (
-        <LivelineChart
-          data={chartData}
-          value={price}
-          height={280}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      )}
+      <LivelineChart
+        data={chartData}
+        value={price}
+        height={280}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && chartData.length === 0}
+        emptyText="No chart data available"
+      />
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
@@ -272,18 +270,16 @@ function MarketDetailContent({ market }: { market: Market }) {
           style={{ width: `${yesPercent}%` }}
         />
       </div>
-      {isLoading && history.length === 0 ? (
-        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
-      ) : (
-        <LivelineChart
-          data={chartData}
-          value={yesPercent}
-          height={280}
-          formatValue={(v) => `${v.toFixed(1)}%`}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      )}
+      <LivelineChart
+        data={chartData}
+        value={yesPercent}
+        height={280}
+        formatValue={(v) => `${v.toFixed(1)}%`}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && history.length === 0}
+        emptyText="No chart data available"
+      />
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>
@@ -369,22 +365,16 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
       <div className="mb-6 text-2xl tabular-nums">
         ${lastValue.toFixed(lastValue >= 1 ? 4 : 8)}
       </div>
-      {barsLoading && chartData.length === 0 ? (
-        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
-      ) : chartData.length >= 2 ? (
-        <LivelineChart
-          data={chartData}
-          value={lastValue}
-          height={280}
-          color={color}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      ) : (
-        <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
-          No chart data available
-        </div>
-      )}
+      <LivelineChart
+        data={chartData}
+        value={lastValue}
+        height={280}
+        color={color}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={barsLoading && chartData.length === 0}
+        emptyText="No chart data available"
+      />
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Mkt Cap</span>
@@ -574,22 +564,16 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
       <div className="mb-6 text-2xl tabular-nums">
         ${formatPerpPrice(market, market.markPx)}
       </div>
-      {isLoading && chartData.length === 0 ? (
-        <div className="h-[280px] w-full animate-pulse rounded-lg bg-muted" />
-      ) : chartData.length >= 2 ? (
-        <LivelineChart
-          data={chartData}
-          value={market.markPx}
-          height={280}
-          color={color}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      ) : (
-        <div className="flex h-[280px] items-center justify-center rounded-lg bg-muted text-sm text-muted-foreground">
-          No chart data available
-        </div>
-      )}
+      <LivelineChart
+        data={chartData}
+        value={market.markPx}
+        height={280}
+        color={color}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && chartData.length === 0}
+        emptyText="No chart data available"
+      />
       <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
         <div>
           <span className="text-muted-foreground">Volume</span>

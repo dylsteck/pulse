@@ -688,19 +688,15 @@ function InlineTokenChart({ token }: { token: Token }) {
           ${formatPrice(price)}
         </span>
       </div>
-      {isLoading && bars.length === 0 ? (
-        <div className="flex h-[220px] items-center justify-center">
-          <div className="h-full w-full animate-pulse rounded-lg bg-muted" />
-        </div>
-      ) : (
-        <LivelineChart
-          data={chartData}
-          value={price}
-          height={220}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      )}
+      <LivelineChart
+        data={chartData}
+        value={price}
+        height={220}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && bars.length === 0}
+        emptyText="No chart data available"
+      />
     </div>
   )
 }
@@ -831,18 +827,16 @@ function InlineMarketChart({ market }: { market: Market }) {
           {Math.round(yesPercent)}% Yes
         </span>
       </div>
-      {isLoading && history.length === 0 ? (
-        <div className="h-[220px] w-full animate-pulse rounded-lg bg-muted" />
-      ) : (
-        <LivelineChart
-          data={chartData}
-          value={yesPercent}
-          height={220}
-          formatValue={(v) => `${Math.round(v)}%`}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      )}
+      <LivelineChart
+        data={chartData}
+        value={yesPercent}
+        height={220}
+        formatValue={(v) => `${Math.round(v)}%`}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && history.length === 0}
+        emptyText="No chart data available"
+      />
     </div>
   )
 }
@@ -1160,22 +1154,16 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
           ${lastValue.toFixed(lastValue >= 1 ? 4 : 8)}
         </span>
       </div>
-      {isLoading && chartData.length === 0 ? (
-        <div className="h-[220px] w-full animate-pulse rounded-lg bg-muted" />
-      ) : chartData.length >= 2 ? (
-        <LivelineChart
-          data={chartData}
-          value={lastValue}
-          height={220}
-          color={color}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      ) : (
-        <div className="flex h-[220px] items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-          No chart data available
-        </div>
-      )}
+      <LivelineChart
+        data={chartData}
+        value={lastValue}
+        height={220}
+        color={color}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && chartData.length === 0}
+        emptyText="No chart data available"
+      />
     </div>
   )
 }

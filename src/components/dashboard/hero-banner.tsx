@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useSyncExternalStore } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
@@ -115,6 +115,17 @@ export function HeroBanner() {
   )
 }
 
+function useDocumentHidden() {
+  return useSyncExternalStore(
+    (cb) => {
+      document.addEventListener('visibilitychange', cb)
+      return () => document.removeEventListener('visibilitychange', cb)
+    },
+    () => document.hidden,
+    () => false,
+  )
+}
+
 function AssetCard({
   asset,
   isDark,
@@ -124,6 +135,7 @@ function AssetCard({
 }) {
   const isPositive = asset.change >= 0
   const color = isPositive ? '#22c55e' : '#ef4444'
+  const isTabHidden = useDocumentHidden()
 
   const chartData = useMemo(() => {
     if (asset.data.length >= 2) return asset.data
@@ -180,6 +192,7 @@ function AssetCard({
           pulse
           fill
           momentum
+          paused={isTabHidden}
           padding={HERO_CHART_PADDING}
           style={{ width: '100%', height: '100%' }}
         />

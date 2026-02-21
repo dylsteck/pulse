@@ -45,6 +45,12 @@ interface LivelineChartProps {
   formatValue?: (v: number) => string
   onWindowChange?: (secs: number) => void
   window?: number
+  /** Show Liveline's built-in loading state (breathing animation) */
+  isLoading?: boolean
+  /** Freeze chart scrolling; resume catches up to real time */
+  paused?: boolean
+  /** Custom text for empty state (default: "No data to display") */
+  emptyText?: string
 }
 
 export function LivelineChart({
@@ -55,6 +61,9 @@ export function LivelineChart({
   formatValue,
   onWindowChange,
   window: windowProp,
+  isLoading = false,
+  paused = false,
+  emptyText,
 }: LivelineChartProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
@@ -64,7 +73,8 @@ export function LivelineChart({
     setMounted(true)
   }, [])
 
-  const chartData = ensureMinChartData(data, value)
+  const hasEnoughData = data.length >= 2
+  const chartData = hasEnoughData ? ensureMinChartData(data, value) : []
   const dataSpanSecs =
     chartData.length >= 2
       ? Math.abs(chartData[chartData.length - 1].time - chartData[0].time)
@@ -96,6 +106,9 @@ export function LivelineChart({
           fill
           grid
           padding={LIVELINE_PADDING}
+          loading={isLoading}
+          paused={paused}
+          {...(emptyText ? { emptyText } : {})}
           {...(formatValue ? { formatValue } : {})}
           style={FULL_SIZE_STYLE}
         />

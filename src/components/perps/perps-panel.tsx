@@ -221,22 +221,16 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
           ${formatPerpPrice(market, market.markPx)}
         </span>
       </div>
-      {isLoading && chartData.length === 0 ? (
-        <div className="h-[220px] w-full animate-pulse rounded-lg bg-muted" />
-      ) : chartData.length >= 2 ? (
-        <LivelineChart
-          data={chartData}
-          value={market.markPx}
-          height={220}
-          color={color}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-        />
-      ) : (
-        <div className="flex h-[220px] items-center justify-center rounded-lg bg-muted text-xs text-muted-foreground">
-          No chart data available
-        </div>
-      )}
+      <LivelineChart
+        data={chartData}
+        value={market.markPx}
+        height={220}
+        color={color}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && chartData.length === 0}
+        emptyText="No chart data available"
+      />
     </div>
   )
 }
