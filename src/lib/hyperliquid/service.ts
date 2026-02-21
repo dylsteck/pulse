@@ -6,13 +6,8 @@ import type {
   UserFillsResponse,
 } from '@nktkas/hyperliquid'
 import { type ExchangeClient, type OrderParameters } from '@nktkas/hyperliquid'
-import { createServerFn } from '@tanstack/react-start'
-import {
-  createHyperliquidExchangeClient,
-  getHyperliquidInfoClient,
-  getHyperliquidSymbolConverter,
-} from '@/lib/hyperliquid/clients'
-import { getHyperliquidRuntimeConfig } from '@/lib/hyperliquid/env'
+import { createHyperliquidExchangeClient } from '@/lib/hyperliquid/clients'
+import { makeRequest } from '@/lib/request'
 import { type PreparedOrder, prepareOrder } from '@/lib/hyperliquid/order-utils'
 import { normalizeHyperliquidError } from '@/lib/hyperliquid/errors'
 import {
@@ -42,96 +37,52 @@ export interface PerpMarketSnapshot {
   maxLeverage: number
 }
 
-const fetchPerpMarketsSnapshotServer = createServerFn({
+const hlPost = (body: Record<string, unknown>): RequestInit => ({
   method: 'POST',
-}).handler(async (): Promise<PerpMarketSnapshot[]> => {
-  const info = getHyperliquidInfoClient()
-  const converter = await getHyperliquidSymbolConverter()
-  const [metaAndCtxs, mids] = await Promise.all([
-    info.metaAndAssetCtxs(),
-    info.allMids(),
-  ])
-  const [meta, ctxs] = metaAndCtxs
-
-  return meta.universe
-    .map((asset, index) => {
-      const ctx = ctxs[index]
-      if (!ctx || asset.isDelisted) return null
-
-      const assetId = converter.getAssetId(asset.name)
-      if (assetId == null) return null
-
-      const markPx = Number(ctx.markPx)
-      const midPx = Number(ctx.midPx ?? ctx.markPx ?? mids[asset.name] ?? 0)
-      const prevDayPx = Number(ctx.prevDayPx)
-      const change24h =
-        prevDayPx > 0 ? ((midPx - prevDayPx) / prevDayPx) * 100 : 0
-
-      return {
-        id: `${asset.name.toLowerCase()}-perp`,
-        assetId,
-        coin: asset.name,
-        markPx,
-        midPx,
-        prevDayPx,
-        change24h,
-        funding: Number(ctx.funding),
-        openInterest: Number(ctx.openInterest),
-        premium: Number(ctx.premium ?? 0),
-        volume24h: Number(ctx.dayNtlVlm),
-        szDecimals: asset.szDecimals,
-        maxLeverage: asset.maxLeverage,
-      } satisfies PerpMarketSnapshot
-    })
-    .filter((market): market is PerpMarketSnapshot => market !== null)
-    .sort((a, b) => b.volume24h - a.volume24h)
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(body),
 })
 
-export async function fetchPerpMarketsSnapshot(): Promise<
-  PerpMarketSnapshot[]
-> {
-  return fetchPerpMarketsSnapshotServer()
+export async function fetchPerpMarketsSnapshot(): Promise<PerpMarketSnapshot[]> {
+  return makeRequest<PerpMarketSnapshot[]>(
+    '/api/hyperliquid',
+    hlPost({ type: 'markets' }),
+  )
 }
-
-const fetchPerpAccountStateServer = createServerFn({ method: 'POST' })
-  .inputValidator((input: { user: string }) => input)
-  .handler(async ({ data }): Promise<ClearinghouseStateResponse> => {
-    return getHyperliquidInfoClient().clearinghouseState({
-      user: data.user as `0x${string}`,
-    })
-  })
 
 export async function fetchPerpAccountState(
   user: string,
 ): Promise<ClearinghouseStateResponse> {
-  return fetchPerpAccountStateServer({ data: { user } })
+  return makeRequest<ClearinghouseStateResponse>(
+    '/api/hyperliquid',
+    hlPost({ type: 'account', params: { user } }),
+  )
 }
-
-const fetchPerpOpenOrdersServer = createServerFn({ method: 'POST' })
-  .inputValidator((input: { user: string }) => input)
-  .handler(async ({ data }) => {
-    return getHyperliquidInfoClient().frontendOpenOrders({
-      user: data.user as `0x${string}`,
-    })
-  })
 
 export async function fetchPerpOpenOrders(
   user: string,
 ): Promise<FrontendOpenOrdersResponse> {
-  return fetchPerpOpenOrdersServer({ data: { user } })
+  return makeRequest<FrontendOpenOrdersResponse>(
+    '/api/hyperliquid',
+    hlPost({ type: 'orders', params: { user } }),
+  )
 }
 
-const fetchPerpFillsServer = createServerFn({ method: 'POST' })
-  .inputValidator((input: { user: string }) => input)
-  .handler(async ({ data }): Promise<UserFillsResponse> => {
-    return getHyperliquidInfoClient().userFills({
-      user: data.user as `0x${string}`,
-      aggregateByTime: true,
-    })
-  })
-
 export async function fetchPerpFills(user: string): Promise<UserFillsResponse> {
-  return fetchPerpFillsServer({ data: { user } })
+  return makeRequest<UserFillsResponse>(
+    '/api/hyperliquid',
+    hlPost({ type: 'fills', params: { user, aggregateByTime: true } }),
+  )
+}
+
+export async function fetchHyperliquidCandles(
+  coin: string,
+  windowLabel: string,
+): Promise<PerpCandlesResponse> {
+  return makeRequest<PerpCandlesResponse>(
+    '/api/hyperliquid',
+    hlPost({ type: 'candles', params: { coin, windowLabel } }),
+  )
 }
 
 interface TradingContext {
@@ -354,57 +305,4 @@ export interface PerpCandleDataPoint {
 export interface PerpCandlesResponse {
   candles: PerpCandleDataPoint[]
   status: string
-}
-
-const PERP_INTERVAL_MAP: Record<string, '1m' | '15m' | '1h' | '4h' | '1d'> = {
-  '15m': '1m',
-  '1H': '1m',
-  '6H': '15m',
-  '1D': '1h',
-}
-
-const PERP_WINDOW_SECS: Record<string, number> = {
-  '15m': 900,
-  '1H': 3600,
-  '6H': 21600,
-  '1D': 86400,
-}
-
-const fetchHyperliquidCandlesServer = createServerFn({ method: 'POST' })
-  .inputValidator((input: { coin: string; windowLabel: string }) => input)
-  .handler(async ({ data }): Promise<PerpCandlesResponse> => {
-    const info = getHyperliquidInfoClient()
-    const interval = PERP_INTERVAL_MAP[data.windowLabel] ?? '15m'
-    const windowSecs = PERP_WINDOW_SECS[data.windowLabel] ?? 3600
-    const now = Date.now()
-    const startTime = now - windowSecs * 1000
-
-    try {
-      const result = await info.candleSnapshot({
-        coin: data.coin,
-        interval,
-        startTime,
-        endTime: now,
-      })
-
-      if (!result || result.length === 0) {
-        return { candles: [], status: 'no_data' }
-      }
-
-      const candles: PerpCandleDataPoint[] = result.map((candle) => ({
-        time: candle.t / 1000,
-        value: Number(candle.c),
-      }))
-
-      return { candles, status: 'ok' }
-    } catch {
-      return { candles: [], status: 'error' }
-    }
-  })
-
-export async function fetchHyperliquidCandles(
-  coin: string,
-  windowLabel: string,
-): Promise<PerpCandlesResponse> {
-  return fetchHyperliquidCandlesServer({ data: { coin, windowLabel } })
 }

@@ -1,6 +1,5 @@
-import { createServerFn } from '@tanstack/react-start'
+import { makeRequest } from '@/lib/request'
 
-const ZORA_GRAPHQL_URL = 'https://api.zora.co/universal/graphql'
 const TRENDING_LIST_TYPE = 'TRENDING_ALL'
 const INITIAL_TRENDING_HASH = '18479101426df2b30828ff4778579280'
 const PAGINATION_TRENDING_HASH = 'e128c68eae591cddd2ec71d367684d7c'
@@ -116,54 +115,43 @@ function mapNodeToToken(node: GraphqlExploreNode): CreatorToken {
   }
 }
 
-const fetchCreatorsPageServer = createServerFn({ method: 'POST' })
-  .inputValidator((input: { first?: number; after?: string | null }) => input)
-  .handler(async ({ data }): Promise<CreatorsPage> => {
-    const first = Math.max(1, Math.min(data.first ?? 20, 50))
-    const after = data.after ?? null
+export function transformCreatorsPage(json: GraphqlResponse): CreatorsPage {
+  const edges = json.data?.exploreList?.edges ?? []
+  const baseEdges = edges.filter((edge) => edge.node.chainId === 8453)
+  const items = baseEdges.map((edge) => mapNodeToToken(edge.node))
+  const lastEdge = edges.at(-1)
 
-    const operationName = after
-      ? 'TrendingAllPaginationQuery'
-      : 'TrendingAllQuery'
-    const hash = after ? PAGINATION_TRENDING_HASH : INITIAL_TRENDING_HASH
-
-    const payload = {
-      hash,
-      operationName,
-      variables: {
-        listType: TRENDING_LIST_TYPE,
-        first,
-        after,
-      },
-    }
-
-    const response = await fetch(ZORA_GRAPHQL_URL, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Zora API error: ${response.status}`)
-    }
-
-    const json = (await response.json()) as GraphqlResponse
-    const edges = json.data?.exploreList?.edges ?? []
-    const baseEdges = edges.filter((edge) => edge.node.chainId === 8453)
-    const items = baseEdges.map((edge) => mapNodeToToken(edge.node))
-    const lastEdge = edges.at(-1)
-
-    return {
-      items,
-      nextCursor: lastEdge?.cursor ?? null,
-    }
-  })
+  return {
+    items,
+    nextCursor: lastEdge?.cursor ?? null,
+  }
+}
 
 export async function fetchCreatorsPage(params?: {
   first?: number
   after?: string | null
 }): Promise<CreatorsPage> {
-  return fetchCreatorsPageServer({ data: params ?? {} })
+  const first = Math.max(1, Math.min(params?.first ?? 20, 50))
+  const after = params?.after ?? null
+
+  const operationName = after ? 'TrendingAllPaginationQuery' : 'TrendingAllQuery'
+  const hash = after ? PAGINATION_TRENDING_HASH : INITIAL_TRENDING_HASH
+
+  const payload = {
+    hash,
+    operationName,
+    variables: {
+      listType: TRENDING_LIST_TYPE,
+      first,
+      after,
+    },
+  }
+
+  return transformCreatorsPage(
+    await makeRequest<GraphqlResponse>('/api/zora', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }),
+  )
 }

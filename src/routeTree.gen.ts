@@ -15,7 +15,13 @@ import { Route as MusicRouteImport } from './routes/music'
 import { Route as MarketsRouteImport } from './routes/markets'
 import { Route as CreatorsRouteImport } from './routes/creators'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiZoraRouteImport } from './routes/api/zora'
+import { Route as ApiHyperliquidRouteImport } from './routes/api/hyperliquid'
+import { Route as ApiCodexRouteImport } from './routes/api/codex'
 import { Route as AssetTypeIdRouteImport } from './routes/asset.$type.$id'
+import { Route as ApiTortoiseSplatRouteImport } from './routes/api/tortoise/$'
+import { Route as ApiPolymarketHistoryRouteImport } from './routes/api/polymarket/history'
+import { Route as ApiPolymarketEventsRouteImport } from './routes/api/polymarket/events'
 
 const TokensRoute = TokensRouteImport.update({
   id: '/tokens',
@@ -47,9 +53,39 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiZoraRoute = ApiZoraRouteImport.update({
+  id: '/api/zora',
+  path: '/api/zora',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHyperliquidRoute = ApiHyperliquidRouteImport.update({
+  id: '/api/hyperliquid',
+  path: '/api/hyperliquid',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCodexRoute = ApiCodexRouteImport.update({
+  id: '/api/codex',
+  path: '/api/codex',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssetTypeIdRoute = AssetTypeIdRouteImport.update({
   id: '/asset/$type/$id',
   path: '/asset/$type/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTortoiseSplatRoute = ApiTortoiseSplatRouteImport.update({
+  id: '/api/tortoise/$',
+  path: '/api/tortoise/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPolymarketHistoryRoute = ApiPolymarketHistoryRouteImport.update({
+  id: '/api/polymarket/history',
+  path: '/api/polymarket/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPolymarketEventsRoute = ApiPolymarketEventsRouteImport.update({
+  id: '/api/polymarket/events',
+  path: '/api/polymarket/events',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -60,6 +96,12 @@ export interface FileRoutesByFullPath {
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
+  '/api/codex': typeof ApiCodexRoute
+  '/api/hyperliquid': typeof ApiHyperliquidRoute
+  '/api/zora': typeof ApiZoraRoute
+  '/api/polymarket/events': typeof ApiPolymarketEventsRoute
+  '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
+  '/api/tortoise/$': typeof ApiTortoiseSplatRoute
   '/asset/$type/$id': typeof AssetTypeIdRoute
 }
 export interface FileRoutesByTo {
@@ -69,6 +111,12 @@ export interface FileRoutesByTo {
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
+  '/api/codex': typeof ApiCodexRoute
+  '/api/hyperliquid': typeof ApiHyperliquidRoute
+  '/api/zora': typeof ApiZoraRoute
+  '/api/polymarket/events': typeof ApiPolymarketEventsRoute
+  '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
+  '/api/tortoise/$': typeof ApiTortoiseSplatRoute
   '/asset/$type/$id': typeof AssetTypeIdRoute
 }
 export interface FileRoutesById {
@@ -79,6 +127,12 @@ export interface FileRoutesById {
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
+  '/api/codex': typeof ApiCodexRoute
+  '/api/hyperliquid': typeof ApiHyperliquidRoute
+  '/api/zora': typeof ApiZoraRoute
+  '/api/polymarket/events': typeof ApiPolymarketEventsRoute
+  '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
+  '/api/tortoise/$': typeof ApiTortoiseSplatRoute
   '/asset/$type/$id': typeof AssetTypeIdRoute
 }
 export interface FileRouteTypes {
@@ -90,6 +144,12 @@ export interface FileRouteTypes {
     | '/music'
     | '/perps'
     | '/tokens'
+    | '/api/codex'
+    | '/api/hyperliquid'
+    | '/api/zora'
+    | '/api/polymarket/events'
+    | '/api/polymarket/history'
+    | '/api/tortoise/$'
     | '/asset/$type/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -99,6 +159,12 @@ export interface FileRouteTypes {
     | '/music'
     | '/perps'
     | '/tokens'
+    | '/api/codex'
+    | '/api/hyperliquid'
+    | '/api/zora'
+    | '/api/polymarket/events'
+    | '/api/polymarket/history'
+    | '/api/tortoise/$'
     | '/asset/$type/$id'
   id:
     | '__root__'
@@ -108,6 +174,12 @@ export interface FileRouteTypes {
     | '/music'
     | '/perps'
     | '/tokens'
+    | '/api/codex'
+    | '/api/hyperliquid'
+    | '/api/zora'
+    | '/api/polymarket/events'
+    | '/api/polymarket/history'
+    | '/api/tortoise/$'
     | '/asset/$type/$id'
   fileRoutesById: FileRoutesById
 }
@@ -118,6 +190,12 @@ export interface RootRouteChildren {
   MusicRoute: typeof MusicRoute
   PerpsRoute: typeof PerpsRoute
   TokensRoute: typeof TokensRoute
+  ApiCodexRoute: typeof ApiCodexRoute
+  ApiHyperliquidRoute: typeof ApiHyperliquidRoute
+  ApiZoraRoute: typeof ApiZoraRoute
+  ApiPolymarketEventsRoute: typeof ApiPolymarketEventsRoute
+  ApiPolymarketHistoryRoute: typeof ApiPolymarketHistoryRoute
+  ApiTortoiseSplatRoute: typeof ApiTortoiseSplatRoute
   AssetTypeIdRoute: typeof AssetTypeIdRoute
 }
 
@@ -165,11 +243,53 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/zora': {
+      id: '/api/zora'
+      path: '/api/zora'
+      fullPath: '/api/zora'
+      preLoaderRoute: typeof ApiZoraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/hyperliquid': {
+      id: '/api/hyperliquid'
+      path: '/api/hyperliquid'
+      fullPath: '/api/hyperliquid'
+      preLoaderRoute: typeof ApiHyperliquidRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/codex': {
+      id: '/api/codex'
+      path: '/api/codex'
+      fullPath: '/api/codex'
+      preLoaderRoute: typeof ApiCodexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/asset/$type/$id': {
       id: '/asset/$type/$id'
       path: '/asset/$type/$id'
       fullPath: '/asset/$type/$id'
       preLoaderRoute: typeof AssetTypeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tortoise/$': {
+      id: '/api/tortoise/$'
+      path: '/api/tortoise/$'
+      fullPath: '/api/tortoise/$'
+      preLoaderRoute: typeof ApiTortoiseSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/polymarket/history': {
+      id: '/api/polymarket/history'
+      path: '/api/polymarket/history'
+      fullPath: '/api/polymarket/history'
+      preLoaderRoute: typeof ApiPolymarketHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/polymarket/events': {
+      id: '/api/polymarket/events'
+      path: '/api/polymarket/events'
+      fullPath: '/api/polymarket/events'
+      preLoaderRoute: typeof ApiPolymarketEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -182,6 +302,12 @@ const rootRouteChildren: RootRouteChildren = {
   MusicRoute: MusicRoute,
   PerpsRoute: PerpsRoute,
   TokensRoute: TokensRoute,
+  ApiCodexRoute: ApiCodexRoute,
+  ApiHyperliquidRoute: ApiHyperliquidRoute,
+  ApiZoraRoute: ApiZoraRoute,
+  ApiPolymarketEventsRoute: ApiPolymarketEventsRoute,
+  ApiPolymarketHistoryRoute: ApiPolymarketHistoryRoute,
+  ApiTortoiseSplatRoute: ApiTortoiseSplatRoute,
   AssetTypeIdRoute: AssetTypeIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -11,13 +11,6 @@ const config = defineConfig({
     hmr: {
       overlay: false,
     },
-    proxy: {
-      '/api/tortoise': {
-        target: 'https://tortoise.studio',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/tortoise/, '/api'),
-      },
-    },
   },
   plugins: [
     devtools(),

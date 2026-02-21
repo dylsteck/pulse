@@ -1,6 +1,4 @@
-import { createServerFn } from '@tanstack/react-start'
-
-const BASE_URL = 'https://tortoise.studio'
+import { makeRequest } from '@/lib/request'
 
 export interface Song {
   id: string
@@ -62,39 +60,21 @@ export function audioUrl(cid: string): string {
   return `https://gateway.pinata.cloud/ipfs/${cid}`
 }
 
-const fetchTrendingSongsServer = createServerFn({ method: 'POST' })
-  .inputValidator(
-    (input: { timeframe: '30d'; page: number; limit: number }) => input,
-  )
-  .handler(async ({ data }): Promise<TrendingResponse> => {
-    const params = new URLSearchParams({
-      timeframe: data.timeframe,
-      page: String(data.page),
-      limit: String(data.limit),
-    })
-    const res = await fetch(`${BASE_URL}/api/songs/trending?${params}`)
-    if (!res.ok) throw new Error(`Tortoise API error: ${res.status}`)
-    return res.json()
-  })
-
-const fetchAudioDetailServer = createServerFn({ method: 'POST' })
-  .inputValidator((input: { slug: string }) => input)
-  .handler(async ({ data }): Promise<AudioDetail> => {
-    const res = await fetch(
-      `${BASE_URL}/api/getAudio?slug=${encodeURIComponent(data.slug)}`,
-    )
-    if (!res.ok) throw new Error(`Tortoise API error: ${res.status}`)
-    return res.json()
-  })
-
 export async function fetchTrendingSongs(
   timeframe: '30d' = '30d',
   page = 1,
   limit = 20,
 ): Promise<TrendingResponse> {
-  return fetchTrendingSongsServer({ data: { timeframe, page, limit } })
+  const params = new URLSearchParams({
+    timeframe,
+    page: String(page),
+    limit: String(limit),
+  })
+  return makeRequest<TrendingResponse>(`/api/tortoise/songs/trending?${params}`)
 }
 
 export async function fetchAudioDetail(slug: string): Promise<AudioDetail> {
-  return fetchAudioDetailServer({ data: { slug } })
+  return makeRequest<AudioDetail>(
+    `/api/tortoise/getAudio?slug=${encodeURIComponent(slug)}`,
+  )
 }
