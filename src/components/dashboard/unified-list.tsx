@@ -575,7 +575,7 @@ function TokenTable({
     <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
+          'sticky top-0 z-10 grid gap-2 border-b border-border bg-muted/50 px-3 py-2 sm:gap-4 sm:px-6',
           gridCols,
         )}
       >
@@ -608,7 +608,7 @@ function TokenTable({
               type="button"
               onClick={() => onRowClick(i)}
               className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
+                'grid w-full items-center gap-2 border-l-2 px-3 py-2 text-left transition-colors sm:gap-4 sm:px-6',
                 gridCols,
                 selected
                   ? 'border-l-foreground bg-accent'
@@ -627,7 +627,7 @@ function TokenTable({
                   />
                 )}
                 <div className="min-w-0">
-                  <span className="text-sm font-semibold">{token.symbol}</span>
+                  <div className="truncate text-sm font-semibold">{token.symbol}</div>
                   <div className="truncate text-xs text-muted-foreground">
                     {token.name}
                   </div>
