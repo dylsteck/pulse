@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TokensRouteImport } from './routes/tokens'
 import { Route as PerpsRouteImport } from './routes/perps'
 import { Route as MusicRouteImport } from './routes/music'
+import { Route as MemesRouteImport } from './routes/memes'
 import { Route as MarketsRouteImport } from './routes/markets'
 import { Route as CreatorsRouteImport } from './routes/creators'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,6 +23,8 @@ import { Route as AssetTypeIdRouteImport } from './routes/asset.$type.$id'
 import { Route as ApiTortoiseGetAudioRouteImport } from './routes/api/tortoise/getAudio'
 import { Route as ApiPolymarketHistoryRouteImport } from './routes/api/polymarket/history'
 import { Route as ApiPolymarketEventsRouteImport } from './routes/api/polymarket/events'
+import { Route as ApiGeckoterminalTokenDetailRouteImport } from './routes/api/geckoterminal/token-detail'
+import { Route as ApiGeckoterminalMemesRouteImport } from './routes/api/geckoterminal/memes'
 import { Route as ApiTortoiseSongsTrendingRouteImport } from './routes/api/tortoise/songs/trending'
 
 const TokensRoute = TokensRouteImport.update({
@@ -37,6 +40,11 @@ const PerpsRoute = PerpsRouteImport.update({
 const MusicRoute = MusicRouteImport.update({
   id: '/music',
   path: '/music',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MemesRoute = MemesRouteImport.update({
+  id: '/memes',
+  path: '/memes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketsRoute = MarketsRouteImport.update({
@@ -89,6 +97,17 @@ const ApiPolymarketEventsRoute = ApiPolymarketEventsRouteImport.update({
   path: '/api/polymarket/events',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGeckoterminalTokenDetailRoute =
+  ApiGeckoterminalTokenDetailRouteImport.update({
+    id: '/api/geckoterminal/token-detail',
+    path: '/api/geckoterminal/token-detail',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiGeckoterminalMemesRoute = ApiGeckoterminalMemesRouteImport.update({
+  id: '/api/geckoterminal/memes',
+  path: '/api/geckoterminal/memes',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTortoiseSongsTrendingRoute =
   ApiTortoiseSongsTrendingRouteImport.update({
     id: '/api/tortoise/songs/trending',
@@ -100,12 +119,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/creators': typeof CreatorsRoute
   '/markets': typeof MarketsRoute
+  '/memes': typeof MemesRoute
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
   '/api/codex': typeof ApiCodexRoute
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/api/zora': typeof ApiZoraRoute
+  '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
+  '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
   '/api/tortoise/getAudio': typeof ApiTortoiseGetAudioRoute
@@ -116,12 +138,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/creators': typeof CreatorsRoute
   '/markets': typeof MarketsRoute
+  '/memes': typeof MemesRoute
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
   '/api/codex': typeof ApiCodexRoute
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/api/zora': typeof ApiZoraRoute
+  '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
+  '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
   '/api/tortoise/getAudio': typeof ApiTortoiseGetAudioRoute
@@ -133,12 +158,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/creators': typeof CreatorsRoute
   '/markets': typeof MarketsRoute
+  '/memes': typeof MemesRoute
   '/music': typeof MusicRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
   '/api/codex': typeof ApiCodexRoute
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/api/zora': typeof ApiZoraRoute
+  '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
+  '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
   '/api/tortoise/getAudio': typeof ApiTortoiseGetAudioRoute
@@ -151,12 +179,15 @@ export interface FileRouteTypes {
     | '/'
     | '/creators'
     | '/markets'
+    | '/memes'
     | '/music'
     | '/perps'
     | '/tokens'
     | '/api/codex'
     | '/api/hyperliquid'
     | '/api/zora'
+    | '/api/geckoterminal/memes'
+    | '/api/geckoterminal/token-detail'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
     | '/api/tortoise/getAudio'
@@ -167,12 +198,15 @@ export interface FileRouteTypes {
     | '/'
     | '/creators'
     | '/markets'
+    | '/memes'
     | '/music'
     | '/perps'
     | '/tokens'
     | '/api/codex'
     | '/api/hyperliquid'
     | '/api/zora'
+    | '/api/geckoterminal/memes'
+    | '/api/geckoterminal/token-detail'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
     | '/api/tortoise/getAudio'
@@ -183,12 +217,15 @@ export interface FileRouteTypes {
     | '/'
     | '/creators'
     | '/markets'
+    | '/memes'
     | '/music'
     | '/perps'
     | '/tokens'
     | '/api/codex'
     | '/api/hyperliquid'
     | '/api/zora'
+    | '/api/geckoterminal/memes'
+    | '/api/geckoterminal/token-detail'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
     | '/api/tortoise/getAudio'
@@ -200,12 +237,15 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreatorsRoute: typeof CreatorsRoute
   MarketsRoute: typeof MarketsRoute
+  MemesRoute: typeof MemesRoute
   MusicRoute: typeof MusicRoute
   PerpsRoute: typeof PerpsRoute
   TokensRoute: typeof TokensRoute
   ApiCodexRoute: typeof ApiCodexRoute
   ApiHyperliquidRoute: typeof ApiHyperliquidRoute
   ApiZoraRoute: typeof ApiZoraRoute
+  ApiGeckoterminalMemesRoute: typeof ApiGeckoterminalMemesRoute
+  ApiGeckoterminalTokenDetailRoute: typeof ApiGeckoterminalTokenDetailRoute
   ApiPolymarketEventsRoute: typeof ApiPolymarketEventsRoute
   ApiPolymarketHistoryRoute: typeof ApiPolymarketHistoryRoute
   ApiTortoiseGetAudioRoute: typeof ApiTortoiseGetAudioRoute
@@ -234,6 +274,13 @@ declare module '@tanstack/react-router' {
       path: '/music'
       fullPath: '/music'
       preLoaderRoute: typeof MusicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/memes': {
+      id: '/memes'
+      path: '/memes'
+      fullPath: '/memes'
+      preLoaderRoute: typeof MemesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/markets': {
@@ -306,6 +353,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPolymarketEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/geckoterminal/token-detail': {
+      id: '/api/geckoterminal/token-detail'
+      path: '/api/geckoterminal/token-detail'
+      fullPath: '/api/geckoterminal/token-detail'
+      preLoaderRoute: typeof ApiGeckoterminalTokenDetailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/geckoterminal/memes': {
+      id: '/api/geckoterminal/memes'
+      path: '/api/geckoterminal/memes'
+      fullPath: '/api/geckoterminal/memes'
+      preLoaderRoute: typeof ApiGeckoterminalMemesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tortoise/songs/trending': {
       id: '/api/tortoise/songs/trending'
       path: '/api/tortoise/songs/trending'
@@ -320,12 +381,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreatorsRoute: CreatorsRoute,
   MarketsRoute: MarketsRoute,
+  MemesRoute: MemesRoute,
   MusicRoute: MusicRoute,
   PerpsRoute: PerpsRoute,
   TokensRoute: TokensRoute,
   ApiCodexRoute: ApiCodexRoute,
   ApiHyperliquidRoute: ApiHyperliquidRoute,
   ApiZoraRoute: ApiZoraRoute,
+  ApiGeckoterminalMemesRoute: ApiGeckoterminalMemesRoute,
+  ApiGeckoterminalTokenDetailRoute: ApiGeckoterminalTokenDetailRoute,
   ApiPolymarketEventsRoute: ApiPolymarketEventsRoute,
   ApiPolymarketHistoryRoute: ApiPolymarketHistoryRoute,
   ApiTortoiseGetAudioRoute: ApiTortoiseGetAudioRoute,

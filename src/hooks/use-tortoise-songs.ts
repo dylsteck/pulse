@@ -1,13 +1,45 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMemo } from 'react'
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
 import { fetchTrendingSongs, fetchAudioDetail } from '@/lib/tortoise'
 
-export function useTortoiseSongs(page = 1, limit = 20) {
-  return useQuery({
-    queryKey: ['tortoise', 'trending', page, limit],
-    queryFn: () => fetchTrendingSongs('30d', page, limit),
+const PAGE_SIZE = 12
+
+export function useTortoiseSongs(limit = PAGE_SIZE) {
+  const query = useInfiniteQuery({
+    queryKey: ['tortoise', 'trending', limit],
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => fetchTrendingSongs('30d', pageParam, limit),
+    getNextPageParam: (lastPage) =>
+      lastPage.pagination.hasNextPage ? lastPage.pagination.page + 1 : null,
     staleTime: 3_600_000,
     gcTime: 3_600_000,
   })
+
+  const data = useMemo(() => {
+    const pages = query.data?.pages ?? []
+    const lastPage = pages.at(-1)
+    return {
+      songs: pages.flatMap((page) => page.songs),
+      pagination:
+        lastPage?.pagination ?? {
+          page: 1,
+          limit,
+          total: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      timeframe: lastPage?.timeframe,
+    }
+  }, [query.data, limit])
+
+  return {
+    ...query,
+    data,
+    hasMore: query.hasNextPage ?? false,
+    loadMore: query.fetchNextPage,
+    isFetchingMore: query.isFetchingNextPage,
+  }
 }
 
 export function useAudioDetail(slug: string | null) {

@@ -15,6 +15,7 @@ function CreatorsPage() {
         if (mode === 'markets') navigate({ to: '/markets', resetScroll: false })
         if (mode === 'music') navigate({ to: '/music', resetScroll: false })
         if (mode === 'perps') navigate({ to: '/perps', resetScroll: false })
+        if (mode === 'memes') navigate({ to: '/memes', resetScroll: false })
       }}
     />
   )

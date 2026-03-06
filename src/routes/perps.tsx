@@ -16,6 +16,7 @@ function PerpsPage() {
         if (mode === 'creators')
           navigate({ to: '/creators', resetScroll: false })
         if (mode === 'music') navigate({ to: '/music', resetScroll: false })
+        if (mode === 'memes') navigate({ to: '/memes', resetScroll: false })
       }}
     />
   )

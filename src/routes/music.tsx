@@ -16,6 +16,7 @@ function MusicPage() {
         if (mode === 'creators')
           navigate({ to: '/creators', resetScroll: false })
         if (mode === 'perps') navigate({ to: '/perps', resetScroll: false })
+        if (mode === 'memes') navigate({ to: '/memes', resetScroll: false })
       }}
     />
   )

@@ -1,20 +1,18 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { fetchUpstreamJson } from '@/lib/server/upstream'
 
 export const Route = createFileRoute('/api/tortoise/songs/trending')({
   server: {
     handlers: {
       GET: async ({ request }) => {
         const { search } = new URL(request.url)
-        const res = await fetch(
+        return fetchUpstreamJson(
           `https://tortoise.studio/api/songs/trending${search}`,
-        )
-        return new Response(res.body, {
-          status: res.status,
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=3600',
+          {
+            cacheTtlMs: 3_600_000,
+            cacheControl: 'public, max-age=3600, stale-while-revalidate=21600',
           },
-        })
+        )
       },
     },
   },

@@ -17,7 +17,9 @@ export function formatPrice(price: number): string {
 }
 
 export function formatDate(s: string): string {
-  return new Date(s).toLocaleDateString('en-US', {
+  const date = new Date(s)
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   })

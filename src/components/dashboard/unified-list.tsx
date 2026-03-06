@@ -9,6 +9,7 @@ import {
   MusicIcon,
   ArrowUpDownIcon,
   ArrowUpRight,
+  FlameIcon,
 } from 'lucide-react'
 import {
   LivelineChart,
@@ -25,11 +26,13 @@ import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
+import { useMemeTokenDetail, useMemeTokens } from '@/hooks/use-meme-tokens'
 import { PerpsPanel } from '@/components/perps/perps-panel'
 import type { Token } from '@/lib/types'
 import type { Market } from '@/lib/types'
 import { imageUrl, type Song } from '@/lib/tortoise'
 import type { CreatorToken } from '@/lib/zora/service'
+import type { MemeToken } from '@/lib/geckoterminal'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatPrice, formatDate } from '@/lib/format'
 import { FadeImage } from '@/components/ui/fade-image'
@@ -43,9 +46,16 @@ const TAB_ICONS: Record<
   creators: SparklesIcon,
   music: MusicIcon,
   perps: ArrowUpDownIcon,
+  memes: FlameIcon,
 }
 
-export type ViewMode = 'tokens' | 'markets' | 'creators' | 'music' | 'perps'
+export type ViewMode =
+  | 'tokens'
+  | 'markets'
+  | 'creators'
+  | 'music'
+  | 'perps'
+  | 'memes'
 type ViewLayout = 'list' | 'grid'
 
 interface UnifiedListProps {
@@ -96,6 +106,8 @@ export function UnifiedList({
   const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const marketsLoadMoreRef = useRef<HTMLDivElement | null>(null)
+  const memesLoadMoreRef = useRef<HTMLDivElement | null>(null)
+  const musicLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const songsQuery = useTortoiseSongs()
   const songsData = songsQuery.data
   const perpsQuery = usePerpMarkets()
@@ -105,8 +117,10 @@ export function UnifiedList({
   const creators = creatorsQuery.items
   const liveTokensQuery = useLiveTokens()
   const liveMarketsQuery = useLiveMarkets()
+  const memeTokensQuery = useMemeTokens()
   const liveTokens = liveTokensQuery.data ?? []
   const liveMarkets = liveMarketsQuery.data ?? []
+  const memeTokens = memeTokensQuery.data ?? []
 
   const items: Array<{ id: string }> =
     mode === 'tokens'
@@ -117,6 +131,8 @@ export function UnifiedList({
           ? creators
           : mode === 'music'
             ? (songsData?.songs ?? [])
+          : mode === 'memes'
+            ? memeTokens
             : (perpMarkets ?? [])
 
   useEffect(() => {
@@ -253,6 +269,64 @@ export function UnifiedList({
     liveMarketsQuery.loadMore,
   ])
 
+  useEffect(() => {
+    if (mode !== 'music') return
+    if (!songsQuery.hasMore || songsQuery.isFetchingMore) return
+    const target = musicLoadMoreRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (
+          entry?.isIntersecting &&
+          songsQuery.hasMore &&
+          !songsQuery.isFetchingMore
+        ) {
+          void songsQuery.loadMore()
+        }
+      },
+      { rootMargin: '300px 0px' },
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [
+    mode,
+    songsQuery.hasMore,
+    songsQuery.isFetchingMore,
+    songsQuery.loadMore,
+  ])
+
+  useEffect(() => {
+    if (mode !== 'memes') return
+    if (!memeTokensQuery.hasMore || memeTokensQuery.isFetching) return
+    const target = memesLoadMoreRef.current
+    if (!target) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (
+          entry?.isIntersecting &&
+          memeTokensQuery.hasMore &&
+          !memeTokensQuery.isFetching
+        ) {
+          void memeTokensQuery.loadMore()
+        }
+      },
+      { rootMargin: '300px 0px' },
+    )
+
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [
+    mode,
+    memeTokensQuery.hasMore,
+    memeTokensQuery.isFetching,
+    memeTokensQuery.loadMore,
+  ])
+
   const handleRowClick = (index: number) => {
     if (!items.length) return
     setSelectedIndex(index)
@@ -267,7 +341,14 @@ export function UnifiedList({
       <div className="mb-2 flex items-end justify-between gap-2 px-2 sm:px-0">
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
           {(
-            ['tokens', 'markets', 'creators', 'music', 'perps'] as ViewMode[]
+            [
+              'tokens',
+              'markets',
+              'creators',
+              'music',
+              'perps',
+              'memes',
+            ] as ViewMode[]
           ).map((tab) => {
             const active = mode === tab
             const Icon = TAB_ICONS[tab]
@@ -417,6 +498,26 @@ export function UnifiedList({
                 onRowClick={handleRowClick}
               />
             )
+          ) : mode === 'memes' ? (
+            memeTokensQuery.isLoading ? (
+              <LoadingPanel label="Loading memes..." />
+            ) : memeTokensQuery.error ? (
+              <ErrorPanel
+                label={
+                  memeTokensQuery.error instanceof Error
+                    ? memeTokensQuery.error.message
+                    : 'Failed to load meme token data.'
+                }
+              />
+            ) : (
+              <MemeTable
+                memes={memeTokens}
+                selectedIndex={selectedIndex}
+                expandedId={expandedId}
+                rowRefs={rowRefs}
+                onRowClick={handleRowClick}
+              />
+            )
           ) : isPerpsLoading ? (
             <LoadingPanel label="Loading perps..." />
           ) : perpsQuery.error ? (
@@ -494,6 +595,20 @@ export function UnifiedList({
           ) : (
             <MusicGrid songs={songsData?.songs ?? []} isLoading={false} />
           )
+        ) : mode === 'memes' ? (
+          memeTokensQuery.isLoading ? (
+            <LoadingPanel label="Loading memes..." />
+          ) : memeTokensQuery.error ? (
+            <ErrorPanel
+              label={
+                memeTokensQuery.error instanceof Error
+                  ? memeTokensQuery.error.message
+                  : 'Failed to load meme token data.'
+              }
+            />
+          ) : (
+            <MemeGrid memes={memeTokens} isLoading={false} />
+          )
         ) : isPerpsLoading ? (
           <LoadingPanel label="Loading perps..." />
         ) : perpsQuery.error ? (
@@ -523,6 +638,12 @@ export function UnifiedList({
         )}
         {mode === 'markets' && liveMarketsQuery.hasMore && (
           <div ref={marketsLoadMoreRef} className="h-6" aria-hidden />
+        )}
+        {mode === 'music' && songsQuery.hasMore && (
+          <div ref={musicLoadMoreRef} className="h-6" aria-hidden />
+        )}
+        {mode === 'memes' && memeTokensQuery.hasMore && (
+          <div ref={memesLoadMoreRef} className="h-6" aria-hidden />
         )}
       </div>
     </div>
@@ -1018,6 +1139,255 @@ function InlineSongDetail({ song }: { song: Song }) {
   )
 }
 
+interface MemeTableProps {
+  memes: MemeToken[]
+  selectedIndex: number
+  expandedId: string | null
+  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  onRowClick: (index: number) => void
+}
+
+function MemeTable({
+  memes,
+  selectedIndex,
+  expandedId,
+  rowRefs,
+  onRowClick,
+}: MemeTableProps) {
+  const gridCols = 'grid-cols-[2fr_1fr_0.7fr_0.8fr_0.8fr]'
+
+  if (memes.length === 0) {
+    return (
+      <div className="flex items-center justify-center border-y border-border py-16 text-sm text-muted-foreground sm:rounded-xl sm:border-x">
+        No meme tokens found
+      </div>
+    )
+  }
+
+  return (
+    <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
+      <div
+        className={cn(
+          'sticky top-0 z-10 grid gap-2 border-b border-border bg-muted/50 px-3 py-2 sm:gap-4 sm:px-6',
+          gridCols,
+        )}
+      >
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Token
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Price
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          24h %
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Volume
+        </span>
+        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+          Liquidity
+        </span>
+      </div>
+
+      {memes.map((meme, i) => {
+        const selected = i === selectedIndex
+        const expanded = expandedId === meme.id
+        return (
+          <div key={meme.id} className="border-b border-border last:border-0">
+            <button
+              ref={(el) => {
+                rowRefs.current[i] = el
+              }}
+              type="button"
+              onClick={() => onRowClick(i)}
+              className={cn(
+                'grid w-full items-center gap-2 border-l-2 px-3 py-2 text-left transition-colors sm:gap-4 sm:px-6',
+                gridCols,
+                selected
+                  ? 'border-l-foreground bg-accent'
+                  : 'border-l-transparent hover:bg-accent/40',
+              )}
+              aria-selected={selected}
+              aria-expanded={expanded}
+            >
+              <div className="flex min-w-0 items-center gap-2">
+                {meme.imageUrl && (
+                  <FadeImage
+                    src={meme.imageUrl}
+                    alt=""
+                    wrapperClassName="size-7 shrink-0 rounded-full"
+                    className="size-7 rounded-full object-cover"
+                  />
+                )}
+                <div className="min-w-0">
+                  <div className="truncate text-sm font-semibold">
+                    {meme.symbol}
+                  </div>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {meme.name}
+                  </div>
+                </div>
+              </div>
+              <span className="text-right text-sm tabular-nums">
+                ${formatPrice(meme.price)}
+              </span>
+              <span
+                className={cn(
+                  'text-right text-sm tabular-nums',
+                  meme.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                )}
+              >
+                {meme.change24h >= 0 ? '+' : ''}
+                {meme.change24h.toFixed(2)}%
+              </span>
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
+                {formatCompact(meme.volume24h)}
+              </span>
+              <span className="text-right text-xs tabular-nums text-muted-foreground">
+                {formatCompact(meme.liquidity)}
+              </span>
+            </button>
+
+            {expanded && (
+              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
+                <InlineMemeDetail meme={meme} />
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function InlineMemeDetail({ meme }: { meme: MemeToken }) {
+  const { data, isLoading } = useMemeTokenDetail(meme.address)
+  const detail = data ?? meme
+  const description = detail.description?.trim()
+  const primaryWebsite = detail.websites?.[0]
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex min-w-0 items-center gap-3">
+            {detail.imageUrl && (
+              <FadeImage
+                src={detail.imageUrl}
+                alt=""
+                wrapperClassName="size-12 shrink-0 rounded-full"
+                className="size-12 rounded-full object-cover"
+              />
+            )}
+            <div className="min-w-0">
+              <h3 className="truncate text-base font-semibold">
+                {detail.name}
+              </h3>
+              <p className="truncate text-sm text-muted-foreground">
+                {detail.symbol}
+              </p>
+            </div>
+          </div>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            {isLoading
+              ? 'Loading token details...'
+              : description || 'No token description available yet.'}
+          </p>
+        </div>
+
+        <div className="grid min-w-[220px] grid-cols-2 gap-3 text-sm">
+          <div className="rounded-lg border border-border bg-muted/40 p-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">
+              Valuation
+            </div>
+            <div className="mt-1 font-semibold tabular-nums">
+              {formatCompact(detail.valuation)}
+            </div>
+            <div className="mt-1 text-[11px] text-muted-foreground">
+              {detail.valuationLabel}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/40 p-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">
+              Holders
+            </div>
+            <div className="mt-1 font-semibold tabular-nums">
+              {detail.holdersCount?.toLocaleString('en-US') ?? '—'}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/40 p-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">
+              GT Score
+            </div>
+            <div className="mt-1 font-semibold tabular-nums">
+              {detail.gtScore ? detail.gtScore.toFixed(1) : '—'}
+            </div>
+          </div>
+          <div className="rounded-lg border border-border bg-muted/40 p-3">
+            <div className="text-xs uppercase tracking-wider text-muted-foreground">
+              Launch
+            </div>
+            <div className="mt-1 font-semibold tabular-nums">
+              {detail.launchProgress != null
+                ? `${detail.launchProgress.toFixed(1)}%`
+                : '—'}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground">
+        {primaryWebsite && (
+          <a
+            href={primaryWebsite}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            Website
+          </a>
+        )}
+        {detail.twitterHandle && (
+          <a
+            href={`https://x.com/${detail.twitterHandle.replace(/^@/, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            X
+          </a>
+        )}
+        {detail.telegramHandle && (
+          <a
+            href={`https://t.me/${detail.telegramHandle.replace(/^@/, '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="transition-colors hover:text-foreground"
+          >
+            Telegram
+          </a>
+        )}
+        <a
+          href={`https://www.geckoterminal.com/solana/pools/${detail.poolAddress}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="transition-colors hover:text-foreground"
+        >
+          GeckoTerminal
+        </a>
+        <Link
+          to="/asset/$type/$id"
+          params={{ type: 'memes', id: detail.id }}
+          className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
+        >
+          View full page
+          <ArrowUpRight className="size-3" />
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 interface CreatorsTableProps {
   creators: CreatorToken[]
   isLoading: boolean
@@ -1506,6 +1876,56 @@ const MusicGridCard = React.memo(function MusicGridCard({
   )
 })
 
+const MemeGridCard = React.memo(function MemeGridCard({
+  meme,
+}: {
+  meme: MemeToken
+}) {
+  return (
+    <Link
+      to="/asset/$type/$id"
+      params={{ type: 'memes', id: meme.id }}
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 gap-3">
+          {meme.imageUrl && (
+            <FadeImage
+              src={meme.imageUrl}
+              alt=""
+              wrapperClassName="size-9 shrink-0 rounded-full"
+              className="size-9 rounded-full object-cover"
+            />
+          )}
+          <div className="min-w-0 flex-1 pt-0.5">
+            <div className="truncate text-sm font-semibold">{meme.symbol}</div>
+            <div className="truncate text-xs text-muted-foreground">
+              {meme.name}
+            </div>
+          </div>
+        </div>
+        <div
+          className={cn(
+            'text-xs font-medium tabular-nums',
+            meme.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+          )}
+        >
+          {meme.change24h >= 0 ? '+' : ''}
+          {meme.change24h.toFixed(2)}%
+        </div>
+      </div>
+
+      <div className="mt-3 text-lg tabular-nums">${formatPrice(meme.price)}</div>
+      <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-xs">
+        <span className="text-muted-foreground">24h Vol</span>
+        <span className="text-right">{formatCompact(meme.volume24h)}</span>
+        <span className="text-muted-foreground">Liquidity</span>
+        <span className="text-right">{formatCompact(meme.liquidity)}</span>
+      </div>
+    </Link>
+  )
+})
+
 function TokenGrid({ tokens }: { tokens: Token[] }) {
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
@@ -1574,6 +1994,32 @@ function MusicGrid({
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {songs.map((song) => (
         <MusicGridCard key={song.id} song={song} />
+      ))}
+    </div>
+  )
+}
+
+function MemeGrid({
+  memes,
+  isLoading,
+}: {
+  memes: MemeToken[]
+  isLoading: boolean
+}) {
+  if (isLoading) {
+    return <LoadingPanel />
+  }
+  if (memes.length === 0) {
+    return (
+      <div className="flex items-center justify-center rounded-xl border border-border py-16 text-sm text-muted-foreground">
+        No meme tokens found
+      </div>
+    )
+  }
+  return (
+    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+      {memes.map((meme) => (
+        <MemeGridCard key={meme.id} meme={meme} />
       ))}
     </div>
   )

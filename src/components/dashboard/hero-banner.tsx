@@ -4,10 +4,12 @@ import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
+import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
 import type { Market } from '@/lib/types'
+import type { MemeToken } from '@/lib/geckoterminal'
 
 const ACCENT_COLOR = '#0066ff'
 const HERO_CHART_PADDING = { top: 4, right: 16, bottom: 0, left: 0 } as const
@@ -23,6 +25,17 @@ type CarouselItem =
       data: { time: number; value: number }[]
       imageUrl?: string
     }
+  | {
+      kind: 'meme'
+      id: string
+      symbol: string
+      name: string
+      price: number
+      change: number
+      data: { time: number; value: number }[]
+      imageUrl?: string
+      liquidity: number
+    }
   | { kind: 'market'; market: Market }
 
 export function HeroBanner() {
@@ -31,6 +44,7 @@ export function HeroBanner() {
 
   const { data: tokens } = useLiveTokens(10)
   const { data: markets } = useLiveMarkets()
+  const { data: memes } = useMemeTokens()
 
   const carouselItems: CarouselItem[] = useMemo(() => {
     const tokenItems: CarouselItem[] = (tokens ?? [])
@@ -46,18 +60,38 @@ export function HeroBanner() {
         imageUrl: t.imageUrl,
       }))
 
+    const memeItems: CarouselItem[] = (memes ?? [])
+      .slice(0, 6)
+      .filter((m) => m.priceHistory.length >= 2)
+      .map((m) => ({
+        kind: 'meme',
+        id: m.id,
+        symbol: m.symbol,
+        name: m.name,
+        price: m.price,
+        change: m.change24h,
+        data: m.priceHistory,
+        imageUrl: m.imageUrl,
+        liquidity: m.liquidity,
+      }))
+
     const marketItems: CarouselItem[] = (markets ?? [])
       .slice(0, 6)
       .map((m) => ({ kind: 'market', market: m }))
 
     const merged: CarouselItem[] = []
-    const maxLen = Math.max(tokenItems.length, marketItems.length)
+    const maxLen = Math.max(
+      tokenItems.length,
+      memeItems.length,
+      marketItems.length,
+    )
     for (let i = 0; i < maxLen; i++) {
       if (i < tokenItems.length) merged.push(tokenItems[i]!)
+      if (i < memeItems.length) merged.push(memeItems[i]!)
       if (i < marketItems.length) merged.push(marketItems[i]!)
     }
     return merged
-  }, [tokens, markets])
+  }, [tokens, markets, memes])
 
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -96,6 +130,13 @@ export function HeroBanner() {
                   asset={currentItem}
                   isDark={isDark}
                 />
+              </Link>
+            ) : currentItem.kind === 'meme' ? (
+              <Link
+                to="/asset/$type/$id"
+                params={{ type: 'memes', id: currentItem.id }}
+              >
+                <MemeHeroCard meme={currentItem} isDark={isDark} />
               </Link>
             ) : (
               <Link
@@ -248,6 +289,87 @@ function HeroMarketCard({ market }: { market: Market }) {
 
       <div className="text-xs text-muted-foreground">
         {formatCompact(market.volume)} Vol.
+      </div>
+    </div>
+  )
+}
+
+function MemeHeroCard({
+  meme,
+  isDark,
+}: {
+  meme: Extract<CarouselItem, { kind: 'meme' }>
+  isDark: boolean
+}) {
+  const isPositive = meme.change >= 0
+  const color = isPositive ? '#22c55e' : '#ef4444'
+  const isTabHidden = useDocumentHidden()
+
+  const chartData = useMemo(() => {
+    if (meme.data.length >= 2) return meme.data
+    const now = Date.now() / 1000
+    const val = meme.data[0]?.value ?? meme.price
+    return [
+      { time: now - 3600, value: val },
+      { time: now, value: meme.price },
+    ]
+  }, [meme.data, meme.price])
+
+  return (
+    <div className="flex cursor-pointer flex-col gap-2 animate-in fade-in duration-500">
+      <div className="flex items-center gap-3">
+        {meme.imageUrl && (
+          <FadeImage
+            src={meme.imageUrl}
+            alt=""
+            wrapperClassName="size-9 shrink-0 rounded-full"
+            className="size-9 rounded-full object-cover"
+          />
+        )}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="truncate text-sm font-bold text-foreground">
+              {meme.symbol}
+            </span>
+            <span
+              className={cn(
+                'text-xs tabular-nums',
+                isPositive ? 'text-green-500' : 'text-red-500',
+              )}
+            >
+              {isPositive ? '+' : ''}
+              {meme.change.toFixed(2)}%
+            </span>
+          </div>
+          <div className="truncate text-xs text-muted-foreground">
+            {meme.name}
+          </div>
+        </div>
+        <div className="text-sm font-semibold tabular-nums text-foreground">
+          ${meme.price < 1 ? meme.price.toFixed(6) : meme.price.toFixed(2)}
+        </div>
+      </div>
+
+      <div className="h-[60px] w-full">
+        <Liveline
+          data={chartData}
+          value={meme.price}
+          color={color}
+          theme={isDark ? 'dark' : 'light'}
+          badge={false}
+          grid={false}
+          scrub={false}
+          pulse
+          fill
+          momentum
+          paused={isTabHidden}
+          padding={HERO_CHART_PADDING}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
+
+      <div className="text-xs text-muted-foreground">
+        {formatCompact(meme.liquidity)} Liquidity
       </div>
     </div>
   )
