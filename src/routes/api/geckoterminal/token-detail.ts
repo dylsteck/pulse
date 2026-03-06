@@ -8,6 +8,8 @@ const GECKO_HEADERS = {
   Accept: 'application/json;version=20230203',
 }
 
+const SOLANA_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
+
 export const Route = createFileRoute('/api/geckoterminal/token-detail')({
   server: {
     handlers: {
@@ -18,6 +20,16 @@ export const Route = createFileRoute('/api/geckoterminal/token-detail')({
         if (!address) {
           return Response.json(
             { error: 'Missing token address.' },
+            {
+              status: 400,
+              headers: { 'Cache-Control': 'no-store' },
+            },
+          )
+        }
+
+        if (!SOLANA_ADDRESS_REGEX.test(address)) {
+          return Response.json(
+            { error: 'Invalid token address format.' },
             {
               status: 400,
               headers: { 'Cache-Control': 'no-store' },

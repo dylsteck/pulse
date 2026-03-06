@@ -9,7 +9,15 @@ import { wagmiConfig } from '@/lib/wagmi'
 
 import appCss from '../styles.css?url'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      staleTime: 60_000,
+    },
+  },
+})
 
 export const Route = createRootRoute({
   head: () => ({

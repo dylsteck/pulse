@@ -1,12 +1,33 @@
 const DEFAULT_CACHE_CONTROL = 'public, max-age=300, stale-while-revalidate=900'
+const MAX_CACHE_SIZE = 500
 const upstreamJsonCache = new Map<
   string,
   { expiresAt: number; data: unknown }
 >()
 
+function evictCacheIfNeeded() {
+  if (upstreamJsonCache.size < MAX_CACHE_SIZE) return
+  const now = Date.now()
+  for (const [key, entry] of upstreamJsonCache) {
+    if (entry.expiresAt <= now) upstreamJsonCache.delete(key)
+  }
+  if (upstreamJsonCache.size < MAX_CACHE_SIZE) return
+  let oldestKey: string | null = null
+  let oldestExpires = Infinity
+  for (const [key, entry] of upstreamJsonCache) {
+    if (entry.expiresAt < oldestExpires) {
+      oldestExpires = entry.expiresAt
+      oldestKey = key
+    }
+  }
+  if (oldestKey) upstreamJsonCache.delete(oldestKey)
+}
+
 type UpstreamRequestInit = RequestInit & {
   cacheControl?: string
   cacheTtlMs?: number
+  /** Optional cache key for POST requests; when set, enables caching for non-GET */
+  cacheKey?: string
 }
 
 function buildErrorResponse(message: string, status = 502) {
@@ -51,9 +72,10 @@ export async function readUpstreamJson(
   url: string,
   init?: UpstreamRequestInit,
 ) {
-  const { headers, cacheTtlMs, ...requestInit } = init ?? {}
+  const { headers, cacheTtlMs, cacheKey: explicitCacheKey, ...requestInit } =
+    init ?? {}
   const method = requestInit.method?.toUpperCase() ?? 'GET'
-  const cacheKey = method === 'GET' ? url : null
+  const cacheKey = explicitCacheKey ?? (method === 'GET' ? url : null)
 
   if (cacheKey && cacheTtlMs) {
     const cached = upstreamJsonCache.get(cacheKey)
@@ -101,6 +123,7 @@ export async function readUpstreamJson(
   }
 
   if (cacheKey && cacheTtlMs) {
+    evictCacheIfNeeded()
     upstreamJsonCache.set(cacheKey, {
       data: json,
       expiresAt: Date.now() + cacheTtlMs,

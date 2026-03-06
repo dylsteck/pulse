@@ -19,6 +19,14 @@ const PERP_WINDOW_SECS: Record<string, number> = {
   '1D': 86400,
 }
 
+const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
+
+function validateUserParam(params: Record<string, unknown> | undefined): string | null {
+  const user = params?.user
+  if (typeof user !== 'string') return null
+  return ETH_ADDRESS_REGEX.test(user) ? user : null
+}
+
 export const Route = createFileRoute('/api/hyperliquid')({
   server: {
     handlers: {
@@ -138,9 +146,14 @@ export const Route = createFileRoute('/api/hyperliquid')({
           }
 
           case 'account': {
-            const result = await info.clearinghouseState(
-              params as Parameters<typeof info.clearinghouseState>[0],
-            )
+            const user = validateUserParam(params)
+            if (!user) {
+              return new Response(
+                JSON.stringify({ error: 'Invalid user address.' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } },
+              )
+            }
+            const result = await info.clearinghouseState({ user })
             return new Response(JSON.stringify(result), {
               status: 200,
               headers: { 'Content-Type': 'application/json' },
@@ -148,9 +161,14 @@ export const Route = createFileRoute('/api/hyperliquid')({
           }
 
           case 'orders': {
-            const result = await info.frontendOpenOrders(
-              params as Parameters<typeof info.frontendOpenOrders>[0],
-            )
+            const user = validateUserParam(params)
+            if (!user) {
+              return new Response(
+                JSON.stringify({ error: 'Invalid user address.' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } },
+              )
+            }
+            const result = await info.frontendOpenOrders({ user })
             return new Response(JSON.stringify(result), {
               status: 200,
               headers: { 'Content-Type': 'application/json' },
@@ -158,9 +176,17 @@ export const Route = createFileRoute('/api/hyperliquid')({
           }
 
           case 'fills': {
-            const result = await info.userFills(
-              params as Parameters<typeof info.userFills>[0],
-            )
+            const user = validateUserParam(params)
+            if (!user) {
+              return new Response(
+                JSON.stringify({ error: 'Invalid user address.' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } },
+              )
+            }
+            const result = await info.userFills({
+              user,
+              aggregateByTime: params?.aggregateByTime !== false,
+            })
             return new Response(JSON.stringify(result), {
               status: 200,
               headers: { 'Content-Type': 'application/json' },

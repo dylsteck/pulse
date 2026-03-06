@@ -1,21 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { createHash } from 'node:crypto'
+import { fetchUpstreamJson } from '@/lib/server/upstream'
 
 export const Route = createFileRoute('/api/zora')({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const body = await request.text()
-        const res = await fetch('https://api.zora.co/universal/graphql', {
+        const hash = createHash('sha256').update(body).digest('hex')
+        return fetchUpstreamJson('https://api.zora.co/universal/graphql', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body,
-        })
-        return new Response(res.body, {
-          status: res.status,
-          headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=60',
-          },
+          headers: { 'Content-Type': 'application/json' },
+          cacheKey: `zora:${hash}`,
+          cacheTtlMs: 60_000,
+          cacheControl: 'public, max-age=60',
         })
       },
     },
