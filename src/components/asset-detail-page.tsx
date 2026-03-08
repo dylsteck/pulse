@@ -19,6 +19,7 @@ import { useMarketHistory } from '@/hooks/use-market-history'
 import { useAudioDetail, useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useMemeTokenDetail } from '@/hooks/use-meme-tokens'
+import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { fetchCodexTokenByAddress } from '@/lib/codex'
 import type { MemeToken } from '@/lib/geckoterminal'
@@ -919,6 +920,28 @@ function MemesDetail({ id }: { id: string }) {
 
 function MemeDetailContent({ meme }: { meme: MemeToken }) {
   const primaryWebsite = meme.websites?.[0]
+  const [windowLabel, setWindowLabel] = useState('15m')
+  const { data: bars, isLoading } = useMemeOhlcv(meme.poolAddress, windowLabel)
+  const chartData =
+    bars.length >= 2
+      ? bars
+      : meme.priceHistory.length >= 2
+        ? meme.priceHistory
+        : [
+            { time: Date.now() / 1000 - 3600, value: meme.price },
+            { time: Date.now() / 1000, value: meme.price },
+          ]
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
+
+  const color = meme.change24h >= 0 ? '#22c55e' : '#ef4444'
 
   return (
     <div className="space-y-4">
@@ -977,6 +1000,17 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
             </div>
           </div>
         )}
+
+        <LivelineChart
+          data={chartData}
+          value={meme.price}
+          height={320}
+          color={color}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+          isLoading={isLoading && bars.length === 0}
+          emptyText="No chart data available"
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

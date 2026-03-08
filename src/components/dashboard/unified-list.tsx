@@ -27,6 +27,7 @@ import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
+import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { PerpsPanel } from '@/components/perps/perps-panel'
 import type { Token } from '@/lib/types'
 import type { Market } from '@/lib/types'
@@ -834,17 +835,30 @@ function InlineTokenChart({ token }: { token: Token }) {
 }
 
 function InlineMemeChart({ meme }: { meme: MemeToken }) {
+  const [windowLabel, setWindowLabel] = useState('15m')
+  const { data: bars, isLoading } = useMemeOhlcv(meme.poolAddress, windowLabel)
   const chartData =
-    meme.priceHistory.length >= 2
-      ? meme.priceHistory
-      : (() => {
-          const now = Date.now() / 1000
-          const val = meme.priceHistory[0]?.value ?? meme.price
-          return [
-            { time: now - 3600, value: val },
-            { time: now, value: meme.price },
-          ]
-        })()
+    bars.length >= 2
+      ? bars
+      : meme.priceHistory.length >= 2
+        ? meme.priceHistory
+        : (() => {
+            const now = Date.now() / 1000
+            const val = meme.priceHistory[0]?.value ?? meme.price
+            return [
+              { time: now - 3600, value: val },
+              { time: now, value: meme.price },
+            ]
+          })()
+
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel]!)
+  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]!
+  const handleWindowChange = useCallback((secs: number) => {
+    if (secs === windowSecsRef.current) return
+    windowSecsRef.current = secs
+    const label = WINDOW_SECS_TO_LABEL[secs]
+    if (label) setWindowLabel(label)
+  }, [])
 
   const color = meme.change24h >= 0 ? '#22c55e' : '#ef4444'
 
@@ -861,6 +875,9 @@ function InlineMemeChart({ meme }: { meme: MemeToken }) {
         value={meme.price}
         height={220}
         color={color}
+        window={WINDOW_LABEL_TO_SECS[windowLabel]}
+        onWindowChange={handleWindowChange}
+        isLoading={isLoading && bars.length === 0}
         emptyText="No chart data available"
       />
       <Link

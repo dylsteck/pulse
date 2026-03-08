@@ -14,30 +14,40 @@ src/
 │   ├── __root.tsx       Global shell (Header, fonts, devtools)
 │   ├── index.tsx        Redirects → /tokens
 │   ├── tokens.tsx       Base token trading page
-│   └── markets.tsx      Polymarket prediction markets page
+│   ├── markets.tsx      Polymarket prediction markets page
+│   ├── memes.tsx       Solana meme tokens (Pump.fun via GeckoTerminal)
+│   ├── creators.tsx    Zora creator tokens
+│   ├── music.tsx       Tortoise music/songs
+│   ├── perps.tsx       Hyperliquid perps
+│   ├── asset.$type.$id  Asset detail page (tokens, markets, memes, creators, music, perps)
+│   └── api/
+│       ├── geckoterminal/
+│       │   ├── memes.ts            Pump.fun pools (filtered by volume/liquidity)
+│       │   ├── ohlcv.ts            Pool OHLCV for meme charts (poolAddress, window)
+│       │   └── token-detail.ts     Token info + metadata
+│       ├── codex.ts                Base token bars (price history)
+│       ├── polymarket/             Events + history
+│       ├── hyperliquid.ts         Perps + candles
+│       └── tortoise/               Songs, trending, audio
 ├── components/
-│   ├── layout/
-│   │   └── header.tsx              Logo + tab nav + wallet button
-│   ├── trading/
-│   │   ├── movers-rail.tsx         Horizontal scroll of biggest movers
-│   │   ├── token-search.tsx        Combobox: search by name or contract address
-│   │   ├── liveline-chart.tsx      Liveline wrapper (280px, light theme)
-│   │   └── trade-form.tsx          Inline buy/sell form
-│   ├── markets/
-│   │   ├── market-card.tsx         Prediction market card + inline trade panel
-│   │   └── markets-list.tsx        3-column responsive grid of cards
-│   └── wallet/
-│       └── wallet-button.tsx       Connect/disconnect dropdown
+│   ├── layout/header.tsx
+│   ├── dashboard/
+│   │   ├── unified-list.tsx        List/grid for all modes (tokens, markets, memes, etc.)
+│   │   └── hero-banner.tsx         Carousel (tokens, markets, memes)
+│   ├── trading/liveline-chart.tsx  Liveline wrapper (LivelineChart, SparklineChart)
+│   └── asset-detail-page.tsx       Detail views per asset type
 ├── hooks/
-│   ├── use-token-price.ts          Simulated live price feed (setInterval random walk)
-│   ├── use-movers.ts               Top movers sorted by |% change|
-│   └── use-wallet.ts               Wallet connection state (mock)
+│   ├── use-token-price.ts          Live price (tokens)
+│   ├── use-token-bars.ts          Codex bars for Base tokens
+│   ├── use-meme-tokens.ts         GeckoTerminal meme tokens (infinite)
+│   ├── use-meme-ohlcv.ts          GeckoTerminal OHLCV for meme pool charts
+│   ├── use-market-history.ts      Polymarket history
+│   ├── use-hyperliquid-candles.ts  Perp candles
+│   └── use-live-tokens.ts, use-live-markets.ts, etc.
 └── lib/
-    ├── mock/
-    │   ├── tokens.ts               8 Base tokens with price history
-    │   ├── markets.ts              6 Polymarket-style events
-    │   └── movers.ts               Top movers helper
-    └── utils.ts                    cn() utility
+    ├── geckoterminal.ts           MemeToken, fetchMemeTokens, transform
+    ├── codex.ts                   Base tokens + bars
+    └── ...
 ```
 
 ## Key conventions

@@ -24,6 +24,7 @@ import { Route as ApiTortoiseGetAudioRouteImport } from './routes/api/tortoise/g
 import { Route as ApiPolymarketHistoryRouteImport } from './routes/api/polymarket/history'
 import { Route as ApiPolymarketEventsRouteImport } from './routes/api/polymarket/events'
 import { Route as ApiGeckoterminalTokenDetailRouteImport } from './routes/api/geckoterminal/token-detail'
+import { Route as ApiGeckoterminalOhlcvRouteImport } from './routes/api/geckoterminal/ohlcv'
 import { Route as ApiGeckoterminalMemesRouteImport } from './routes/api/geckoterminal/memes'
 import { Route as ApiTortoiseSongsTrendingRouteImport } from './routes/api/tortoise/songs/trending'
 
@@ -103,6 +104,11 @@ const ApiGeckoterminalTokenDetailRoute =
     path: '/api/geckoterminal/token-detail',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiGeckoterminalOhlcvRoute = ApiGeckoterminalOhlcvRouteImport.update({
+  id: '/api/geckoterminal/ohlcv',
+  path: '/api/geckoterminal/ohlcv',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiGeckoterminalMemesRoute = ApiGeckoterminalMemesRouteImport.update({
   id: '/api/geckoterminal/memes',
   path: '/api/geckoterminal/memes',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/api/zora': typeof ApiZoraRoute
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
+  '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/api/zora': typeof ApiZoraRoute
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
+  '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/api/zora': typeof ApiZoraRoute
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
+  '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/api/hyperliquid'
     | '/api/zora'
     | '/api/geckoterminal/memes'
+    | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/api/hyperliquid'
     | '/api/zora'
     | '/api/geckoterminal/memes'
+    | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/api/hyperliquid'
     | '/api/zora'
     | '/api/geckoterminal/memes'
+    | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
@@ -245,6 +257,7 @@ export interface RootRouteChildren {
   ApiHyperliquidRoute: typeof ApiHyperliquidRoute
   ApiZoraRoute: typeof ApiZoraRoute
   ApiGeckoterminalMemesRoute: typeof ApiGeckoterminalMemesRoute
+  ApiGeckoterminalOhlcvRoute: typeof ApiGeckoterminalOhlcvRoute
   ApiGeckoterminalTokenDetailRoute: typeof ApiGeckoterminalTokenDetailRoute
   ApiPolymarketEventsRoute: typeof ApiPolymarketEventsRoute
   ApiPolymarketHistoryRoute: typeof ApiPolymarketHistoryRoute
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGeckoterminalTokenDetailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/geckoterminal/ohlcv': {
+      id: '/api/geckoterminal/ohlcv'
+      path: '/api/geckoterminal/ohlcv'
+      fullPath: '/api/geckoterminal/ohlcv'
+      preLoaderRoute: typeof ApiGeckoterminalOhlcvRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/geckoterminal/memes': {
       id: '/api/geckoterminal/memes'
       path: '/api/geckoterminal/memes'
@@ -389,6 +409,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiHyperliquidRoute: ApiHyperliquidRoute,
   ApiZoraRoute: ApiZoraRoute,
   ApiGeckoterminalMemesRoute: ApiGeckoterminalMemesRoute,
+  ApiGeckoterminalOhlcvRoute: ApiGeckoterminalOhlcvRoute,
   ApiGeckoterminalTokenDetailRoute: ApiGeckoterminalTokenDetailRoute,
   ApiPolymarketEventsRoute: ApiPolymarketEventsRoute,
   ApiPolymarketHistoryRoute: ApiPolymarketHistoryRoute,

@@ -6,9 +6,9 @@ const GECKO_HEADERS = {
 }
 
 /** Minimum 24h volume (USD) to include a pool */
-const MIN_VOLUME_USD = 10_000
+const MIN_VOLUME_USD = 1_000
 /** Minimum liquidity/reserve (USD) to include a pool */
-const MIN_LIQUIDITY_USD = 5_000
+const MIN_LIQUIDITY_USD = 500
 
 function toNum(v: string | number | null | undefined): number {
   const n = typeof v === 'number' ? v : Number(v ?? 0)
@@ -19,48 +19,63 @@ export const Route = createFileRoute('/api/geckoterminal/memes')({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        const url = new URL(request.url)
-        const rawPage = url.searchParams.get('page') ?? '1'
-        const parsed = Math.max(1, Math.min(100, Math.floor(Number(rawPage)) || 1))
-        const page = String(parsed)
-        const params = new URLSearchParams({
-          sort: 'h24_volume_usd_desc',
-          include: 'base_token',
-          page,
-        })
+        try {
+          const url = new URL(request.url)
+          const rawPage = url.searchParams.get('page') ?? '1'
+          const parsed = Math.max(1, Math.min(100, Math.floor(Number(rawPage)) || 1))
+          const page = String(parsed)
+          const params = new URLSearchParams({
+            sort: 'h24_volume_usd_desc',
+            include: 'base_token',
+            page,
+          })
 
-        const json = (await readUpstreamJson(
-          `https://api.geckoterminal.com/api/v2/networks/solana/dexes/pump-fun/pools?${params.toString()}`,
-          {
-            headers: GECKO_HEADERS,
-            cacheTtlMs: 60_000,
-          },
-        )) as {
-          data?: Array<{
-            attributes?: {
-              volume_usd?: { h24?: string | null }
-              reserve_in_usd?: string | null
-            }
-          }>
-          included?: unknown[]
-        }
-
-        const data = json.data ?? []
-        const filtered = data.filter((pool) => {
-          const vol = toNum(pool.attributes?.volume_usd?.h24)
-          const liq = toNum(pool.attributes?.reserve_in_usd)
-          return vol >= MIN_VOLUME_USD && liq >= MIN_LIQUIDITY_USD
-        })
-
-        return Response.json(
-          { ...json, data: filtered },
-          {
-            headers: {
-              'Cache-Control':
-                'public, max-age=60, stale-while-revalidate=300',
+          const json = (await readUpstreamJson(
+            `https://api.geckoterminal.com/api/v2/networks/solana/dexes/pump-fun/pools?${params.toString()}`,
+            {
+              headers: GECKO_HEADERS,
+              cacheTtlMs: 60_000,
             },
-          },
-        )
+          )) as {
+            data?: Array<{
+              attributes?: {
+                volume_usd?: { h24?: string | null }
+                reserve_in_usd?: string | null
+              }
+            }>
+            included?: unknown[]
+          }
+
+          const data = json.data ?? []
+          const filtered = data.filter((pool) => {
+            const vol = toNum(pool.attributes?.volume_usd?.h24)
+            const liq = toNum(pool.attributes?.reserve_in_usd)
+            return vol >= MIN_VOLUME_USD && liq >= MIN_LIQUIDITY_USD
+          })
+
+          // Fallback: if all pools filtered out, return unfiltered data
+          const result = filtered.length > 0 ? filtered : data
+
+          return Response.json(
+            { ...json, data: result },
+            {
+              headers: {
+                'Cache-Control':
+                  'public, max-age=60, stale-while-revalidate=300',
+              },
+            },
+          )
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : 'Upstream request failed.'
+          return Response.json(
+            { error: message, data: [] },
+            {
+              status: 502,
+              headers: { 'Cache-Control': 'no-store' },
+            },
+          )
+        }
       },
     },
   },
