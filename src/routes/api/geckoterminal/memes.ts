@@ -5,10 +5,12 @@ const GECKO_HEADERS = {
   Accept: 'application/json;version=20230203',
 }
 
-/** Minimum 24h volume (USD) to include a pool */
-const MIN_VOLUME_USD = 1_000
-/** Minimum liquidity/reserve (USD) to include a pool */
-const MIN_LIQUIDITY_USD = 500
+/** Minimum 24h volume (USD) — higher = better quality */
+const MIN_VOLUME_USD = 50_000
+/** Minimum liquidity (USD) — exclude dust/rugs */
+const MIN_LIQUIDITY_USD = 2_000
+/** Minimum market cap / FDV (USD) — higher = established tokens */
+const MIN_MCAP_USD = 25_000
 
 function toNum(v: string | number | null | undefined): number {
   const n = typeof v === 'number' ? v : Number(v ?? 0)
@@ -41,6 +43,8 @@ export const Route = createFileRoute('/api/geckoterminal/memes')({
               attributes?: {
                 volume_usd?: { h24?: string | null }
                 reserve_in_usd?: string | null
+                market_cap_usd?: string | null
+                fdv_usd?: string | null
               }
             }>
             included?: unknown[]
@@ -50,14 +54,24 @@ export const Route = createFileRoute('/api/geckoterminal/memes')({
           const filtered = data.filter((pool) => {
             const vol = toNum(pool.attributes?.volume_usd?.h24)
             const liq = toNum(pool.attributes?.reserve_in_usd)
-            return vol >= MIN_VOLUME_USD && liq >= MIN_LIQUIDITY_USD
+            const mcap = toNum(pool.attributes?.market_cap_usd)
+            const fdv = toNum(pool.attributes?.fdv_usd)
+            const valuation = mcap > 0 ? mcap : fdv
+            return (
+              vol >= MIN_VOLUME_USD &&
+              liq >= MIN_LIQUIDITY_USD &&
+              valuation >= MIN_MCAP_USD
+            )
           })
 
           // Fallback: if all pools filtered out, return unfiltered data
           const result = filtered.length > 0 ? filtered : data
 
+          // nextPage: upstream returned full page → more pages available for infinite scroll
+          const nextPage = data.length >= 20 ? parsed + 1 : null
+
           return Response.json(
-            { ...json, data: result },
+            { ...json, data: result, nextPage },
             {
               headers: {
                 'Cache-Control':

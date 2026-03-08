@@ -195,9 +195,14 @@ export function transformMemeTokensPage(
     ),
   )
 
+  // Use API-provided nextPage for infinite scroll (based on upstream full page)
+  const apiNextPage = (json as { nextPage?: number | null }).nextPage
+  const nextPage =
+    apiNextPage ?? (items.length >= GECKO_MEME_PAGE_SIZE ? page + 1 : null)
+
   return {
     items,
-    nextPage: items.length >= GECKO_MEME_PAGE_SIZE ? page + 1 : null,
+    nextPage,
   }
 }
 

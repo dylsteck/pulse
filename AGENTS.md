@@ -70,6 +70,29 @@ src/
 | wagmi connectors | wagmi.sh/react | Wallet connection — injected, Coinbase Wallet, Base Account, optional WalletConnect |
 | Relay | https://docs.relay.link/ | Trade routing |
 
+## GeckoTerminal API (memes / pump.fun)
+
+We proxy GeckoTerminal at `/api/geckoterminal/*`. Full OAS: https://api.geckoterminal.com/docs/v2/swagger.json
+
+**Endpoints we use:**
+
+| Path | Purpose |
+|------|---------|
+| `GET /networks/{network}/dexes/{dex}/pools` | Top pools by DEX (we use `solana` + `pump-fun`) |
+| `GET /networks/{network}/pools/{pool_address}/ohlcv/{timeframe}` | OHLCV for charts |
+| `GET /networks/{network}/tokens/{address}` + `/info` | Token detail + metadata |
+
+**Pools params:**
+- `page` — 1–10 (max 10 pages on public API)
+- `sort` — `h24_volume_usd_desc` | `h24_tx_count_desc`
+- `include` — `base_token` (for name/symbol/image)
+
+**Pool attributes:** `volume_usd.h24`, `reserve_in_usd`, `base_token_price_usd`, `price_change_percentage.h24`
+
+**OHLCV params:** `timeframe` = `day`|`hour`|`minute`, `aggregate` = `1`|`5`|`15` (minute), `limit` max 1000
+
+**Rate limit:** ~10 calls/min (public). Set `Accept: application/json;version=20230203`.
+
 ## Liveline chart API
 
 ```ts

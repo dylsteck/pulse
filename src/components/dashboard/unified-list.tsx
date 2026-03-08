@@ -303,7 +303,8 @@ export function UnifiedList({
     if (mode !== 'memes') return
     if (!memeTokensQuery.hasMore || memeTokensQuery.isFetching) return
     const target = memesLoadMoreRef.current
-    if (!target) return
+    const scrollEl = scrollRef.current
+    if (!target || !scrollEl) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -316,7 +317,7 @@ export function UnifiedList({
           void memeTokensQuery.loadMore()
         }
       },
-      { rootMargin: '300px 0px' },
+      { root: scrollEl, rootMargin: '400px 0px', threshold: 0 },
     )
 
     observer.observe(target)
@@ -503,13 +504,7 @@ export function UnifiedList({
             memeTokensQuery.isLoading ? (
               <LoadingPanel label="Loading memes..." />
             ) : memeTokensQuery.error ? (
-              <ErrorPanel
-                label={
-                  memeTokensQuery.error instanceof Error
-                    ? memeTokensQuery.error.message
-                    : 'Failed to load meme token data.'
-                }
-              />
+              <MemeRetryState onRetry={() => memeTokensQuery.refetch()} />
             ) : (
               <MemeTable
                 memes={memeTokens}
@@ -600,13 +595,7 @@ export function UnifiedList({
           memeTokensQuery.isLoading ? (
             <LoadingPanel label="Loading memes..." />
           ) : memeTokensQuery.error ? (
-            <ErrorPanel
-              label={
-                memeTokensQuery.error instanceof Error
-                  ? memeTokensQuery.error.message
-                  : 'Failed to load meme token data.'
-              }
-            />
+            <MemeRetryState onRetry={() => memeTokensQuery.refetch()} />
           ) : (
             <MemeGrid memes={memeTokens} isLoading={false} />
           )
@@ -644,7 +633,21 @@ export function UnifiedList({
           <div ref={musicLoadMoreRef} className="h-6" aria-hidden />
         )}
         {mode === 'memes' && memeTokensQuery.hasMore && (
-          <div ref={memesLoadMoreRef} className="h-6" aria-hidden />
+          <div
+            ref={memesLoadMoreRef}
+            className="flex min-h-[120px] items-center justify-center py-8"
+          >
+            <button
+              type="button"
+              onClick={() => {
+                if (!memeTokensQuery.isFetching) void memeTokensQuery.loadMore()
+              }}
+              disabled={memeTokensQuery.isFetching}
+              className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+            >
+              {memeTokensQuery.isFetching ? 'Loading...' : 'Load more'}
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -674,6 +677,21 @@ function ErrorPanel({ label }: { label: string }) {
   return (
     <div className="flex items-center justify-center border-y border-border py-16 text-sm text-[#ef4444] sm:rounded-xl sm:border-x">
       {label}
+    </div>
+  )
+}
+
+function MemeRetryState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-4 border-y border-border py-16 text-sm text-muted-foreground sm:rounded-xl sm:border-x">
+      <span>Having trouble loading. Try again in a moment.</span>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-foreground hover:bg-muted/80"
+      >
+        Retry
+      </button>
     </div>
   )
 }
