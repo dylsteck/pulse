@@ -26,7 +26,7 @@ import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
-import { useMemeTokenDetail, useMemeTokens } from '@/hooks/use-meme-tokens'
+import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { PerpsPanel } from '@/components/perps/perps-panel'
 import type { Token } from '@/lib/types'
 import type { Market } from '@/lib/types'
@@ -833,6 +833,48 @@ function InlineTokenChart({ token }: { token: Token }) {
   )
 }
 
+function InlineMemeChart({ meme }: { meme: MemeToken }) {
+  const chartData =
+    meme.priceHistory.length >= 2
+      ? meme.priceHistory
+      : (() => {
+          const now = Date.now() / 1000
+          const val = meme.priceHistory[0]?.value ?? meme.price
+          return [
+            { time: now - 3600, value: val },
+            { time: now, value: meme.price },
+          ]
+        })()
+
+  const color = meme.change24h >= 0 ? '#22c55e' : '#ef4444'
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-4">
+      <div className="mb-3 flex items-baseline justify-between">
+        <span className="text-sm font-semibold">{meme.symbol}</span>
+        <span className="text-lg font-semibold tabular-nums">
+          ${formatPrice(meme.price)}
+        </span>
+      </div>
+      <LivelineChart
+        data={chartData}
+        value={meme.price}
+        height={220}
+        color={color}
+        emptyText="No chart data available"
+      />
+      <Link
+        to="/asset/$type/$id"
+        params={{ type: 'memes', id: meme.id }}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+      >
+        View full page
+        <ArrowUpRight className="size-3" />
+      </Link>
+    </div>
+  )
+}
+
 interface MarketTableProps {
   markets: Market[]
   selectedIndex: number
@@ -1250,140 +1292,12 @@ function MemeTable({
 
             {expanded && (
               <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
-                <InlineMemeDetail meme={meme} />
+                <InlineMemeChart meme={meme} />
               </div>
             )}
           </div>
         )
       })}
-    </div>
-  )
-}
-
-function InlineMemeDetail({ meme }: { meme: MemeToken }) {
-  const { data, isLoading } = useMemeTokenDetail(meme.address)
-  const detail = data ?? meme
-  const description = detail.description?.trim()
-  const primaryWebsite = detail.websites?.[0]
-
-  return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="min-w-0 flex-1">
-          <div className="flex min-w-0 items-center gap-3">
-            {detail.imageUrl && (
-              <FadeImage
-                src={detail.imageUrl}
-                alt=""
-                wrapperClassName="size-12 shrink-0 rounded-full"
-                className="size-12 rounded-full object-cover"
-              />
-            )}
-            <div className="min-w-0">
-              <h3 className="truncate text-base font-semibold">
-                {detail.name}
-              </h3>
-              <p className="truncate text-sm text-muted-foreground">
-                {detail.symbol}
-              </p>
-            </div>
-          </div>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            {isLoading
-              ? 'Loading token details...'
-              : description || 'No token description available yet.'}
-          </p>
-        </div>
-
-        <div className="grid min-w-[220px] grid-cols-2 gap-3 text-sm">
-          <div className="rounded-lg border border-border bg-muted/40 p-3">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Valuation
-            </div>
-            <div className="mt-1 font-semibold tabular-nums">
-              {formatCompact(detail.valuation)}
-            </div>
-            <div className="mt-1 text-[11px] text-muted-foreground">
-              {detail.valuationLabel}
-            </div>
-          </div>
-          <div className="rounded-lg border border-border bg-muted/40 p-3">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Holders
-            </div>
-            <div className="mt-1 font-semibold tabular-nums">
-              {detail.holdersCount?.toLocaleString('en-US') ?? '—'}
-            </div>
-          </div>
-          <div className="rounded-lg border border-border bg-muted/40 p-3">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              GT Score
-            </div>
-            <div className="mt-1 font-semibold tabular-nums">
-              {detail.gtScore ? detail.gtScore.toFixed(1) : '—'}
-            </div>
-          </div>
-          <div className="rounded-lg border border-border bg-muted/40 p-3">
-            <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              Launch
-            </div>
-            <div className="mt-1 font-semibold tabular-nums">
-              {detail.launchProgress != null
-                ? `${detail.launchProgress.toFixed(1)}%`
-                : '—'}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-medium text-muted-foreground">
-        {primaryWebsite && (
-          <a
-            href={primaryWebsite}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition-colors hover:text-foreground"
-          >
-            Website
-          </a>
-        )}
-        {detail.twitterHandle && (
-          <a
-            href={`https://x.com/${detail.twitterHandle.replace(/^@/, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition-colors hover:text-foreground"
-          >
-            X
-          </a>
-        )}
-        {detail.telegramHandle && (
-          <a
-            href={`https://t.me/${detail.telegramHandle.replace(/^@/, '')}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition-colors hover:text-foreground"
-          >
-            Telegram
-          </a>
-        )}
-        <a
-          href={`https://www.geckoterminal.com/solana/pools/${detail.poolAddress}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="transition-colors hover:text-foreground"
-        >
-          GeckoTerminal
-        </a>
-        <Link
-          to="/asset/$type/$id"
-          params={{ type: 'memes', id: detail.id }}
-          className="inline-flex items-center gap-1 transition-colors hover:text-foreground"
-        >
-          View full page
-          <ArrowUpRight className="size-3" />
-        </Link>
-      </div>
     </div>
   )
 }
