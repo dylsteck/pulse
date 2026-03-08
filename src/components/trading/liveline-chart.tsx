@@ -37,6 +37,19 @@ function ensureMinChartData(
   ]
 }
 
+/** Extend data so the line stretches from the left edge of the visible window */
+function extendToWindowStart(
+  data: Array<{ time: number; value: number }>,
+  windowSecs: number,
+): Array<{ time: number; value: number }> {
+  if (data.length < 2) return data
+  const now = Date.now() / 1000
+  const windowStart = now - windowSecs
+  const first = data[0]!
+  if (first.time <= windowStart) return data
+  return [{ time: windowStart, value: first.value }, ...data]
+}
+
 interface LivelineChartProps {
   data: Array<{ time: number; value: number }>
   value: number
@@ -51,6 +64,8 @@ interface LivelineChartProps {
   paused?: boolean
   /** Custom text for empty state (default: "No data to display") */
   emptyText?: string
+  /** Tight Y-axis — small moves fill chart height (for tiny values like meme tokens) */
+  exaggerate?: boolean
 }
 
 export function LivelineChart({
@@ -64,6 +79,7 @@ export function LivelineChart({
   isLoading = false,
   paused = false,
   emptyText,
+  exaggerate = false,
 }: LivelineChartProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
@@ -74,7 +90,10 @@ export function LivelineChart({
   }, [])
 
   const hasEnoughData = data.length >= 2
-  const chartData = hasEnoughData ? ensureMinChartData(data, value) : []
+  let chartData = hasEnoughData ? ensureMinChartData(data, value) : []
+  if (chartData.length >= 2 && windowProp) {
+    chartData = extendToWindowStart(chartData, windowProp)
+  }
   const dataSpanSecs =
     chartData.length >= 2
       ? Math.abs(chartData[chartData.length - 1].time - chartData[0].time)
@@ -108,6 +127,7 @@ export function LivelineChart({
           padding={LIVELINE_PADDING}
           loading={isLoading}
           paused={paused}
+          exaggerate={exaggerate}
           {...(emptyText ? { emptyText } : {})}
           {...(formatValue ? { formatValue } : {})}
           style={FULL_SIZE_STYLE}

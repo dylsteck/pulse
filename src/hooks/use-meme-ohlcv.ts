@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { makeRequest } from '@/lib/request'
 
 export interface MemeOhlcvBar {
   time: number
@@ -7,7 +6,7 @@ export interface MemeOhlcvBar {
 }
 
 interface MemeOhlcvResponse {
-  bars: MemeOhlcvBar[]
+  bars?: MemeOhlcvBar[]
   error?: string
 }
 
@@ -19,10 +18,9 @@ async function fetchMemeOhlcv(
     poolAddress,
     window: windowLabel,
   })
-  const res = await makeRequest<MemeOhlcvResponse>(
-    `/api/geckoterminal/ohlcv?${params.toString()}`,
-  )
-  return res.bars ?? []
+  const res = await fetch(`/api/geckoterminal/ohlcv?${params.toString()}`)
+  const json = (await res.json()) as MemeOhlcvResponse
+  return json.bars ?? []
 }
 
 export function useMemeOhlcv(

@@ -224,7 +224,7 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
       <LivelineChart
         data={chartData}
         value={market.markPx}
-        height={220}
+        height={280}
         color={color}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}

@@ -834,7 +834,7 @@ function InlineTokenChart({ token }: { token: Token }) {
       <LivelineChart
         data={chartData}
         value={price}
-        height={220}
+        height={280}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}
         isLoading={isLoading && bars.length === 0}
@@ -891,12 +891,14 @@ function InlineMemeChart({ meme }: { meme: MemeToken }) {
       <LivelineChart
         data={chartData}
         value={meme.price}
-        height={220}
+        height={280}
         color={color}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}
         isLoading={isLoading && bars.length === 0}
         emptyText="No chart data available"
+        exaggerate
+        formatValue={(v) => `$${formatPrice(v)}`}
       />
       <Link
         to="/asset/$type/$id"
@@ -1039,7 +1041,7 @@ function InlineMarketChart({ market }: { market: Market }) {
       <LivelineChart
         data={chartData}
         value={yesPercent}
-        height={220}
+        height={280}
         formatValue={(v) => `${Math.round(v)}%`}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}
@@ -1503,7 +1505,7 @@ function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
       <LivelineChart
         data={chartData}
         value={lastValue}
-        height={220}
+        height={280}
         color={color}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}

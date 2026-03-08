@@ -170,7 +170,7 @@ function TokenDetailContent({ token }: { token: Token }) {
         <LivelineChart
           data={chartData}
           value={price}
-          height={320}
+          height={380}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
           isLoading={isLoading && chartData.length === 0}
@@ -373,7 +373,7 @@ function MarketDetailContent({ market }: { market: Market }) {
         <LivelineChart
           data={chartData}
           value={yesPercent}
-          height={280}
+          height={340}
           formatValue={(v) => `${v.toFixed(1)}%`}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
@@ -508,7 +508,7 @@ function CreatorDetailContent({ creator }: { creator: CreatorToken }) {
         <LivelineChart
           data={chartData}
           value={lastValue}
-          height={320}
+          height={380}
           color={color}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
@@ -786,7 +786,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
         <LivelineChart
           data={chartData}
           value={market.markPx}
-          height={320}
+          height={380}
           color={color}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
@@ -1004,12 +1004,14 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
         <LivelineChart
           data={chartData}
           value={meme.price}
-          height={320}
+          height={380}
           color={color}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
           isLoading={isLoading && bars.length === 0}
           emptyText="No chart data available"
+          exaggerate
+          formatValue={(v) => `$${formatPrice(v)}`}
         />
       </div>
 
