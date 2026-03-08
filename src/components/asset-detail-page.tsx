@@ -44,7 +44,7 @@ export function AssetDetailPage({ type, id }: { type: string; id: string }) {
   const backTo = BACK_ROUTES[type] ?? '/tokens'
 
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-37px)] w-full max-w-6xl flex-col px-3 py-4 sm:px-6">
+    <div className="mx-auto flex min-h-[calc(100vh-37px)] w-full max-w-7xl flex-col px-3 py-4 sm:px-6">
       <button
         type="button"
         onClick={() => navigate({ to: backTo })}

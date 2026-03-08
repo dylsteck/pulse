@@ -11,7 +11,7 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 bg-background pt-1.5">
-      <div className="mx-auto flex h-9 max-w-6xl items-center justify-between px-4 sm:px-6">
+      <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Link to="/" className="text-sm font-semibold text-foreground">
           Pulse
         </Link>
