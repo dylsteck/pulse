@@ -56,7 +56,7 @@ src/
 - **Routing**: TanStack Router file-based. New routes go in `src/routes/`. Run dev server to auto-regenerate `routeTree.gen.ts`, or update it manually.
 - **Path alias**: `@/` maps to `src/` (configured in `tsconfig.json`).
 - **Styling**: Tailwind v4 + shadcn. Design tokens are in `src/styles.css`. Raw color values used: `#FFFFFF` bg, `#F9F9F9` sections, `#E5E5E5` borders, `#22c55e` green, `#ef4444` red.
-- **UI components**: Prefer existing shadcn components in `src/components/ui/` before creating new ones. They're built on `@base-ui/react`.
+- **UI components**: Use **shadcn/ui** for all UI. Prefer existing components in `src/components/ui/` before creating new ones. They're built on `@base-ui/react`. For guidance on adding, styling, and composing shadcn components, refer to the shadcn skill at `.agents/skills/shadcn/SKILL.md` and its rules in `.agents/skills/shadcn/`.
 - **Mock vs live**: All data comes from `src/lib/mock/`. When wiring real APIs, keep mock as fallback.
 - **No auto-commit**: Don't commit unless explicitly asked.
 

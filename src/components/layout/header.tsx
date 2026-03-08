@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
-import { MoonIcon, SunIcon } from 'lucide-react'
+import { MoonIcon, SearchIcon, SunIcon } from 'lucide-react'
+import { openCommandPalette } from '@/components/command-palette'
 // import { WalletButton } from '@/components/wallet/wallet-button'
 // import { useWallet } from '@/hooks/use-wallet'
 import { useTheme } from '@/components/theme-provider'
@@ -15,6 +16,13 @@ export function Header() {
           Pulse
         </Link>
         <div className="flex items-center gap-2">
+          <button
+            onClick={openCommandPalette}
+            aria-label="Search"
+            className="rounded-md p-1.5 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <SearchIcon className="size-4" />
+          </button>
           <button
             onClick={toggleTheme}
             aria-label="Toggle theme"
