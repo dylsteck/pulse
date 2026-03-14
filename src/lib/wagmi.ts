@@ -1,18 +1,24 @@
 import { createConfig, http } from 'wagmi'
 import { base } from 'wagmi/chains'
-import { injected, coinbaseWallet, walletConnect } from 'wagmi/connectors'
-import { baseAccount } from '@wagmi/connectors'
+import { createCDPEmbeddedWalletConnector } from '@coinbase/cdp-wagmi'
 
-const walletConnectProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID as string | undefined
+const projectId = import.meta.env.VITE_CDP_PROJECT_ID as string | undefined
+
+const cdpConnector =
+  projectId &&
+  createCDPEmbeddedWalletConnector({
+    cdpConfig: { projectId },
+    providerConfig: {
+      chains: [base],
+      transports: {
+        [base.id]: http(),
+      },
+    },
+  })
 
 export const wagmiConfig = createConfig({
   chains: [base],
-  connectors: [
-    injected(),
-    coinbaseWallet({ appName: 'Pulse' }),
-    baseAccount(),
-    ...(walletConnectProjectId ? [walletConnect({ projectId: walletConnectProjectId })] : []),
-  ],
+  connectors: cdpConnector ? [cdpConnector] : [],
   transports: {
     [base.id]: http(),
   },

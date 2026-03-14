@@ -37,17 +37,36 @@ function ensureMinChartData(
   ]
 }
 
-/** Extend data so the line stretches from the left edge of the visible window */
-function extendToWindowStart(
+/** Normalize timestamp to seconds (APIs may return ms) */
+function toSeconds(t: number): number {
+  return t > 1e12 ? t / 1000 : t
+}
+
+/** Extend data so the line stretches across the full visible window */
+function extendToFullWindow(
   data: Array<{ time: number; value: number }>,
   windowSecs: number,
+  currentValue: number,
 ): Array<{ time: number; value: number }> {
   if (data.length < 2) return data
   const now = Date.now() / 1000
   const windowStart = now - windowSecs
-  const first = data[0]!
-  if (first.time <= windowStart) return data
-  return [{ time: windowStart, value: first.value }, ...data]
+
+  const normalized = data
+    .map((p) => ({ time: toSeconds(p.time), value: p.value }))
+    .sort((a, b) => a.time - b.time)
+
+  const first = normalized[0]!
+  const last = normalized[normalized.length - 1]!
+  let result = normalized
+
+  if (first.time > windowStart) {
+    result = [{ time: windowStart, value: first.value }, ...result]
+  }
+  if (last.time < now) {
+    result = [...result, { time: now, value: currentValue }]
+  }
+  return result
 }
 
 interface LivelineChartProps {
@@ -92,7 +111,7 @@ export function LivelineChart({
   const hasEnoughData = data.length >= 2
   let chartData = hasEnoughData ? ensureMinChartData(data, value) : []
   if (chartData.length >= 2 && windowProp) {
-    chartData = extendToWindowStart(chartData, windowProp)
+    chartData = extendToFullWindow(chartData, windowProp, value)
   }
   const dataSpanSecs =
     chartData.length >= 2

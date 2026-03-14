@@ -3,12 +3,17 @@ import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { CDPReactProvider } from '@coinbase/cdp-react'
+
+import appCss from '../styles.css?url'
+
 import { Header } from '@/components/layout/header'
 import { CommandPalette } from '@/components/command-palette'
 import { ThemeProvider } from '@/components/theme-provider'
 import { wagmiConfig } from '@/lib/wagmi'
 
-import appCss from '../styles.css?url'
+const cdpProjectId = import.meta.env.VITE_CDP_PROJECT_ID as string | undefined
+const cdpConfig = cdpProjectId ? { projectId: cdpProjectId } : null
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,15 +53,29 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground">
-        <WagmiProvider config={wagmiConfig}>
-          <QueryClientProvider client={queryClient}>
-            <ThemeProvider>
-              <Header />
-              <CommandPalette />
-              {children}
-            </ThemeProvider>
-          </QueryClientProvider>
-        </WagmiProvider>
+        {cdpConfig ? (
+          <CDPReactProvider config={cdpConfig}>
+            <WagmiProvider config={wagmiConfig}>
+              <QueryClientProvider client={queryClient}>
+                <ThemeProvider>
+                  <Header />
+                  <CommandPalette />
+                  {children}
+                </ThemeProvider>
+              </QueryClientProvider>
+            </WagmiProvider>
+          </CDPReactProvider>
+        ) : (
+          <WagmiProvider config={wagmiConfig}>
+            <QueryClientProvider client={queryClient}>
+              <ThemeProvider>
+                <Header />
+                <CommandPalette />
+                {children}
+              </ThemeProvider>
+            </QueryClientProvider>
+          </WagmiProvider>
+        )}
         <TanStackDevtools
           config={{ position: 'bottom-right' }}
           plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
