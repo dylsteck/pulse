@@ -12,6 +12,9 @@ const config = defineConfig({
       overlay: false,
     },
   },
+  ssr: {
+    noExternal: ['@coinbase/cdp-react'],
+  },
   plugins: [
     devtools(),
     nitro(),
