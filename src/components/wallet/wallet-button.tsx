@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
-import { WalletIcon, LogOutIcon, UserIcon } from 'lucide-react'
+import { WalletIcon, LogOutIcon } from 'lucide-react'
 import { useAccount } from 'wagmi'
 import { AuthButton } from '@coinbase/cdp-react'
 import { Button } from '@/components/ui/button'
@@ -14,8 +13,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import type { WalletState } from '@/hooks/use-wallet'
-
-const cdpProjectId = import.meta.env.VITE_CDP_PROJECT_ID as string | undefined
+import { cdpProjectId } from '@/lib/wagmi'
 
 function shortAddress(addr: string) {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`
@@ -61,24 +59,13 @@ export function WalletButton({ wallet }: { wallet: WalletState }) {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
-                <Link
-                  to="/profile"
-                  className="order-2 w-full sm:order-1 sm:w-auto"
-                  onClick={() => setOpen(false)}
-                >
-                  <Button variant="outline" className="w-full gap-2 sm:w-auto">
-                    <UserIcon className="size-3.5" />
-                    Profile
-                  </Button>
-                </Link>
-                <AlertDialogCancel className="order-1 sm:order-2">Close</AlertDialogCancel>
+                <AlertDialogCancel>Close</AlertDialogCancel>
                 <Button
                   variant="destructive"
-                  className="order-3"
                   onClick={() => {
+                    onSuccess?.()
                     wallet.disconnect()
                     setOpen(false)
-                    onSuccess?.()
                   }}
                 >
                   <LogOutIcon className="size-3.5" />

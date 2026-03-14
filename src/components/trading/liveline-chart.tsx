@@ -37,7 +37,8 @@ function ensureMinChartData(
   ]
 }
 
-/** Normalize timestamp to seconds (APIs may return ms) */
+/** Normalize timestamp to seconds (APIs may return ms).
+ *  Heuristic: values above 1e12 (~year 2001 in ms) are treated as milliseconds. */
 function toSeconds(t: number): number {
   return t > 1e12 ? t / 1000 : t
 }

@@ -10,9 +10,8 @@ import appCss from '../styles.css?url'
 import { Header } from '@/components/layout/header'
 import { CommandPalette } from '@/components/command-palette'
 import { ThemeProvider } from '@/components/theme-provider'
-import { wagmiConfig } from '@/lib/wagmi'
+import { wagmiConfig, cdpProjectId } from '@/lib/wagmi'
 
-const cdpProjectId = import.meta.env.VITE_CDP_PROJECT_ID as string | undefined
 const cdpConfig = cdpProjectId ? { projectId: cdpProjectId } : null
 
 const queryClient = new QueryClient({
@@ -53,8 +52,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground">
-        {cdpConfig ? (
-          <CDPReactProvider config={cdpConfig}>
+        {(() => {
+          const inner = (
             <WagmiProvider config={wagmiConfig}>
               <QueryClientProvider client={queryClient}>
                 <ThemeProvider>
@@ -64,18 +63,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 </ThemeProvider>
               </QueryClientProvider>
             </WagmiProvider>
-          </CDPReactProvider>
-        ) : (
-          <WagmiProvider config={wagmiConfig}>
-            <QueryClientProvider client={queryClient}>
-              <ThemeProvider>
-                <Header />
-                <CommandPalette />
-                {children}
-              </ThemeProvider>
-            </QueryClientProvider>
-          </WagmiProvider>
-        )}
+          )
+          return cdpConfig ? <CDPReactProvider config={cdpConfig}>{inner}</CDPReactProvider> : inner
+        })()}
         <TanStackDevtools
           config={{ position: 'bottom-right' }}
           plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}

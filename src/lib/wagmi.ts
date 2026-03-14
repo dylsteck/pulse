@@ -2,12 +2,12 @@ import { createConfig, http } from 'wagmi'
 import { base } from 'wagmi/chains'
 import { createCDPEmbeddedWalletConnector } from '@coinbase/cdp-wagmi'
 
-const projectId = import.meta.env.VITE_CDP_PROJECT_ID as string | undefined
+export const cdpProjectId = import.meta.env.VITE_CDP_PROJECT_ID as string | undefined
 
 const cdpConnector =
-  projectId &&
+  cdpProjectId &&
   createCDPEmbeddedWalletConnector({
-    cdpConfig: { projectId },
+    cdpConfig: { projectId: cdpProjectId },
     providerConfig: {
       chains: [base],
       transports: {
