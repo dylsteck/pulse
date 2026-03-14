@@ -121,3 +121,13 @@ bun install
 bun run dev     # localhost:3000
 bun run build   # production build (catches type errors)
 ```
+
+## Cursor Cloud specific instructions
+
+- **Single service**: The entire app is one process (`bun run dev` on port 3000). No Docker, no database, no external services needed locally.
+- **Bun is pre-installed** via the update script. Just run `bun install` if deps look stale, then `bun run dev`.
+- **`.env` setup**: Copy `.env.example` to `.env`. All API keys are optional — the app falls back to mock data in `src/lib/mock/`. The `/tokens` page uses live Codex data when `CODEX_API_KEY` is set; without it, mock data is shown.
+- **Lint**: `bun run lint` (ESLint). The codebase has pre-existing lint errors (import ordering, array-type style). `bun run check` runs Prettier + ESLint with `--fix`.
+- **Tests**: `bun run test` (Vitest). Tests are under `src/lib/hyperliquid/__tests__/`. Vitest may log a "hanging-process" warning after tests pass — this is benign.
+- **Build**: `bun run build` produces a Nitro server bundle in `.output/`. This also surfaces TypeScript errors.
+- **Route generation**: TanStack Router auto-generates `src/routeTree.gen.ts` when the dev server runs. If routes look stale, start the dev server to regenerate.
