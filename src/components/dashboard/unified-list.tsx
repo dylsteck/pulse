@@ -355,10 +355,9 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
                 key={tab}
                 type="button"
                 onClick={() => {
-                  navigate({ to: '/', search: { type: tab } })
+                  navigate({ to: '/', search: { type: tab }, resetScroll: false })
                   setExpandedId(null)
                   setSelectedIndex(0)
-                  scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
                 }}
                 className={cn(
                   'flex shrink-0 items-center gap-1.5 text-sm font-medium capitalize transition-colors',
