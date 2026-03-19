@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { parseCancelStatuses, parseOrderStatuses } from '@/lib/hyperliquid/status'
+import {
+  parseCancelStatuses,
+  parseOrderStatuses,
+} from '@/lib/hyperliquid/status'
 
 describe('status parsers', () => {
   it('parses mixed order statuses', () => {
@@ -9,7 +12,9 @@ describe('status parsers', () => {
         type: 'order',
         data: {
           statuses: [
-            { resting: { oid: 1, cloid: '0x1234567890abcdef1234567890abcdef' } },
+            {
+              resting: { oid: 1, cloid: '0x1234567890abcdef1234567890abcdef' },
+            },
             { filled: { oid: 2, avgPx: '100', totalSz: '0.1' } },
             { error: 'Order too small.' },
             'waitingForFill',
@@ -35,6 +40,9 @@ describe('status parsers', () => {
       },
     } as any)
 
-    expect(parsed).toEqual([{ kind: 'ok' }, { kind: 'error', error: 'unknown order' }])
+    expect(parsed).toEqual([
+      { kind: 'ok' },
+      { kind: 'error', error: 'unknown order' },
+    ])
   })
 })

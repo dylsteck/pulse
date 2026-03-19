@@ -40,7 +40,7 @@ export interface AudioDetail {
 }
 
 export interface TrendingResponse {
-  songs: Song[]
+  songs: Array<Song>
   pagination: {
     page: number
     limit: number

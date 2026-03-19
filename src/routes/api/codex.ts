@@ -1,5 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { createHash } from 'node:crypto'
+import { createFileRoute } from '@tanstack/react-router'
 import { fetchUpstreamJson } from '@/lib/server/upstream'
 
 export const Route = createFileRoute('/api/codex')({

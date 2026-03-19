@@ -72,8 +72,12 @@ export async function readUpstreamJson(
   url: string,
   init?: UpstreamRequestInit,
 ) {
-  const { headers, cacheTtlMs, cacheKey: explicitCacheKey, ...requestInit } =
-    init ?? {}
+  const {
+    headers,
+    cacheTtlMs,
+    cacheKey: explicitCacheKey,
+    ...requestInit
+  } = init ?? {}
   const method = requestInit.method?.toUpperCase() ?? 'GET'
   const cacheKey = explicitCacheKey ?? (method === 'GET' ? url : null)
 
@@ -137,8 +141,11 @@ export async function fetchUpstreamJson(
   url: string,
   init?: UpstreamRequestInit,
 ) {
-  const { cacheControl = DEFAULT_CACHE_CONTROL, headers, ...requestInit } =
-    init ?? {}
+  const {
+    cacheControl = DEFAULT_CACHE_CONTROL,
+    headers,
+    ...requestInit
+  } = init ?? {}
   try {
     const json = await readUpstreamJson(url, { ...requestInit, headers })
     return Response.json(json, {

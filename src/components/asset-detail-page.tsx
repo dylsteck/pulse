@@ -1,11 +1,12 @@
 import { useCallback, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { ArrowLeft } from 'lucide-react'
 import type { CreatorToken } from '@/lib/zora/service'
 import type { Market, Token } from '@/lib/types'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
-import { ArrowLeft } from 'lucide-react'
 import type { Song } from '@/lib/tortoise'
+import type { MemeToken } from '@/lib/geckoterminal'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
@@ -22,13 +23,12 @@ import { useMemeTokenDetail } from '@/hooks/use-meme-tokens'
 import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { fetchCodexTokenByAddress } from '@/lib/codex'
-import type { MemeToken } from '@/lib/geckoterminal'
 import { fetchPolymarketEventById } from '@/lib/polymarket'
 import { FadeImage } from '@/components/ui/fade-image'
 import { imageUrl } from '@/lib/tortoise'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { cn } from '@/lib/utils'
-import { formatCompact, formatPrice, formatDate } from '@/lib/format'
+import { formatCompact, formatDate, formatPrice } from '@/lib/format'
 
 export function AssetDetailPage({ type, id }: { type: string; id: string }) {
   const navigate = useNavigate()
@@ -56,7 +56,9 @@ export function AssetDetailPage({ type, id }: { type: string; id: string }) {
       {type === 'music' && <MusicDetail id={id} />}
       {type === 'perps' && <PerpDetail id={id} />}
       {type === 'memes' && <MemesDetail id={id} />}
-      {!['tokens', 'markets', 'creators', 'music', 'perps', 'memes'].includes(type) && (
+      {!['tokens', 'markets', 'creators', 'music', 'perps', 'memes'].includes(
+        type,
+      ) && (
         <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
           Unknown asset type
         </div>
@@ -953,7 +955,9 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
             )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-xl font-semibold">{meme.symbol}</h1>
+                <h1 className="truncate text-xl font-semibold">
+                  {meme.symbol}
+                </h1>
                 <span
                   className={cn(
                     'rounded-full px-2 py-0.5 text-xs font-medium',
@@ -966,15 +970,20 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
                   {meme.change24h.toFixed(2)}%
                 </span>
               </div>
-              <p className="truncate text-sm text-muted-foreground">{meme.name}</p>
+              <p className="truncate text-sm text-muted-foreground">
+                {meme.name}
+              </p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {meme.description?.trim() || 'No description available for this token yet.'}
+                {meme.description?.trim() ||
+                  'No description available for this token yet.'}
               </p>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="text-3xl tabular-nums">${formatPrice(meme.price)}</div>
+            <div className="text-3xl tabular-nums">
+              ${formatPrice(meme.price)}
+            </div>
             <p className="text-xs text-muted-foreground">Current Price</p>
           </div>
         </div>
@@ -990,7 +999,9 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
             <div className="h-2 overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full rounded-full bg-foreground/80 transition-all"
-                style={{ width: `${Math.min(100, Math.max(0, meme.launchProgress))}%` }}
+                style={{
+                  width: `${Math.min(100, Math.max(0, meme.launchProgress))}%`,
+                }}
               />
             </div>
           </div>

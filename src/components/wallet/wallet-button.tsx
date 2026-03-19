@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { WalletIcon, LogOutIcon } from 'lucide-react'
+import { LogOutIcon, WalletIcon } from 'lucide-react'
 import { useAccount } from 'wagmi'
 import { AuthButton } from '@coinbase/cdp-react'
+import type { WalletState } from '@/hooks/use-wallet'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -12,7 +13,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import type { WalletState } from '@/hooks/use-wallet'
 import { cdpProjectId } from '@/lib/wagmi'
 
 function shortAddress(addr: string) {

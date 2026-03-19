@@ -1,6 +1,8 @@
-import { useState, useRef, useCallback } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight } from 'lucide-react'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
@@ -8,22 +10,20 @@ import {
 } from '@/components/trading/liveline-chart'
 import { FadeImage } from '@/components/ui/fade-image'
 import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
-import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
-import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
-import { formatPerpPrice } from '@/lib/hyperliquid/service'
+import { cn } from '@/lib/utils'
 
 function perpIconUrl(coin: string): string {
   return `https://app.hyperliquid.xyz/coins/${coin}.svg`
 }
 
 interface PerpsPanelProps {
-  markets: PerpMarketSnapshot[]
+  markets: Array<PerpMarketSnapshot>
   isLoading: boolean
   layout: 'list' | 'grid'
   selectedIndex: number
   expandedId: string | null
-  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
   onRowClick: (index: number) => void
 }
 
@@ -76,18 +76,18 @@ function PerpsTable({
   rowRefs,
   onRowClick,
 }: {
-  markets: PerpMarketSnapshot[]
+  markets: Array<PerpMarketSnapshot>
   selectedIndex: number
   expandedId: string | null
-  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
   onRowClick: (index: number) => void
 }) {
   const gridCols = 'grid-cols-[1.1fr_1fr_0.8fr_0.9fr_0.8fr_0.8fr_32px]'
   return (
-    <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
+    <div className="w-full border-y border-border sm:rounded-xl sm:border-x">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
+          'sticky top-18 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
@@ -111,84 +111,89 @@ function PerpsTable({
         </span>
         <span />
       </div>
-      {markets.map((market, i) => {
-        const selected = i === selectedIndex
-        const expanded = expandedId === market.id
-        return (
-          <div key={market.id} className="border-b border-border last:border-0">
-            <button
-              ref={(el) => {
-                rowRefs.current[i] = el
-              }}
-              type="button"
-              onClick={() => onRowClick(i)}
-              className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
-                gridCols,
-                selected
-                  ? 'border-l-foreground bg-accent'
-                  : 'border-l-transparent hover:bg-accent/40',
-              )}
-              aria-selected={selected}
-              aria-expanded={expanded}
+      <div className="overflow-hidden">
+        {markets.map((market, i) => {
+          const selected = i === selectedIndex
+          const expanded = expandedId === market.id
+          return (
+            <div
+              key={market.id}
+              className="border-b border-border last:border-0"
             >
-              <div className="flex items-center gap-2">
-                <FadeImage
-                  src={perpIconUrl(market.coin)}
-                  alt=""
-                  wrapperClassName="size-7 shrink-0 rounded-full"
-                  className="size-7 rounded-full object-cover"
-                />
-                <span className="text-sm font-semibold">{market.coin}</span>
-                <span className="text-xs text-muted-foreground">PERP</span>
-              </div>
-              <span className="text-right text-sm tabular-nums">
-                ${formatPerpPrice(market, market.markPx)}
-              </span>
-              <span
+              <button
+                ref={(el) => {
+                  rowRefs.current[i] = el
+                }}
+                type="button"
+                onClick={() => onRowClick(i)}
                 className={cn(
-                  'text-right text-sm tabular-nums',
-                  market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
+                  gridCols,
+                  selected
+                    ? 'border-l-foreground bg-accent'
+                    : 'border-l-transparent hover:bg-accent/40',
                 )}
+                aria-selected={selected}
+                aria-expanded={expanded}
               >
-                {market.change24h >= 0 ? '+' : ''}
-                {market.change24h.toFixed(2)}%
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(market.volume24h)}
-              </span>
-              <span
-                className={cn(
-                  'text-right text-xs tabular-nums',
-                  market.funding >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-                )}
-              >
-                {(market.funding * 100).toFixed(4)}%
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(market.openInterest)}
-              </span>
-              <span className="flex justify-end pr-1">
-                <Link
-                  to="/asset/$type/$id"
-                  params={{ type: 'perps', id: market.id }}
-                  className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                  aria-label="View details"
-                  title="View details"
-                  onClick={(e) => e.stopPropagation()}
+                <div className="flex items-center gap-2">
+                  <FadeImage
+                    src={perpIconUrl(market.coin)}
+                    alt=""
+                    wrapperClassName="size-7 shrink-0 rounded-full"
+                    className="size-7 rounded-full object-cover"
+                  />
+                  <span className="text-sm font-semibold">{market.coin}</span>
+                  <span className="text-xs text-muted-foreground">PERP</span>
+                </div>
+                <span className="text-right text-sm tabular-nums">
+                  ${formatPerpPrice(market, market.markPx)}
+                </span>
+                <span
+                  className={cn(
+                    'text-right text-sm tabular-nums',
+                    market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  )}
                 >
-                  <ArrowUpRight className="size-3.5" />
-                </Link>
-              </span>
-            </button>
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
-                <InlinePerpChart market={market} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+                  {market.change24h >= 0 ? '+' : ''}
+                  {market.change24h.toFixed(2)}%
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(market.volume24h)}
+                </span>
+                <span
+                  className={cn(
+                    'text-right text-xs tabular-nums',
+                    market.funding >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  )}
+                >
+                  {(market.funding * 100).toFixed(4)}%
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(market.openInterest)}
+                </span>
+                <span className="flex justify-end pr-1">
+                  <Link
+                    to="/asset/$type/$id"
+                    params={{ type: 'perps', id: market.id }}
+                    className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                    aria-label="View details"
+                    title="View details"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ArrowUpRight className="size-3.5" />
+                  </Link>
+                </span>
+              </button>
+              {expanded && (
+                <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
+                  <InlinePerpChart market={market} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -235,7 +240,7 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
   )
 }
 
-function PerpsGrid({ markets }: { markets: PerpMarketSnapshot[] }) {
+function PerpsGrid({ markets }: { markets: Array<PerpMarketSnapshot> }) {
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {markets.map((market) => (

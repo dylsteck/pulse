@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchCodexBars, type BarDataPoint } from '@/lib/codex'
+import type { BarDataPoint } from '@/lib/codex'
+import { fetchCodexBars } from '@/lib/codex'
 
 export function useTokenBars(
   address: string,
   windowLabel: string,
 ): {
-  data: BarDataPoint[]
+  data: Array<BarDataPoint>
   isLoading: boolean
   isError: boolean
 } {

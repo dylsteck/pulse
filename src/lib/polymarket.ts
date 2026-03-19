@@ -16,11 +16,11 @@ interface PolymarketEvent {
   volume?: number
   endDate?: string
   image?: string
-  markets?: PolymarketMarket[]
+  markets?: Array<PolymarketMarket>
 }
 
 export interface PolymarketPage {
-  items: Market[]
+  items: Array<Market>
   nextOffset: number | null
 }
 
@@ -36,7 +36,7 @@ function parseOutcomePrices(
 ): [number, number] | null {
   if (!value) return null
   try {
-    const parsed = JSON.parse(value) as string[]
+    const parsed = JSON.parse(value) as Array<string>
     if (!Array.isArray(parsed) || parsed.length < 2) return null
     const yes = Number(parsed[0])
     const no = Number(parsed[1])
@@ -47,10 +47,10 @@ function parseOutcomePrices(
   }
 }
 
-function parseClobTokenIds(value: string | undefined): string[] | null {
+function parseClobTokenIds(value: string | undefined): Array<string> | null {
   if (!value) return null
   try {
-    const parsed = JSON.parse(value) as string[]
+    const parsed = JSON.parse(value) as Array<string>
     if (!Array.isArray(parsed) || parsed.length === 0) return null
     return parsed
   } catch {
@@ -58,10 +58,10 @@ function parseClobTokenIds(value: string | undefined): string[] | null {
   }
 }
 
-function parseOutcomeNames(value: string | undefined): string[] | null {
+function parseOutcomeNames(value: string | undefined): Array<string> | null {
   if (!value) return null
   try {
-    const parsed = JSON.parse(value) as string[]
+    const parsed = JSON.parse(value) as Array<string>
     if (!Array.isArray(parsed)) return null
     return parsed
   } catch {
@@ -105,10 +105,12 @@ function shortenOutcomeName(question: string): string {
   return result || question
 }
 
-function extractOutcomes(markets: PolymarketMarket[]): MarketOutcome[] {
+function extractOutcomes(
+  markets: Array<PolymarketMarket>,
+): Array<MarketOutcome> {
   if (markets.length <= 1) return []
 
-  const outcomes: MarketOutcome[] = []
+  const outcomes: Array<MarketOutcome> = []
   for (const m of markets) {
     const names = parseOutcomeNames(m.outcomes)
     const prices = parseOutcomePrices(m.outcomePrices)
@@ -127,7 +129,7 @@ function extractOutcomes(markets: PolymarketMarket[]): MarketOutcome[] {
 }
 
 export function transformPolymarketEvents(
-  json: PolymarketEvent[],
+  json: Array<PolymarketEvent>,
   limit: number,
   offset: number,
 ): PolymarketPage {
@@ -193,8 +195,8 @@ export function transformPolymarketEventById(
 }
 
 export function transformPriceHistory(json: {
-  history?: { t: number; p: number }[]
-}): { time: number; value: number }[] {
+  history?: Array<{ t: number; p: number }>
+}): Array<{ time: number; value: number }> {
   if (!json.history || json.history.length === 0) return []
   return json.history.map((pt) => ({
     time: pt.t,
@@ -214,7 +216,7 @@ export async function fetchPolymarketEvents(
     limit: String(limit),
     offset: String(offset),
   })
-  const data = await makeRequest<PolymarketEvent[]>(
+  const data = await makeRequest<Array<PolymarketEvent>>(
     `/api/polymarket/events?${params.toString()}`,
   )
   return transformPolymarketEvents(data, limit, offset)
@@ -236,7 +238,7 @@ export async function fetchPolymarketEventById(
 export async function fetchPolymarketPriceHistory(
   clobTokenId: string,
   windowLabel: string,
-): Promise<{ time: number; value: number }[]> {
+): Promise<Array<{ time: number; value: number }>> {
   const interval = CLOB_INTERVAL_MAP[windowLabel] ?? '1d'
   const params = new URLSearchParams({
     market: clobTokenId,
@@ -245,7 +247,7 @@ export async function fetchPolymarketPriceHistory(
   })
   try {
     return transformPriceHistory(
-      await makeRequest<{ history?: { t: number; p: number }[] }>(
+      await makeRequest<{ history?: Array<{ t: number; p: number }> }>(
         `/api/polymarket/history?${params.toString()}`,
       ),
     )

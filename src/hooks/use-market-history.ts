@@ -5,7 +5,7 @@ export function useMarketHistory(
   clobTokenId: string | undefined,
   windowLabel: string,
 ): {
-  data: { time: number; value: number }[]
+  data: Array<{ time: number; value: number }>
   isLoading: boolean
 } {
   const { data, isLoading } = useQuery({

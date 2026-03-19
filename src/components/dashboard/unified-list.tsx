@@ -1,27 +1,31 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import {
-  LayoutGridIcon,
-  Rows3Icon,
-  CoinsIcon,
-  TrendingUpIcon,
-  SparklesIcon,
-  MusicIcon,
   ArrowUpDownIcon,
   ArrowUpRight,
+  CoinsIcon,
   FlameIcon,
+  LayoutGridIcon,
+  MusicIcon,
+  Rows3Icon,
+  SparklesIcon,
+  TrendingUpIcon,
 } from 'lucide-react'
+import type { Market, Token } from '@/lib/types'
+import type { Song } from '@/lib/tortoise'
+import type { CreatorToken } from '@/lib/zora/service'
+import type { MemeToken } from '@/lib/geckoterminal'
 import {
   LivelineChart,
-  WINDOW_SECS_TO_LABEL,
   WINDOW_LABEL_TO_SECS,
+  WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { HeroBanner } from '@/components/dashboard/hero-banner'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useMarketHistory } from '@/hooks/use-market-history'
-import { useTortoiseSongs, useAudioDetail } from '@/hooks/use-tortoise-songs'
+import { useAudioDetail, useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
@@ -29,13 +33,9 @@ import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { PerpsPanel } from '@/components/perps/perps-panel'
-import type { Token } from '@/lib/types'
-import type { Market } from '@/lib/types'
-import { imageUrl, type Song } from '@/lib/tortoise'
-import type { CreatorToken } from '@/lib/zora/service'
-import type { MemeToken } from '@/lib/geckoterminal'
+import { imageUrl } from '@/lib/tortoise'
 import { cn } from '@/lib/utils'
-import { formatCompact, formatPrice, formatDate } from '@/lib/format'
+import { formatCompact, formatDate, formatPrice } from '@/lib/format'
 import { FadeImage } from '@/components/ui/fade-image'
 
 const TAB_ICONS: Record<
@@ -99,7 +99,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
   }, [isMobile, setLayout])
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [selectedIndex, setSelectedIndex] = useState(0)
-  const rowRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const rowRefs = useRef<Array<HTMLButtonElement | null>>([])
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -116,9 +116,9 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
   const liveTokensQuery = useLiveTokens()
   const liveMarketsQuery = useLiveMarkets()
   const memeTokensQuery = useMemeTokens()
-  const liveTokens = liveTokensQuery.data ?? []
-  const liveMarkets = liveMarketsQuery.data ?? []
-  const memeTokens = memeTokensQuery.data ?? []
+  const liveTokens = liveTokensQuery.data
+  const liveMarkets = liveMarketsQuery.data
+  const memeTokens = memeTokensQuery.data
 
   const items: Array<{ id: string }> =
     mode === 'tokens'
@@ -128,10 +128,10 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
         : mode === 'creators'
           ? creators
           : mode === 'music'
-            ? (songsData?.songs ?? [])
-          : mode === 'memes'
-            ? memeTokens
-            : (perpMarkets ?? [])
+            ? songsData.songs
+            : mode === 'memes'
+              ? memeTokens
+              : (perpMarkets ?? [])
 
   useEffect(() => {
     setMode(initialMode)
@@ -156,19 +156,18 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
         e.preventDefault()
         setSelectedIndex((i) => {
           const next = Math.min(i + 1, items.length - 1)
-          rowRefs.current[next]?.scrollIntoView({ block: 'nearest' })
+          rowRefs.current[next].scrollIntoView({ block: 'nearest' })
           return next
         })
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
         setSelectedIndex((i) => {
           const next = Math.max(i - 1, 0)
-          rowRefs.current[next]?.scrollIntoView({ block: 'nearest' })
+          rowRefs.current[next].scrollIntoView({ block: 'nearest' })
           return next
         })
       } else if (e.key === 'Enter') {
         const item = items[selectedIndex]
-        if (!item) return
         setExpandedId((prev) => (prev === item.id ? null : item.id))
       }
     }
@@ -186,7 +185,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
       (entries) => {
         const entry = entries[0]
         if (
-          entry?.isIntersecting &&
+          entry.isIntersecting &&
           creatorsQuery.hasNextPage &&
           !creatorsQuery.isFetchingNextPage
         ) {
@@ -215,7 +214,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
       (entries) => {
         const entry = entries[0]
         if (
-          entry?.isIntersecting &&
+          entry.isIntersecting &&
           liveTokensQuery.hasMore &&
           !liveTokensQuery.isFetching
         ) {
@@ -244,7 +243,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
       (entries) => {
         const entry = entries[0]
         if (
-          entry?.isIntersecting &&
+          entry.isIntersecting &&
           liveMarketsQuery.hasMore &&
           !liveMarketsQuery.isFetching
         ) {
@@ -273,7 +272,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
       (entries) => {
         const entry = entries[0]
         if (
-          entry?.isIntersecting &&
+          entry.isIntersecting &&
           songsQuery.hasMore &&
           !songsQuery.isFetchingMore
         ) {
@@ -285,12 +284,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
 
     observer.observe(target)
     return () => observer.disconnect()
-  }, [
-    mode,
-    songsQuery.hasMore,
-    songsQuery.isFetchingMore,
-    songsQuery.loadMore,
-  ])
+  }, [mode, songsQuery.hasMore, songsQuery.isFetchingMore, songsQuery.loadMore])
 
   useEffect(() => {
     if (mode !== 'memes') return
@@ -302,7 +296,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
       (entries) => {
         const entry = entries[0]
         if (
-          entry?.isIntersecting &&
+          entry.isIntersecting &&
           memeTokensQuery.hasMore &&
           !memeTokensQuery.isFetching
         ) {
@@ -325,93 +319,206 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
     if (!items.length) return
     setSelectedIndex(index)
     const item = items[index]
-    if (!item) return
     setExpandedId((prev) => (prev === item.id ? null : item.id))
   }
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col py-2 sm:px-6">
       <HeroBanner />
-      <div
-        ref={scrollRef}
-        className="scroll-mt-4 py-6"
-      >
-      <div className="mb-2 flex items-end justify-between gap-2 px-2 sm:px-0">
-        <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
-          {(
-            [
-              'tokens',
-              'markets',
-              'creators',
-              'music',
-              'perps',
-              'memes',
-            ] as ViewMode[]
-          ).map((tab) => {
-            const active = mode === tab
-            const Icon = TAB_ICONS[tab]
-            return (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => {
-                  navigate({ to: '/', search: { type: tab }, resetScroll: false })
-                  setExpandedId(null)
-                  setSelectedIndex(0)
-                }}
-                className={cn(
-                  'flex shrink-0 items-center gap-1.5 text-sm font-medium capitalize transition-colors',
-                  active
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-              >
-                <Icon className="size-3.5" />
-                {tab}
-              </button>
+      <div ref={scrollRef} className="scroll-mt-4 py-6">
+        <div className="sticky top-[2.75rem] z-20 -mx-2 mb-2 flex items-end justify-between gap-2 bg-background px-2 pb-2 pt-1 sm:-mx-6 sm:px-6">
+          <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
+            {(
+              [
+                'tokens',
+                'markets',
+                'creators',
+                'music',
+                'perps',
+                'memes',
+              ] as Array<ViewMode>
+            ).map((tab) => {
+              const active = mode === tab
+              const Icon = TAB_ICONS[tab]
+              return (
+                <button
+                  key={tab}
+                  type="button"
+                  onClick={() => {
+                    navigate({
+                      to: '/',
+                      search: { type: tab },
+                      resetScroll: false,
+                    })
+                    setExpandedId(null)
+                    setSelectedIndex(0)
+                  }}
+                  className={cn(
+                    'flex shrink-0 items-center gap-1.5 text-sm font-medium capitalize transition-colors',
+                    active
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                >
+                  <Icon className="size-3.5" />
+                  {tab}
+                </button>
+              )
+            })}
+          </div>
+
+          <div className="inline-flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => setLayout('list')}
+              className={cn(
+                'inline-flex size-6 items-center justify-center rounded-md transition-colors',
+                layout === 'list'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+              aria-label="List view"
+              title="List view"
+            >
+              <Rows3Icon className="size-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setLayout('grid')}
+              className={cn(
+                'inline-flex size-6 items-center justify-center rounded-md transition-colors',
+                layout === 'grid'
+                  ? 'text-foreground'
+                  : 'text-muted-foreground hover:text-foreground',
+              )}
+              aria-label="Grid view"
+              title="Grid view"
+            >
+              <LayoutGridIcon className="size-3.5" />
+            </button>
+          </div>
+        </div>
+
+        <div className={cn(layout === 'grid' && 'px-2 sm:px-0')}>
+          {layout === 'list' ? (
+            mode === 'tokens' ? (
+              liveTokensQuery.isLoading ? (
+                <LoadingPanel label="Loading live token data..." />
+              ) : liveTokensQuery.error ? (
+                <ErrorPanel
+                  label={
+                    liveTokensQuery.error instanceof Error
+                      ? liveTokensQuery.error.message
+                      : 'Failed to load live token data.'
+                  }
+                />
+              ) : (
+                <TokenTable
+                  tokens={liveTokens}
+                  selectedIndex={selectedIndex}
+                  expandedId={expandedId}
+                  rowRefs={rowRefs}
+                  onRowClick={handleRowClick}
+                />
+              )
+            ) : mode === 'markets' ? (
+              liveMarketsQuery.isLoading ? (
+                <LoadingPanel label="Loading Polymarket events..." />
+              ) : liveMarketsQuery.error ? (
+                <ErrorPanel
+                  label={
+                    liveMarketsQuery.error instanceof Error
+                      ? liveMarketsQuery.error.message
+                      : 'Failed to load live market data.'
+                  }
+                />
+              ) : (
+                <MarketTable
+                  markets={liveMarkets}
+                  selectedIndex={selectedIndex}
+                  expandedId={expandedId}
+                  rowRefs={rowRefs}
+                  onRowClick={handleRowClick}
+                />
+              )
+            ) : mode === 'creators' ? (
+              creatorsQuery.isLoading ? (
+                <LoadingPanel label="Loading creators..." />
+              ) : creatorsQuery.error ? (
+                <ErrorPanel
+                  label={
+                    creatorsQuery.error instanceof Error
+                      ? creatorsQuery.error.message
+                      : 'Failed to load creator data.'
+                  }
+                />
+              ) : (
+                <CreatorsTable
+                  creators={creators}
+                  isLoading={false}
+                  selectedIndex={selectedIndex}
+                  expandedId={expandedId}
+                  rowRefs={rowRefs}
+                  onRowClick={handleRowClick}
+                />
+              )
+            ) : mode === 'music' ? (
+              songsQuery.isLoading ? (
+                <LoadingPanel label="Loading music..." />
+              ) : songsQuery.error ? (
+                <ErrorPanel
+                  label={
+                    songsQuery.error instanceof Error
+                      ? songsQuery.error.message
+                      : 'Failed to load music data.'
+                  }
+                />
+              ) : (
+                <MusicTable
+                  songs={songsData.songs}
+                  isLoading={false}
+                  selectedIndex={selectedIndex}
+                  expandedId={expandedId}
+                  rowRefs={rowRefs}
+                  onRowClick={handleRowClick}
+                />
+              )
+            ) : mode === 'memes' ? (
+              memeTokensQuery.isLoading ? (
+                <LoadingPanel label="Loading memes..." />
+              ) : memeTokensQuery.error ? (
+                <MemeRetryState onRetry={() => memeTokensQuery.refetch()} />
+              ) : (
+                <MemeTable
+                  memes={memeTokens}
+                  selectedIndex={selectedIndex}
+                  expandedId={expandedId}
+                  rowRefs={rowRefs}
+                  onRowClick={handleRowClick}
+                />
+              )
+            ) : isPerpsLoading ? (
+              <LoadingPanel label="Loading perps..." />
+            ) : perpsQuery.error ? (
+              <ErrorPanel
+                label={
+                  perpsQuery.error instanceof Error
+                    ? perpsQuery.error.message
+                    : 'Failed to load perps data.'
+                }
+              />
+            ) : (
+              <PerpsPanel
+                markets={perpMarkets ?? []}
+                isLoading={false}
+                layout="list"
+                selectedIndex={selectedIndex}
+                expandedId={expandedId}
+                rowRefs={rowRefs}
+                onRowClick={handleRowClick}
+              />
             )
-          })}
-        </div>
-
-        <div className="inline-flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setLayout('list')}
-            className={cn(
-              'inline-flex size-6 items-center justify-center rounded-md transition-colors',
-              layout === 'list'
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-            aria-label="List view"
-            title="List view"
-          >
-            <Rows3Icon className="size-3.5" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setLayout('grid')}
-            className={cn(
-              'inline-flex size-6 items-center justify-center rounded-md transition-colors',
-              layout === 'grid'
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-            aria-label="Grid view"
-            title="Grid view"
-          >
-            <LayoutGridIcon className="size-3.5" />
-          </button>
-        </div>
-      </div>
-
-      <div
-        className={cn(
-          layout === 'grid' && 'px-2 sm:px-0',
-        )}
-      >
-        {layout === 'list' ? (
-          mode === 'tokens' ? (
+          ) : mode === 'tokens' ? (
             liveTokensQuery.isLoading ? (
               <LoadingPanel label="Loading live token data..." />
             ) : liveTokensQuery.error ? (
@@ -423,13 +530,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
                 }
               />
             ) : (
-              <TokenTable
-                tokens={liveTokens}
-                selectedIndex={selectedIndex}
-                expandedId={expandedId}
-                rowRefs={rowRefs}
-                onRowClick={handleRowClick}
-              />
+              <TokenGrid tokens={liveTokens} />
             )
           ) : mode === 'markets' ? (
             liveMarketsQuery.isLoading ? (
@@ -443,13 +544,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
                 }
               />
             ) : (
-              <MarketTable
-                markets={liveMarkets}
-                selectedIndex={selectedIndex}
-                expandedId={expandedId}
-                rowRefs={rowRefs}
-                onRowClick={handleRowClick}
-              />
+              <MarketGrid markets={liveMarkets} />
             )
           ) : mode === 'creators' ? (
             creatorsQuery.isLoading ? (
@@ -463,14 +558,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
                 }
               />
             ) : (
-              <CreatorsTable
-                creators={creators}
-                isLoading={false}
-                selectedIndex={selectedIndex}
-                expandedId={expandedId}
-                rowRefs={rowRefs}
-                onRowClick={handleRowClick}
-              />
+              <CreatorsGrid creators={creators} isLoading={false} />
             )
           ) : mode === 'music' ? (
             songsQuery.isLoading ? (
@@ -484,14 +572,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
                 }
               />
             ) : (
-              <MusicTable
-                songs={songsData?.songs ?? []}
-                isLoading={false}
-                selectedIndex={selectedIndex}
-                expandedId={expandedId}
-                rowRefs={rowRefs}
-                onRowClick={handleRowClick}
-              />
+              <MusicGrid songs={songsData.songs} isLoading={false} />
             )
           ) : mode === 'memes' ? (
             memeTokensQuery.isLoading ? (
@@ -499,13 +580,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
             ) : memeTokensQuery.error ? (
               <MemeRetryState onRetry={() => memeTokensQuery.refetch()} />
             ) : (
-              <MemeTable
-                memes={memeTokens}
-                selectedIndex={selectedIndex}
-                expandedId={expandedId}
-                rowRefs={rowRefs}
-                onRowClick={handleRowClick}
-              />
+              <MemeGrid memes={memeTokens} isLoading={false} />
             )
           ) : isPerpsLoading ? (
             <LoadingPanel label="Loading perps..." />
@@ -521,128 +596,44 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
             <PerpsPanel
               markets={perpMarkets ?? []}
               isLoading={false}
-              layout="list"
+              layout="grid"
               selectedIndex={selectedIndex}
               expandedId={expandedId}
               rowRefs={rowRefs}
               onRowClick={handleRowClick}
             />
-          )
-        ) : mode === 'tokens' ? (
-          liveTokensQuery.isLoading ? (
-            <LoadingPanel label="Loading live token data..." />
-          ) : liveTokensQuery.error ? (
-            <ErrorPanel
-              label={
-                liveTokensQuery.error instanceof Error
-                  ? liveTokensQuery.error.message
-                  : 'Failed to load live token data.'
-              }
-            />
-          ) : (
-            <TokenGrid tokens={liveTokens} />
-          )
-        ) : mode === 'markets' ? (
-          liveMarketsQuery.isLoading ? (
-            <LoadingPanel label="Loading Polymarket events..." />
-          ) : liveMarketsQuery.error ? (
-            <ErrorPanel
-              label={
-                liveMarketsQuery.error instanceof Error
-                  ? liveMarketsQuery.error.message
-                  : 'Failed to load live market data.'
-              }
-            />
-          ) : (
-            <MarketGrid markets={liveMarkets} />
-          )
-        ) : mode === 'creators' ? (
-          creatorsQuery.isLoading ? (
-            <LoadingPanel label="Loading creators..." />
-          ) : creatorsQuery.error ? (
-            <ErrorPanel
-              label={
-                creatorsQuery.error instanceof Error
-                  ? creatorsQuery.error.message
-                  : 'Failed to load creator data.'
-              }
-            />
-          ) : (
-            <CreatorsGrid creators={creators} isLoading={false} />
-          )
-        ) : mode === 'music' ? (
-          songsQuery.isLoading ? (
-            <LoadingPanel label="Loading music..." />
-          ) : songsQuery.error ? (
-            <ErrorPanel
-              label={
-                songsQuery.error instanceof Error
-                  ? songsQuery.error.message
-                  : 'Failed to load music data.'
-              }
-            />
-          ) : (
-            <MusicGrid songs={songsData?.songs ?? []} isLoading={false} />
-          )
-        ) : mode === 'memes' ? (
-          memeTokensQuery.isLoading ? (
-            <LoadingPanel label="Loading memes..." />
-          ) : memeTokensQuery.error ? (
-            <MemeRetryState onRetry={() => memeTokensQuery.refetch()} />
-          ) : (
-            <MemeGrid memes={memeTokens} isLoading={false} />
-          )
-        ) : isPerpsLoading ? (
-          <LoadingPanel label="Loading perps..." />
-        ) : perpsQuery.error ? (
-          <ErrorPanel
-            label={
-              perpsQuery.error instanceof Error
-                ? perpsQuery.error.message
-                : 'Failed to load perps data.'
-            }
-          />
-        ) : (
-          <PerpsPanel
-            markets={perpMarkets ?? []}
-            isLoading={false}
-            layout="grid"
-            selectedIndex={selectedIndex}
-            expandedId={expandedId}
-            rowRefs={rowRefs}
-            onRowClick={handleRowClick}
-          />
-        )}
-        {mode === 'creators' && creatorsQuery.hasNextPage && (
-          <div ref={creatorsLoadMoreRef} className="h-6" aria-hidden />
-        )}
-        {mode === 'tokens' && liveTokensQuery.hasMore && (
-          <div ref={tokensLoadMoreRef} className="h-6" aria-hidden />
-        )}
-        {mode === 'markets' && liveMarketsQuery.hasMore && (
-          <div ref={marketsLoadMoreRef} className="h-6" aria-hidden />
-        )}
-        {mode === 'music' && songsQuery.hasMore && (
-          <div ref={musicLoadMoreRef} className="h-6" aria-hidden />
-        )}
-        {mode === 'memes' && memeTokensQuery.hasMore && (
-          <div
-            ref={memesLoadMoreRef}
-            className="flex min-h-[120px] items-center justify-center py-8"
-          >
-            <button
-              type="button"
-              onClick={() => {
-                if (!memeTokensQuery.isFetching) void memeTokensQuery.loadMore()
-              }}
-              disabled={memeTokensQuery.isFetching}
-              className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+          )}
+          {mode === 'creators' && creatorsQuery.hasNextPage && (
+            <div ref={creatorsLoadMoreRef} className="h-6" aria-hidden />
+          )}
+          {mode === 'tokens' && liveTokensQuery.hasMore && (
+            <div ref={tokensLoadMoreRef} className="h-6" aria-hidden />
+          )}
+          {mode === 'markets' && liveMarketsQuery.hasMore && (
+            <div ref={marketsLoadMoreRef} className="h-6" aria-hidden />
+          )}
+          {mode === 'music' && songsQuery.hasMore && (
+            <div ref={musicLoadMoreRef} className="h-6" aria-hidden />
+          )}
+          {mode === 'memes' && memeTokensQuery.hasMore && (
+            <div
+              ref={memesLoadMoreRef}
+              className="flex min-h-[120px] items-center justify-center py-8"
             >
-              {memeTokensQuery.isFetching ? 'Loading...' : 'Load more'}
-            </button>
-          </div>
-        )}
-      </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!memeTokensQuery.isFetching)
+                    void memeTokensQuery.loadMore()
+                }}
+                disabled={memeTokensQuery.isFetching}
+                className="rounded-md border border-border bg-muted/50 px-4 py-2 text-sm text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
+              >
+                {memeTokensQuery.isFetching ? 'Loading...' : 'Load more'}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
@@ -691,10 +682,10 @@ function MemeRetryState({ onRetry }: { onRetry: () => void }) {
 }
 
 interface TokenTableProps {
-  tokens: Token[]
+  tokens: Array<Token>
   selectedIndex: number
   expandedId: string | null
-  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
   onRowClick: (index: number) => void
 }
 
@@ -707,14 +698,14 @@ function TokenTable({
 }: TokenTableProps) {
   const gridCols = 'grid-cols-[2fr_1fr_0.7fr_0.8fr_0.8fr]'
   return (
-    <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
+    <div className="w-full border-y border-border sm:rounded-xl sm:border-x">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-2 border-b border-border bg-muted/50 px-3 py-2 sm:gap-4 sm:px-6',
+          'grid gap-2 border-b border-border bg-muted/50 px-3 py-2 sm:gap-4 sm:px-6',
           gridCols,
         )}
       >
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Token
         </span>
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -723,81 +714,86 @@ function TokenTable({
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           24h %
         </span>
-        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Volume
         </span>
-        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Mkt Cap
         </span>
       </div>
 
-      {tokens.map((token, i) => {
-        const selected = i === selectedIndex
-        const expanded = expandedId === token.id
-        return (
-          <div key={token.id} className="border-b border-border last:border-0">
-            <button
-              ref={(el) => {
-                rowRefs.current[i] = el
-              }}
-              type="button"
-              onClick={() => onRowClick(i)}
-              className={cn(
-                'grid w-full items-center gap-2 border-l-2 px-3 py-2 text-left transition-colors sm:gap-4 sm:px-6',
-                gridCols,
-                selected
-                  ? 'border-l-foreground bg-accent'
-                  : 'border-l-transparent hover:bg-accent/40',
-              )}
-              aria-selected={selected}
-              aria-expanded={expanded}
+      <div className="overflow-hidden">
+        {tokens.map((token, i) => {
+          const selected = i === selectedIndex
+          const expanded = expandedId === token.id
+          return (
+            <div
+              key={token.id}
+              className="border-b border-border last:border-0"
             >
-              <div className="flex min-w-0 items-center gap-2">
-                {token.imageUrl && (
-                  <FadeImage
-                    src={token.imageUrl}
-                    alt=""
-                    wrapperClassName="size-7 shrink-0 rounded-full"
-                    className="size-7 rounded-full object-cover"
-                  />
+              <button
+                ref={(el) => {
+                  rowRefs.current[i] = el
+                }}
+                type="button"
+                onClick={() => onRowClick(i)}
+                className={cn(
+                  'grid w-full items-center gap-2 border-l-2 px-3 py-2 text-left transition-colors sm:gap-4 sm:px-6',
+                  gridCols,
+                  selected
+                    ? 'border-l-foreground bg-accent'
+                    : 'border-l-transparent hover:bg-accent/40',
                 )}
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">
-                    {token.symbol}
-                  </div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {token.name}
+                aria-selected={selected}
+                aria-expanded={expanded}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {token.imageUrl && (
+                    <FadeImage
+                      src={token.imageUrl}
+                      alt=""
+                      wrapperClassName="size-7 shrink-0 rounded-full"
+                      className="size-7 rounded-full object-cover"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">
+                      {token.symbol}
+                    </div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {token.name}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <span className="text-right text-sm tabular-nums">
-                ${formatPrice(token.price)}
-              </span>
-              <span
-                className={cn(
-                  'text-right text-sm tabular-nums',
-                  token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-                )}
-              >
-                {token.change24h >= 0 ? '+' : ''}
-                {token.change24h.toFixed(2)}%
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(token.volume24h)}
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(token.marketCap)}
-              </span>
-            </button>
+                <span className="text-right text-sm tabular-nums">
+                  ${formatPrice(token.price)}
+                </span>
+                <span
+                  className={cn(
+                    'text-right text-sm tabular-nums',
+                    token.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  )}
+                >
+                  {token.change24h >= 0 ? '+' : ''}
+                  {token.change24h.toFixed(2)}%
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(token.volume24h)}
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(token.marketCap)}
+                </span>
+              </button>
 
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
-                <InlineTokenChart token={token} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+              {expanded && (
+                <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
+                  <InlineTokenChart token={token} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -808,7 +804,7 @@ function InlineTokenChart({ token }: { token: Token }) {
   const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
   const chartData = bars.length >= 2 ? bars : token.priceHistory
 
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel]!)
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
   windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]!
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
@@ -863,7 +859,7 @@ function InlineMemeChart({ meme }: { meme: MemeToken }) {
             ]
           })()
 
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel]!)
+  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
   windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]!
   const handleWindowChange = useCallback((secs: number) => {
     if (secs === windowSecsRef.current) return
@@ -907,10 +903,10 @@ function InlineMemeChart({ meme }: { meme: MemeToken }) {
 }
 
 interface MarketTableProps {
-  markets: Market[]
+  markets: Array<Market>
   selectedIndex: number
   expandedId: string | null
-  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
   onRowClick: (index: number) => void
 }
 
@@ -923,10 +919,10 @@ function MarketTable({
 }: MarketTableProps) {
   const gridCols = 'grid-cols-[3fr_0.6fr_0.8fr_0.8fr]'
   return (
-    <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
+    <div className="w-full border-y border-border sm:rounded-xl sm:border-x">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
+          'sticky top-[4.5rem] z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
@@ -944,57 +940,62 @@ function MarketTable({
         </span>
       </div>
 
-      {markets.map((market, i) => {
-        const selected = i === selectedIndex
-        const expanded = expandedId === market.id
-        return (
-          <div key={market.id} className="border-b border-border last:border-0">
-            <button
-              ref={(el) => {
-                rowRefs.current[i] = el
-              }}
-              type="button"
-              onClick={() => onRowClick(i)}
-              className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
-                gridCols,
-                selected
-                  ? 'border-l-foreground bg-accent'
-                  : 'border-l-transparent hover:bg-accent/40',
-              )}
-              aria-selected={selected}
-              aria-expanded={expanded}
+      <div className="overflow-hidden">
+        {markets.map((market, i) => {
+          const selected = i === selectedIndex
+          const expanded = expandedId === market.id
+          return (
+            <div
+              key={market.id}
+              className="border-b border-border last:border-0"
             >
-              <div className="flex min-w-0 items-center gap-2">
-                {market.imageUrl && (
-                  <FadeImage
-                    src={market.imageUrl}
-                    alt=""
-                    wrapperClassName="size-7 shrink-0 rounded-sm"
-                    className="size-7 rounded-sm object-cover"
-                  />
+              <button
+                ref={(el) => {
+                  rowRefs.current[i] = el
+                }}
+                type="button"
+                onClick={() => onRowClick(i)}
+                className={cn(
+                  'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
+                  gridCols,
+                  selected
+                    ? 'border-l-foreground bg-accent'
+                    : 'border-l-transparent hover:bg-accent/40',
                 )}
-                <span className="truncate text-sm">{market.title}</span>
-              </div>
-              <span className="text-right text-sm tabular-nums">
-                {market.yesPercent}%
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(market.volume)}
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatDate(market.expiry)}
-              </span>
-            </button>
+                aria-selected={selected}
+                aria-expanded={expanded}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {market.imageUrl && (
+                    <FadeImage
+                      src={market.imageUrl}
+                      alt=""
+                      wrapperClassName="size-7 shrink-0 rounded-sm"
+                      className="size-7 rounded-sm object-cover"
+                    />
+                  )}
+                  <span className="truncate text-sm">{market.title}</span>
+                </div>
+                <span className="text-right text-sm tabular-nums">
+                  {market.yesPercent}%
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(market.volume)}
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatDate(market.expiry)}
+                </span>
+              </button>
 
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
-                <InlineMarketChart market={market} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+              {expanded && (
+                <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
+                  <InlineMarketChart market={market} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -1055,11 +1056,11 @@ function InlineMarketChart({ market }: { market: Market }) {
 }
 
 interface MusicTableProps {
-  songs: Song[]
+  songs: Array<Song>
   isLoading: boolean
   selectedIndex: number
   expandedId: string | null
-  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
   onRowClick: (index: number) => void
 }
 
@@ -1083,10 +1084,10 @@ function MusicTable({
     )
   }
   return (
-    <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
+    <div className="w-full border-y border-border sm:rounded-xl sm:border-x">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
+          'sticky top-[4.5rem] z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
@@ -1107,58 +1108,60 @@ function MusicTable({
         </span>
       </div>
 
-      {songs.map((song, i) => {
-        const selected = i === selectedIndex
-        const expanded = expandedId === song.id
-        return (
-          <div key={song.id} className="border-b border-border last:border-0">
-            <button
-              ref={(el) => {
-                rowRefs.current[i] = el
-              }}
-              type="button"
-              onClick={() => onRowClick(i)}
-              className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
-                gridCols,
-                selected
-                  ? 'border-l-foreground bg-accent'
-                  : 'border-l-transparent hover:bg-accent/40',
-              )}
-              aria-selected={selected}
-              aria-expanded={expanded}
-            >
-              <div className="flex min-w-0 items-center gap-2">
-                <FadeImage
-                  src={imageUrl(song.image_ipfs_cid)}
-                  alt=""
-                  wrapperClassName="size-7 shrink-0 rounded-sm"
-                  className="size-7 rounded-sm object-cover"
-                />
-                <span className="truncate text-sm">{song.title}</span>
-              </div>
-              <span className="truncate text-sm text-muted-foreground">
-                {song.artist}
-              </span>
-              <span className="text-right text-sm tabular-nums">
-                {song.collection_count}
-              </span>
-              <span className="text-right text-xs text-muted-foreground capitalize">
-                {song.media_type}
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatDate(song.created_at)}
-              </span>
-            </button>
+      <div className="overflow-hidden">
+        {songs.map((song, i) => {
+          const selected = i === selectedIndex
+          const expanded = expandedId === song.id
+          return (
+            <div key={song.id} className="border-b border-border last:border-0">
+              <button
+                ref={(el) => {
+                  rowRefs.current[i] = el
+                }}
+                type="button"
+                onClick={() => onRowClick(i)}
+                className={cn(
+                  'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
+                  gridCols,
+                  selected
+                    ? 'border-l-foreground bg-accent'
+                    : 'border-l-transparent hover:bg-accent/40',
+                )}
+                aria-selected={selected}
+                aria-expanded={expanded}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  <FadeImage
+                    src={imageUrl(song.image_ipfs_cid)}
+                    alt=""
+                    wrapperClassName="size-7 shrink-0 rounded-sm"
+                    className="size-7 rounded-sm object-cover"
+                  />
+                  <span className="truncate text-sm">{song.title}</span>
+                </div>
+                <span className="truncate text-sm text-muted-foreground">
+                  {song.artist}
+                </span>
+                <span className="text-right text-sm tabular-nums">
+                  {song.collection_count}
+                </span>
+                <span className="text-right text-xs text-muted-foreground capitalize">
+                  {song.media_type}
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatDate(song.created_at)}
+                </span>
+              </button>
 
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
-                <InlineSongDetail song={song} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+              {expanded && (
+                <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
+                  <InlineSongDetail song={song} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -1213,10 +1216,10 @@ function InlineSongDetail({ song }: { song: Song }) {
 }
 
 interface MemeTableProps {
-  memes: MemeToken[]
+  memes: Array<MemeToken>
   selectedIndex: number
   expandedId: string | null
-  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
   onRowClick: (index: number) => void
 }
 
@@ -1238,14 +1241,14 @@ function MemeTable({
   }
 
   return (
-    <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
+    <div className="w-full border-y border-border sm:rounded-xl sm:border-x">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-2 border-b border-border bg-muted/50 px-3 py-2 sm:gap-4 sm:px-6',
+          'grid gap-2 border-b border-border bg-muted/50 px-3 py-2 sm:gap-4 sm:px-6',
           gridCols,
         )}
       >
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Token
         </span>
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -1254,91 +1257,93 @@ function MemeTable({
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           24h %
         </span>
-        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Volume
         </span>
-        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Liquidity
         </span>
       </div>
 
-      {memes.map((meme, i) => {
-        const selected = i === selectedIndex
-        const expanded = expandedId === meme.id
-        return (
-          <div key={meme.id} className="border-b border-border last:border-0">
-            <button
-              ref={(el) => {
-                rowRefs.current[i] = el
-              }}
-              type="button"
-              onClick={() => onRowClick(i)}
-              className={cn(
-                'grid w-full items-center gap-2 border-l-2 px-3 py-2 text-left transition-colors sm:gap-4 sm:px-6',
-                gridCols,
-                selected
-                  ? 'border-l-foreground bg-accent'
-                  : 'border-l-transparent hover:bg-accent/40',
-              )}
-              aria-selected={selected}
-              aria-expanded={expanded}
-            >
-              <div className="flex min-w-0 items-center gap-2">
-                {meme.imageUrl && (
-                  <FadeImage
-                    src={meme.imageUrl}
-                    alt=""
-                    wrapperClassName="size-7 shrink-0 rounded-full"
-                    className="size-7 rounded-full object-cover"
-                  />
+      <div className="overflow-hidden">
+        {memes.map((meme, i) => {
+          const selected = i === selectedIndex
+          const expanded = expandedId === meme.id
+          return (
+            <div key={meme.id} className="border-b border-border last:border-0">
+              <button
+                ref={(el) => {
+                  rowRefs.current[i] = el
+                }}
+                type="button"
+                onClick={() => onRowClick(i)}
+                className={cn(
+                  'grid w-full items-center gap-2 border-l-2 px-3 py-2 text-left transition-colors sm:gap-4 sm:px-6',
+                  gridCols,
+                  selected
+                    ? 'border-l-foreground bg-accent'
+                    : 'border-l-transparent hover:bg-accent/40',
                 )}
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">
-                    {meme.symbol}
-                  </div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {meme.name}
+                aria-selected={selected}
+                aria-expanded={expanded}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {meme.imageUrl && (
+                    <FadeImage
+                      src={meme.imageUrl}
+                      alt=""
+                      wrapperClassName="size-7 shrink-0 rounded-full"
+                      className="size-7 rounded-full object-cover"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">
+                      {meme.symbol}
+                    </div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {meme.name}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <span className="text-right text-sm tabular-nums">
-                ${formatPrice(meme.price)}
-              </span>
-              <span
-                className={cn(
-                  'text-right text-sm tabular-nums',
-                  meme.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-                )}
-              >
-                {meme.change24h >= 0 ? '+' : ''}
-                {meme.change24h.toFixed(2)}%
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(meme.volume24h)}
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(meme.liquidity)}
-              </span>
-            </button>
+                <span className="text-right text-sm tabular-nums">
+                  ${formatPrice(meme.price)}
+                </span>
+                <span
+                  className={cn(
+                    'text-right text-sm tabular-nums',
+                    meme.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+                  )}
+                >
+                  {meme.change24h >= 0 ? '+' : ''}
+                  {meme.change24h.toFixed(2)}%
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(meme.volume24h)}
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(meme.liquidity)}
+                </span>
+              </button>
 
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
-                <InlineMemeChart meme={meme} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+              {expanded && (
+                <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
+                  <InlineMemeChart meme={meme} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
 interface CreatorsTableProps {
-  creators: CreatorToken[]
+  creators: Array<CreatorToken>
   isLoading: boolean
   selectedIndex: number
   expandedId: string | null
-  rowRefs: React.MutableRefObject<(HTMLButtonElement | null)[]>
+  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
   onRowClick: (index: number) => void
 }
 
@@ -1365,102 +1370,104 @@ function CreatorsTable({
   }
 
   return (
-    <div className="w-full overflow-hidden border-y border-border sm:rounded-xl sm:border-x">
+    <div className="w-full border-y border-border sm:rounded-xl sm:border-x">
       <div
         className={cn(
-          'sticky top-0 z-10 grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
+          'grid gap-4 border-b border-border bg-muted/50 px-3 py-2 sm:px-6',
           gridCols,
         )}
       >
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Token
         </span>
-        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Mkt Cap
         </span>
         <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           24h %
         </span>
-        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           24h Vol
         </span>
-        <span className="text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+        <span className="sticky top-18 z-10 -mb-px border-b border-border bg-muted/50 py-2 text-right text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
           Holders
         </span>
       </div>
 
-      {creators.map((creator, i) => {
-        const selected = i === selectedIndex
-        const expanded = expandedId === creator.id
-        return (
-          <div
-            key={creator.id}
-            className="border-b border-border last:border-0"
-          >
-            <button
-              ref={(el) => {
-                rowRefs.current[i] = el
-              }}
-              type="button"
-              onClick={() => onRowClick(i)}
-              className={cn(
-                'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
-                gridCols,
-                selected
-                  ? 'border-l-foreground bg-accent'
-                  : 'border-l-transparent hover:bg-accent/40',
-              )}
-              aria-selected={selected}
-              aria-expanded={expanded}
+      <div className="overflow-hidden">
+        {creators.map((creator, i) => {
+          const selected = i === selectedIndex
+          const expanded = expandedId === creator.id
+          return (
+            <div
+              key={creator.id}
+              className="border-b border-border last:border-0"
             >
-              <div className="flex min-w-0 items-center gap-2">
-                {creator.imageUrl && (
-                  <FadeImage
-                    src={creator.imageUrl}
-                    alt=""
-                    wrapperClassName="size-7 shrink-0 rounded-sm"
-                    className="size-7 rounded-sm object-cover"
-                  />
+              <button
+                ref={(el) => {
+                  rowRefs.current[i] = el
+                }}
+                type="button"
+                onClick={() => onRowClick(i)}
+                className={cn(
+                  'grid w-full items-center gap-4 border-l-2 px-3 py-2 text-left transition-colors sm:px-6',
+                  gridCols,
+                  selected
+                    ? 'border-l-foreground bg-accent'
+                    : 'border-l-transparent hover:bg-accent/40',
                 )}
-                <div className="min-w-0">
-                  <div className="truncate text-sm font-semibold">
-                    {creator.symbol}
-                  </div>
-                  <div className="truncate text-xs text-muted-foreground">
-                    {creator.creatorHandle ?? creator.name}
+                aria-selected={selected}
+                aria-expanded={expanded}
+              >
+                <div className="flex min-w-0 items-center gap-2">
+                  {creator.imageUrl && (
+                    <FadeImage
+                      src={creator.imageUrl}
+                      alt=""
+                      wrapperClassName="size-7 shrink-0 rounded-sm"
+                      className="size-7 rounded-sm object-cover"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold">
+                      {creator.symbol}
+                    </div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {creator.creatorHandle ?? creator.name}
+                    </div>
                   </div>
                 </div>
-              </div>
-              <span className="text-right text-sm tabular-nums">
-                {formatCompact(creator.marketCap)}
-              </span>
-              <span
-                className={cn(
-                  'text-right text-sm tabular-nums',
-                  creator.marketCapDelta24h >= 0
-                    ? 'text-[#22c55e]'
-                    : 'text-[#ef4444]',
-                )}
-              >
-                {creator.marketCapDelta24h >= 0 ? '+' : ''}
-                {creator.marketCapDelta24h.toFixed(2)}%
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {formatCompact(creator.volume24h)}
-              </span>
-              <span className="text-right text-xs tabular-nums text-muted-foreground">
-                {creator.uniqueHolders.toLocaleString('en-US')}
-              </span>
-            </button>
+                <span className="text-right text-sm tabular-nums">
+                  {formatCompact(creator.marketCap)}
+                </span>
+                <span
+                  className={cn(
+                    'text-right text-sm tabular-nums',
+                    creator.marketCapDelta24h >= 0
+                      ? 'text-[#22c55e]'
+                      : 'text-[#ef4444]',
+                  )}
+                >
+                  {creator.marketCapDelta24h >= 0 ? '+' : ''}
+                  {creator.marketCapDelta24h.toFixed(2)}%
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {formatCompact(creator.volume24h)}
+                </span>
+                <span className="text-right text-xs tabular-nums text-muted-foreground">
+                  {creator.uniqueHolders.toLocaleString('en-US')}
+                </span>
+              </button>
 
-            {expanded && (
-              <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
-                <InlineCreatorChart creator={creator} />
-              </div>
-            )}
-          </div>
-        )
-      })}
+              {expanded && (
+                <div className="border-t border-border bg-muted/30 px-3 py-4 sm:px-6">
+                  <InlineCreatorChart creator={creator} />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -1860,7 +1867,9 @@ const MemeGridCard = React.memo(function MemeGridCard({
         </div>
       </div>
 
-      <div className="mt-3 text-lg tabular-nums">${formatPrice(meme.price)}</div>
+      <div className="mt-3 text-lg tabular-nums">
+        ${formatPrice(meme.price)}
+      </div>
       <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-xs">
         <span className="text-muted-foreground">24h Vol</span>
         <span className="text-right">{formatCompact(meme.volume24h)}</span>
@@ -1871,7 +1880,7 @@ const MemeGridCard = React.memo(function MemeGridCard({
   )
 })
 
-function TokenGrid({ tokens }: { tokens: Token[] }) {
+function TokenGrid({ tokens }: { tokens: Array<Token> }) {
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {tokens.map((token) => (
@@ -1885,7 +1894,7 @@ function CreatorsGrid({
   creators,
   isLoading,
 }: {
-  creators: CreatorToken[]
+  creators: Array<CreatorToken>
   isLoading: boolean
 }) {
   if (isLoading) {
@@ -1908,7 +1917,7 @@ function CreatorsGrid({
   )
 }
 
-function MarketGrid({ markets }: { markets: Market[] }) {
+function MarketGrid({ markets }: { markets: Array<Market> }) {
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {markets.map((market) => (
@@ -1922,7 +1931,7 @@ function MusicGrid({
   songs,
   isLoading,
 }: {
-  songs: Song[]
+  songs: Array<Song>
   isLoading: boolean
 }) {
   if (isLoading) {
@@ -1948,7 +1957,7 @@ function MemeGrid({
   memes,
   isLoading,
 }: {
-  memes: MemeToken[]
+  memes: Array<MemeToken>
   isLoading: boolean
 }) {
   if (isLoading) {

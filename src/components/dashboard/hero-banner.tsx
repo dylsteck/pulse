@@ -1,7 +1,9 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Liveline } from 'liveline'
-import { ChevronUpIcon, ChevronDownIcon, FlameIcon } from 'lucide-react'
+import { ChevronDownIcon, ChevronUpIcon, FlameIcon } from 'lucide-react'
+import type { Market } from '@/lib/types'
+import type { MemeToken } from '@/lib/geckoterminal'
 import { useTheme } from '@/components/theme-provider'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
@@ -9,8 +11,6 @@ import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
-import type { Market } from '@/lib/types'
-import type { MemeToken } from '@/lib/geckoterminal'
 
 const ACCENT_COLOR = '#0066ff'
 const HERO_CHART_PADDING = { top: 8, right: 24, bottom: 0, left: 0 } as const
@@ -23,7 +23,7 @@ type CarouselItem =
       name: string
       price: number
       change: number
-      data: { time: number; value: number }[]
+      data: Array<{ time: number; value: number }>
       imageUrl?: string
     }
   | {
@@ -33,7 +33,7 @@ type CarouselItem =
       name: string
       price: number
       change: number
-      data: { time: number; value: number }[]
+      data: Array<{ time: number; value: number }>
       imageUrl?: string
       liquidity: number
     }
@@ -80,8 +80,8 @@ export function HeroBanner() {
   const { data: markets } = useLiveMarkets()
   const { data: memes } = useMemeTokens()
 
-  const carouselItems: CarouselItem[] = useMemo(() => {
-    const tokenItems: CarouselItem[] = (tokens ?? [])
+  const carouselItems: Array<CarouselItem> = useMemo(() => {
+    const tokenItems: Array<CarouselItem> = (tokens ?? [])
       .filter((t) => t.priceHistory.length >= 2)
       .map((t) => ({
         kind: 'token',
@@ -94,7 +94,7 @@ export function HeroBanner() {
         imageUrl: t.imageUrl,
       }))
 
-    const memeItems: CarouselItem[] = (memes ?? [])
+    const memeItems: Array<CarouselItem> = (memes ?? [])
       .slice(0, 6)
       .filter((m) => m.priceHistory.length >= 2)
       .map((m) => ({
@@ -109,26 +109,26 @@ export function HeroBanner() {
         liquidity: m.liquidity,
       }))
 
-    const marketItems: CarouselItem[] = (markets ?? [])
+    const marketItems: Array<CarouselItem> = (markets ?? [])
       .slice(0, 6)
       .map((m) => ({ kind: 'market', market: m }))
 
-    const merged: CarouselItem[] = []
+    const merged: Array<CarouselItem> = []
     const maxLen = Math.max(
       tokenItems.length,
       memeItems.length,
       marketItems.length,
     )
     for (let i = 0; i < maxLen; i++) {
-      if (i < tokenItems.length) merged.push(tokenItems[i]!)
-      if (i < memeItems.length) merged.push(memeItems[i]!)
-      if (i < marketItems.length) merged.push(marketItems[i]!)
+      if (i < tokenItems.length) merged.push(tokenItems[i])
+      if (i < memeItems.length) merged.push(memeItems[i])
+      if (i < marketItems.length) merged.push(marketItems[i])
     }
     return merged
   }, [tokens, markets, memes])
 
   const sidebarItems = useMemo(() => {
-    const items: SidebarItem[] = []
+    const items: Array<SidebarItem> = []
 
     ;(tokens ?? []).forEach((t) => {
       items.push({
@@ -169,16 +169,14 @@ export function HeroBanner() {
     })
 
     const seen = new Set<string>()
-    const merged: SidebarItem[] = []
+    const merged: Array<SidebarItem> = []
     const withChange = items.filter(
       (i) => (i.kind === 'token' || i.kind === 'meme') && i.change !== 0,
     )
     const breaking = [...withChange]
       .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
       .slice(0, 5)
-    const trending = [...items]
-      .sort((a, b) => b.volume - a.volume)
-      .slice(0, 5)
+    const trending = [...items].sort((a, b) => b.volume - a.volume).slice(0, 5)
 
     for (const item of [...breaking, ...trending]) {
       const key = `${item.type}-${item.id}`
@@ -195,12 +193,11 @@ export function HeroBanner() {
   return (
     <div
       className={cn(
-        'flex min-h-[70vh] w-full flex-col px-2 py-6 sm:px-0 sm:py-8',
+        'flex w-full flex-col px-2 py-6 sm:px-0 sm:py-8 lg:min-h-[70vh]',
       )}
     >
       <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
-        Stay on the <span style={{ color: ACCENT_COLOR }}>pulse</span> of
-        crypto
+        Stay on the <span style={{ color: ACCENT_COLOR }}>pulse</span> of crypto
       </h1>
       <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">
         Every market, every asset, every chain. One interface.
@@ -251,23 +248,23 @@ export function HeroBanner() {
 
         {/* Right: Sidebar */}
         <div className="ml-auto flex w-full shrink-0 flex-col sm:w-[320px] lg:w-[360px]">
-        <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card/50 p-4">
-          <h3 className="mb-2 flex shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            <FlameIcon className="size-3.5" />
-            Top assets
-          </h3>
-          <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto">
-            {sidebarItems.length === 0 ? (
-              <li className="py-4 text-center text-sm text-muted-foreground">
-                No data yet
-              </li>
-            ) : (
-              sidebarItems.map((item) => (
-                <SidebarRow key={`${item.type}-${item.id}`} item={item} />
-              ))
-            )}
-          </ul>
-        </div>
+          <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card/50 p-4">
+            <h3 className="mb-2 flex shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <FlameIcon className="size-3.5" />
+              Top assets
+            </h3>
+            <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+              {sidebarItems.length === 0 ? (
+                <li className="py-4 text-center text-sm text-muted-foreground">
+                  No data yet
+                </li>
+              ) : (
+                sidebarItems.map((item) => (
+                  <SidebarRow key={`${item.type}-${item.id}`} item={item} />
+                ))
+              )}
+            </ul>
+          </div>
         </div>
       </div>
     </div>

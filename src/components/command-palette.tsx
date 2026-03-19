@@ -11,6 +11,12 @@ import {
   SparklesIcon,
   TrendingUpIcon,
 } from 'lucide-react'
+import type { Market, Token } from '@/lib/types'
+import type { CreatorToken } from '@/lib/zora/service'
+import type { MemeToken } from '@/lib/geckoterminal'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import type { Song } from '@/lib/tortoise'
+import type { CommandSearchItem } from '@/hooks/use-command-search'
 import {
   Command,
   CommandDialog,
@@ -24,18 +30,13 @@ import {
 } from '@/components/ui/command'
 import { FadeImage } from '@/components/ui/fade-image'
 import { SparklineChart } from '@/components/trading/liveline-chart'
-import { useCommandSearch, type CommandSearchItem } from '@/hooks/use-command-search'
+import { useCommandSearch } from '@/hooks/use-command-search'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { useMarketHistory } from '@/hooks/use-market-history'
 import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { useTokenPrice } from '@/hooks/use-token-price'
-import type { Token } from '@/lib/types'
-import type { Market } from '@/lib/types'
-import type { CreatorToken } from '@/lib/zora/service'
-import type { MemeToken } from '@/lib/geckoterminal'
-import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
-import { imageUrl, type Song } from '@/lib/tortoise'
+import { imageUrl } from '@/lib/tortoise'
 import { cn } from '@/lib/utils'
 
 const ASSET_ICONS: Record<
@@ -61,7 +62,10 @@ const GROUP_HEADINGS: Record<CommandSearchItem['type'], string> = {
 
 function AssetIcon({ item }: { item: CommandSearchItem }) {
   const raw = item.raw
-  const rounded = item.type === 'tokens' || item.type === 'memes' ? 'rounded-full' : 'rounded-sm'
+  const rounded =
+    item.type === 'tokens' || item.type === 'memes'
+      ? 'rounded-full'
+      : 'rounded-sm'
   if (item.type === 'tokens') {
     const token = raw as Token
     if (token.imageUrl) {
@@ -137,7 +141,12 @@ function TokenChartPreview({ token }: { token: Token }) {
   if (isLoading || chartData.length < 2) return null
   return (
     <div className="h-24 w-full">
-      <SparklineChart data={chartData} value={price} color={color} height={80} />
+      <SparklineChart
+        data={chartData}
+        value={price}
+        color={color}
+        height={80}
+      />
     </div>
   )
 }
@@ -150,7 +159,12 @@ function CreatorChartPreview({ creator }: { creator: CreatorToken }) {
   if (isLoading || chartData.length < 2) return null
   return (
     <div className="h-24 w-full">
-      <SparklineChart data={chartData} value={value} color={color} height={80} />
+      <SparklineChart
+        data={chartData}
+        value={value}
+        color={color}
+        height={80}
+      />
     </div>
   )
 }
@@ -158,7 +172,11 @@ function CreatorChartPreview({ creator }: { creator: CreatorToken }) {
 function MemeChartPreview({ meme }: { meme: MemeToken }) {
   const { data: bars, isLoading } = useMemeOhlcv(meme.poolAddress, '1D')
   const chartData =
-    bars.length >= 2 ? bars : meme.priceHistory.length >= 2 ? meme.priceHistory : []
+    bars.length >= 2
+      ? bars
+      : meme.priceHistory.length >= 2
+        ? meme.priceHistory
+        : []
   const color = meme.change24h >= 0 ? '#22c55e' : '#ef4444'
   if (isLoading || chartData.length < 2) return null
   return (
@@ -274,7 +292,7 @@ export function CommandPalette() {
   )
 
   const itemsByType = React.useMemo(() => {
-    const map = new Map<CommandSearchItem['type'], CommandSearchItem[]>()
+    const map = new Map<CommandSearchItem['type'], Array<CommandSearchItem>>()
     for (const item of items) {
       const list = map.get(item.type) ?? []
       list.push(item)
@@ -292,7 +310,10 @@ export function CommandPalette() {
       }
       const item = items.find((i) => i.value === value)
       if (item) {
-        navigate({ to: '/asset/$type/$id', params: { type: item.type, id: item.id } })
+        navigate({
+          to: '/asset/$type/$id',
+          params: { type: item.type, id: item.id },
+        })
         setOpen(false)
       }
     },
@@ -325,13 +346,21 @@ export function CommandPalette() {
         <div className="relative flex min-h-0 flex-1 flex-col">
           <CommandList
             className={cn(
-              "max-h-[min(20rem,60vh)] flex-1 overflow-y-auto",
-              selectedItem?.hasChart && "pb-28",
+              'max-h-[min(20rem,60vh)] flex-1 overflow-y-auto',
+              selectedItem?.hasChart && 'pb-28',
             )}
           >
             <CommandEmpty>No results found.</CommandEmpty>
-          {(['tokens', 'markets', 'creators', 'music', 'perps', 'memes'] as const).map(
-            (type) => {
+            {(
+              [
+                'tokens',
+                'markets',
+                'creators',
+                'music',
+                'perps',
+                'memes',
+              ] as const
+            ).map((type) => {
               const typeItems = itemsByType.get(type) ?? []
               if (typeItems.length === 0) return null
               return (
@@ -357,16 +386,18 @@ export function CommandPalette() {
                   ))}
                 </CommandGroup>
               )
-            },
-          )}
-          <CommandSeparator />
-          <CommandGroup heading="Quick actions">
-            <CommandItem value="github" onSelect={() => handleSelect('github')}>
-              <GithubIcon className="size-3.5 shrink-0" />
-              <span>Open GitHub</span>
-              <CommandShortcut>⌘G</CommandShortcut>
-            </CommandItem>
-          </CommandGroup>
+            })}
+            <CommandSeparator />
+            <CommandGroup heading="Quick actions">
+              <CommandItem
+                value="github"
+                onSelect={() => handleSelect('github')}
+              >
+                <GithubIcon className="size-3.5 shrink-0" />
+                <span>Open GitHub</span>
+                <CommandShortcut>⌘G</CommandShortcut>
+              </CommandItem>
+            </CommandGroup>
           </CommandList>
           {selectedItem?.hasChart && <ChartPreview item={selectedItem} />}
         </div>

@@ -2,7 +2,14 @@ import { createFileRoute } from '@tanstack/react-router'
 import { fetchUpstreamJson } from '@/lib/server/upstream'
 
 const POLYMARKET_ID_REGEX = /^[a-zA-Z0-9_-]{1,64}$/
-const EVENTS_ALLOWLIST = ['active', 'closed', 'order', 'ascending', 'limit', 'offset'] as const
+const EVENTS_ALLOWLIST = [
+  'active',
+  'closed',
+  'order',
+  'ascending',
+  'limit',
+  'offset',
+] as const
 
 export const Route = createFileRoute('/api/polymarket/events')({
   server: {

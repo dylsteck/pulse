@@ -1,8 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import {
-  readUpstreamJson,
-  upstreamErrorResponse,
-} from '@/lib/server/upstream'
+import { readUpstreamJson, upstreamErrorResponse } from '@/lib/server/upstream'
 
 const GECKO_HEADERS = {
   Accept: 'application/json;version=20230203',

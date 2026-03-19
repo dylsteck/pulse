@@ -57,8 +57,8 @@ function extendToFullWindow(
     .map((p) => ({ time: toSeconds(p.time), value: p.value }))
     .sort((a, b) => a.time - b.time)
 
-  const first = normalized[0]!
-  const last = normalized[normalized.length - 1]!
+  const first = normalized[0]
+  const last = normalized[normalized.length - 1]
   let result = normalized
 
   if (first.time > windowStart) {

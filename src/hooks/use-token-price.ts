@@ -3,7 +3,7 @@ import type { Token } from '@/lib/types'
 
 export interface LivePrice {
   price: number
-  history: { time: number; value: number }[]
+  history: Array<{ time: number; value: number }>
 }
 
 export function useTokenPrice(token: Token): LivePrice {

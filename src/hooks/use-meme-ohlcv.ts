@@ -6,14 +6,14 @@ export interface MemeOhlcvBar {
 }
 
 interface MemeOhlcvResponse {
-  bars?: MemeOhlcvBar[]
+  bars?: Array<MemeOhlcvBar>
   error?: string
 }
 
 async function fetchMemeOhlcv(
   poolAddress: string,
   windowLabel: string,
-): Promise<MemeOhlcvBar[]> {
+): Promise<Array<MemeOhlcvBar>> {
   const params = new URLSearchParams({
     poolAddress,
     window: windowLabel,
@@ -27,7 +27,7 @@ export function useMemeOhlcv(
   poolAddress: string | null,
   windowLabel: string,
 ): {
-  data: MemeOhlcvBar[]
+  data: Array<MemeOhlcvBar>
   isLoading: boolean
   isError: boolean
 } {

@@ -35,7 +35,7 @@ interface GraphqlExploreNode {
     } | null
     downloadableUri?: string | null
   } | null
-  sparklineData?: GraphqlSparkPoint[] | null
+  sparklineData?: Array<GraphqlSparkPoint> | null
 }
 
 interface GraphqlEdge {
@@ -46,7 +46,7 @@ interface GraphqlEdge {
 interface GraphqlResponse {
   data?: {
     exploreList?: {
-      edges?: GraphqlEdge[]
+      edges?: Array<GraphqlEdge>
     }
   }
 }
@@ -69,7 +69,7 @@ export interface CreatorToken {
 }
 
 export interface CreatorsPage {
-  items: CreatorToken[]
+  items: Array<CreatorToken>
   nextCursor: string | null
 }
 
@@ -79,7 +79,7 @@ function toNumber(value: string | number | null | undefined): number {
 }
 
 function normalizeSparkline(
-  points: GraphqlSparkPoint[] | null | undefined,
+  points: Array<GraphqlSparkPoint> | null | undefined,
 ): Array<{ time: number; value: number }> {
   if (!points || points.length === 0) return []
   return points
@@ -134,7 +134,9 @@ export async function fetchCreatorsPage(params?: {
   const first = Math.max(1, Math.min(params?.first ?? 20, 50))
   const after = params?.after ?? null
 
-  const operationName = after ? 'TrendingAllPaginationQuery' : 'TrendingAllQuery'
+  const operationName = after
+    ? 'TrendingAllPaginationQuery'
+    : 'TrendingAllQuery'
   const hash = after ? PAGINATION_TRENDING_HASH : INITIAL_TRENDING_HASH
 
   const payload = {

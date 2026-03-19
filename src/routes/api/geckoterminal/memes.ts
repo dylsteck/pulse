@@ -24,7 +24,10 @@ export const Route = createFileRoute('/api/geckoterminal/memes')({
         try {
           const url = new URL(request.url)
           const rawPage = url.searchParams.get('page') ?? '1'
-          const parsed = Math.max(1, Math.min(100, Math.floor(Number(rawPage)) || 1))
+          const parsed = Math.max(
+            1,
+            Math.min(100, Math.floor(Number(rawPage)) || 1),
+          )
           const page = String(parsed)
           const params = new URLSearchParams({
             sort: 'h24_volume_usd_desc',
@@ -47,7 +50,7 @@ export const Route = createFileRoute('/api/geckoterminal/memes')({
                 fdv_usd?: string | null
               }
             }>
-            included?: unknown[]
+            included?: Array<unknown>
           }
 
           const data = json.data ?? []

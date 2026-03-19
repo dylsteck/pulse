@@ -7,7 +7,10 @@ describe('OrderBatchQueue', () => {
       order: vi.fn(),
       cancel: vi.fn().mockResolvedValue({
         status: 'ok',
-        response: { type: 'cancel', data: { statuses: ['success', 'success'] } },
+        response: {
+          type: 'cancel',
+          data: { statuses: ['success', 'success'] },
+        },
       }),
     } as any
 

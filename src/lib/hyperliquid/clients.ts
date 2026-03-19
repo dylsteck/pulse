@@ -4,9 +4,9 @@ import {
   InfoClient,
   SubscriptionClient,
   WebSocketTransport,
-  type AbstractViemJsonRpcAccount,
 } from '@nktkas/hyperliquid'
 import { SymbolConverter } from '@nktkas/hyperliquid/utils'
+import type { AbstractViemJsonRpcAccount } from '@nktkas/hyperliquid'
 import { getHyperliquidRuntimeConfig } from '@/lib/hyperliquid/env'
 
 let httpTransport: HttpTransport | null = null
@@ -41,7 +41,9 @@ export function getHyperliquidInfoClient(): InfoClient {
 
 export function getHyperliquidSubscriptionClient(): SubscriptionClient {
   if (subClient) return subClient
-  subClient = new SubscriptionClient({ transport: getHyperliquidWebSocketTransport() })
+  subClient = new SubscriptionClient({
+    transport: getHyperliquidWebSocketTransport(),
+  })
   return subClient
 }
 
@@ -54,7 +56,9 @@ export function getHyperliquidSymbolConverter(): Promise<SymbolConverter> {
   return symbolConverterPromise
 }
 
-export function createHyperliquidExchangeClient(wallet: AbstractViemJsonRpcAccount): ExchangeClient {
+export function createHyperliquidExchangeClient(
+  wallet: AbstractViemJsonRpcAccount,
+): ExchangeClient {
   return new ExchangeClient({
     transport: getHyperliquidHttpTransport(),
     wallet,

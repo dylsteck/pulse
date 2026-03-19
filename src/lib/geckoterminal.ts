@@ -41,8 +41,8 @@ interface GeckoPool {
 }
 
 interface GeckoPoolsResponse {
-  data: GeckoPool[]
-  included?: GeckoTokenInclude[]
+  data: Array<GeckoPool>
+  included?: Array<GeckoTokenInclude>
 }
 
 interface GeckoTokenResponse {
@@ -77,7 +77,7 @@ interface GeckoTokenInfoResponse {
   data?: {
     attributes?: {
       description?: string | null
-      websites?: string[]
+      websites?: Array<string>
       twitter_handle?: string | null
       telegram_handle?: string | null
       gt_score?: number | null
@@ -112,19 +112,19 @@ export interface MemeToken {
   valuation: number
   valuationLabel: 'Market Cap' | 'FDV'
   createdAt?: string
-  priceHistory: { time: number; value: number }[]
+  priceHistory: Array<{ time: number; value: number }>
   imageUrl?: string
   description?: string | null
   holdersCount?: number
   gtScore?: number
   launchProgress?: number | null
-  websites?: string[]
+  websites?: Array<string>
   twitterHandle?: string | null
   telegramHandle?: string | null
 }
 
 export interface MemeTokensPage {
-  items: MemeToken[]
+  items: Array<MemeToken>
   nextPage: number | null
 }
 
@@ -152,7 +152,8 @@ function buildMemeToken(
   const fdv = toNumber(pool.attributes.fdv_usd)
   const valuation = marketCap > 0 ? marketCap : fdv
   const valuationLabel = marketCap > 0 ? 'Market Cap' : 'FDV'
-  const address = includedToken?.attributes.address ?? fallbackTokenAddress(pool)
+  const address =
+    includedToken?.attributes.address ?? fallbackTokenAddress(pool)
   const name =
     includedToken?.attributes.name ?? baseNameFromPool(pool.attributes.name)
   const symbol =
@@ -243,7 +244,8 @@ export function transformMemeTokenDetail(
     websites: infoAttributes?.websites ?? [],
     twitterHandle: infoAttributes?.twitter_handle ?? null,
     telegramHandle: infoAttributes?.telegram_handle ?? null,
-    imageUrl: infoAttributes?.image_url ?? tokenAttributes.image_url ?? undefined,
+    imageUrl:
+      infoAttributes?.image_url ?? tokenAttributes.image_url ?? undefined,
   }
 }
 

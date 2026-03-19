@@ -1,7 +1,14 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
 import { UnifiedList } from '@/components/dashboard/unified-list'
 
-const VALID_TYPES = ['tokens', 'markets', 'creators', 'music', 'perps', 'memes'] as const
+const VALID_TYPES = [
+  'tokens',
+  'markets',
+  'creators',
+  'music',
+  'perps',
+  'memes',
+] as const
 type ViewType = (typeof VALID_TYPES)[number]
 
 export const Route = createFileRoute('/')({

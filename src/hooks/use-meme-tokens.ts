@@ -1,10 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import {
-  fetchMemeTokenDetail,
-  fetchMemeTokens,
-  type MemeToken,
-} from '@/lib/geckoterminal'
+import type { MemeToken } from '@/lib/geckoterminal'
+import { fetchMemeTokenDetail, fetchMemeTokens } from '@/lib/geckoterminal'
 
 export function useMemeTokens() {
   const query = useInfiniteQuery({
@@ -21,7 +18,7 @@ export function useMemeTokens() {
     () => query.data?.pages.flatMap((page) => page.items) ?? [],
     [query.data],
   )
-  const [items, setItems] = useState<MemeToken[]>([])
+  const [items, setItems] = useState<Array<MemeToken>>([])
 
   useEffect(() => {
     if (pageItems.length === 0) {

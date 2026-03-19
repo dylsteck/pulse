@@ -7,7 +7,7 @@ export interface Token {
   change24h: number
   volume24h: number
   marketCap: number
-  priceHistory: { time: number; value: number }[]
+  priceHistory: Array<{ time: number; value: number }>
   imageUrl?: string
 }
 
@@ -23,8 +23,8 @@ export interface Market {
   noPercent: number
   volume: number
   expiry: string
-  priceHistory: { time: number; value: number }[]
+  priceHistory: Array<{ time: number; value: number }>
   imageUrl?: string
-  outcomes?: MarketOutcome[]
+  outcomes?: Array<MarketOutcome>
   clobTokenId?: string
 }

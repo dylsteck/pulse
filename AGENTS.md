@@ -62,13 +62,13 @@ src/
 
 ## Integrations to wire (post-MVP)
 
-| Integration | Docs | What it replaces |
-|---|---|---|
-| Spandex | https://spandex.sh/ | Mock token prices + swap execution — **no API key required, public API** |
-| Codex | https://docs.codex.io/ | Mock price history + volume |
-| Polymarket CLOB | https://docs.polymarket.com/ | Mock market data + trade execution |
-| wagmi connectors | wagmi.sh/react | Wallet connection — injected, Coinbase Wallet, Base Account, optional WalletConnect |
-| Relay | https://docs.relay.link/ | Trade routing |
+| Integration      | Docs                         | What it replaces                                                                    |
+| ---------------- | ---------------------------- | ----------------------------------------------------------------------------------- |
+| Spandex          | https://spandex.sh/          | Mock token prices + swap execution — **no API key required, public API**            |
+| Codex            | https://docs.codex.io/       | Mock price history + volume                                                         |
+| Polymarket CLOB  | https://docs.polymarket.com/ | Mock market data + trade execution                                                  |
+| wagmi connectors | wagmi.sh/react               | Wallet connection — injected, Coinbase Wallet, Base Account, optional WalletConnect |
+| Relay            | https://docs.relay.link/     | Trade routing                                                                       |
 
 ## GeckoTerminal API (memes / pump.fun)
 
@@ -76,13 +76,14 @@ We proxy GeckoTerminal at `/api/geckoterminal/*`. Full OAS: https://api.geckoter
 
 **Endpoints we use:**
 
-| Path | Purpose |
-|------|---------|
-| `GET /networks/{network}/dexes/{dex}/pools` | Top pools by DEX (we use `solana` + `pump-fun`) |
-| `GET /networks/{network}/pools/{pool_address}/ohlcv/{timeframe}` | OHLCV for charts |
-| `GET /networks/{network}/tokens/{address}` + `/info` | Token detail + metadata |
+| Path                                                             | Purpose                                         |
+| ---------------------------------------------------------------- | ----------------------------------------------- |
+| `GET /networks/{network}/dexes/{dex}/pools`                      | Top pools by DEX (we use `solana` + `pump-fun`) |
+| `GET /networks/{network}/pools/{pool_address}/ohlcv/{timeframe}` | OHLCV for charts                                |
+| `GET /networks/{network}/tokens/{address}` + `/info`             | Token detail + metadata                         |
 
 **Pools params:**
+
 - `page` — 1–10 (max 10 pages on public API)
 - `sort` — `h24_volume_usd_desc` | `h24_tx_count_desc`
 - `include` — `base_token` (for name/symbol/image)

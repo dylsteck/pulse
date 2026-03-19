@@ -10,7 +10,7 @@ import appCss from '../styles.css?url'
 import { Header } from '@/components/layout/header'
 import { CommandPalette } from '@/components/command-palette'
 import { ThemeProvider } from '@/components/theme-provider'
-import { wagmiConfig, cdpProjectId } from '@/lib/wagmi'
+import { cdpProjectId, wagmiConfig } from '@/lib/wagmi'
 
 const cdpConfig = cdpProjectId ? { projectId: cdpProjectId } : null
 
@@ -34,7 +34,11 @@ export const Route = createRootRoute({
     links: [
       { rel: 'stylesheet', href: appCss },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
-      { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
       {
         rel: 'stylesheet',
         href: 'https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&display=swap',
@@ -64,11 +68,20 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               </QueryClientProvider>
             </WagmiProvider>
           )
-          return cdpConfig ? <CDPReactProvider config={cdpConfig}>{inner}</CDPReactProvider> : inner
+          return cdpConfig ? (
+            <CDPReactProvider config={cdpConfig}>{inner}</CDPReactProvider>
+          ) : (
+            inner
+          )
         })()}
         <TanStackDevtools
           config={{ position: 'bottom-right' }}
-          plugins={[{ name: 'Tanstack Router', render: <TanStackRouterDevtoolsPanel /> }]}
+          plugins={[
+            {
+              name: 'Tanstack Router',
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
         />
         <Scripts />
       </body>

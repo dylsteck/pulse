@@ -1,16 +1,15 @@
 import { useMemo } from 'react'
+import type { Market, Token } from '@/lib/types'
+import type { CreatorToken } from '@/lib/zora/service'
+import type { MemeToken } from '@/lib/geckoterminal'
+import type { Song } from '@/lib/tortoise'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
-import type { Token } from '@/lib/types'
-import type { Market } from '@/lib/types'
-import type { CreatorToken } from '@/lib/zora/service'
-import type { MemeToken } from '@/lib/geckoterminal'
-import type { Song } from '@/lib/tortoise'
-import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 
 export type CommandSearchAssetType =
   | 'tokens'
@@ -46,7 +45,7 @@ export function useCommandSearch() {
   const perps = perpsQuery.data ?? []
 
   const items = useMemo(() => {
-    const result: CommandSearchItem[] = []
+    const result: Array<CommandSearchItem> = []
 
     for (const t of tokens) {
       result.push({
