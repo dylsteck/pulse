@@ -52,7 +52,11 @@ describe('transformPolymarketEvents', () => {
 
   test('filters out events without valid prices', () => {
     const json = [
-      { id: '1', title: 'Valid', markets: [{ outcomePrices: '["0.5","0.5"]' }] },
+      {
+        id: '1',
+        title: 'Valid',
+        markets: [{ outcomePrices: '["0.5","0.5"]' }],
+      },
       { id: '2', title: 'No prices', markets: [{}] },
     ]
     const result = transformPolymarketEvents(json, 10, 0)

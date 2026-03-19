@@ -21,6 +21,7 @@ export type CarouselTokenItem = {
 export type CarouselMemeItem = {
   kind: 'meme'
   id: string
+  poolAddress: string
   symbol: string
   name: string
   price: number

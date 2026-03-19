@@ -29,7 +29,7 @@ export const TAB_ICONS: Record<
   memes: FlameIcon,
 }
 
-const TABS: ViewMode[] = [
+const TABS: Array<ViewMode> = [
   'tokens',
   'markets',
   'creators',

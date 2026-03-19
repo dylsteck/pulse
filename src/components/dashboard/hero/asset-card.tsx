@@ -1,10 +1,13 @@
 import { useMemo } from 'react'
 import { Liveline } from 'liveline'
+import type { CarouselTokenItem } from './types'
+import { HERO_CHART_PADDING } from './types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { useDocumentHidden } from '@/hooks/use-document-hidden'
+import { useTokenBars } from '@/hooks/use-token-bars'
 import { cn } from '@/lib/utils'
-import { HERO_CHART_PADDING } from './types'
-import type { CarouselTokenItem } from './types'
+
+const CHART_WINDOW = '1D'
 
 export function AssetCard({
   asset,
@@ -16,16 +19,18 @@ export function AssetCard({
   const isPositive = asset.change >= 0
   const color = isPositive ? '#22c55e' : '#ef4444'
   const isTabHidden = useDocumentHidden()
+  const { data: bars } = useTokenBars(asset.id, CHART_WINDOW)
 
   const chartData = useMemo(() => {
+    if (bars.length >= 2) return bars
     if (asset.data.length >= 2) return asset.data
     const now = Date.now() / 1000
     const val = asset.data[0]?.value ?? asset.price
     return [
-      { time: now - 3600, value: val },
+      { time: now - 86400, value: val },
       { time: now, value: asset.price },
     ]
-  }, [asset.data, asset.price])
+  }, [bars, asset.data, asset.price])
 
   return (
     <div className="flex h-full min-h-0 cursor-pointer flex-col gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent/30 sm:p-6">

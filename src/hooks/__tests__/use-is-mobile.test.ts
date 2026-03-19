@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react'
 import { useIsMobile } from '../use-is-mobile'
 
 describe('useIsMobile', () => {
-  const listeners: (() => void)[] = []
+  const listeners: Array<() => void> = []
 
   beforeEach(() => {
     listeners.length = 0

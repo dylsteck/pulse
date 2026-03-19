@@ -6,12 +6,12 @@ import { useInfiniteScroll } from '../use-infinite-scroll'
 describe('useInfiniteScroll', () => {
   const mockObserve = () => {}
   const mockDisconnect = () => {}
-  let callback: (entries: { isIntersecting: boolean }[]) => void
+  let callback: (entries: Array<{ isIntersecting: boolean }>) => void
 
   beforeEach(() => {
     callback = () => {}
     ;(global as any).IntersectionObserver = class MockIntersectionObserver {
-      constructor(cb: (entries: { isIntersecting: boolean }[]) => void) {
+      constructor(cb: (entries: Array<{ isIntersecting: boolean }>) => void) {
         callback = cb
       }
       observe = mockObserve

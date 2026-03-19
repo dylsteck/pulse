@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
+import type { SidebarItem } from './types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
-import type { SidebarItem } from './types'
 
 export function SidebarRow({ item }: { item: SidebarItem }) {
   const isPositive = item.change >= 0

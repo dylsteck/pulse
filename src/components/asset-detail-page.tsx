@@ -1,12 +1,12 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import {
-  TokenDetail,
-  MarketDetail,
   CreatorDetail,
+  MarketDetail,
+  MemeDetail,
   MusicDetail,
   PerpDetail,
-  MemeDetail,
+  TokenDetail,
 } from '@/components/asset-detail'
 
 const ASSET_TYPES = [

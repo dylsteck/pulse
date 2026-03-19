@@ -3,6 +3,8 @@
 import * as React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { GithubIcon } from 'lucide-react'
+import { AssetIcon } from './asset-icon'
+import { ChartPreview } from './chart-preview'
 import type { CommandSearchItem } from '@/hooks/use-command-search'
 import {
   Command,
@@ -15,8 +17,6 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from '@/components/ui/command'
-import { AssetIcon } from './asset-icon'
-import { ChartPreview } from './chart-preview'
 import { useCommandSearch } from '@/hooks/use-command-search'
 import { cn } from '@/lib/utils'
 

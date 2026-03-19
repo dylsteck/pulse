@@ -1,19 +1,20 @@
 import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { FlameIcon } from 'lucide-react'
+import {
+  AssetCard,
+  
+  MarketCard,
+  MemeCard,
+  
+  SidebarRow
+} from './hero'
+import type {CarouselItem, SidebarItem} from './hero';
 import { useTheme } from '@/components/theme-provider'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { cn } from '@/lib/utils'
-import {
-  AssetCard,
-  MarketCard,
-  MemeCard,
-  SidebarRow,
-  type CarouselItem,
-  type SidebarItem,
-} from './hero'
 
 const ACCENT_COLOR = '#0066ff'
 
@@ -45,6 +46,7 @@ export function HeroBanner() {
       .map((m) => ({
         kind: 'meme',
         id: m.id,
+        poolAddress: m.poolAddress,
         symbol: m.symbol,
         name: m.name,
         price: m.price,

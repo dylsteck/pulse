@@ -1,11 +1,14 @@
 import { useMemo } from 'react'
 import { Liveline } from 'liveline'
+import type { CarouselMemeItem } from './types'
+import { HERO_CHART_PADDING } from './types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { useDocumentHidden } from '@/hooks/use-document-hidden'
+import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { HERO_CHART_PADDING } from './types'
-import type { CarouselMemeItem } from './types'
+
+const CHART_WINDOW = '1D'
 
 export function MemeCard({
   meme,
@@ -17,16 +20,18 @@ export function MemeCard({
   const isPositive = meme.change >= 0
   const color = isPositive ? '#22c55e' : '#ef4444'
   const isTabHidden = useDocumentHidden()
+  const { data: bars } = useMemeOhlcv(meme.poolAddress, CHART_WINDOW)
 
   const chartData = useMemo(() => {
+    if (bars.length >= 2) return bars
     if (meme.data.length >= 2) return meme.data
     const now = Date.now() / 1000
     const val = meme.data[0]?.value ?? meme.price
     return [
-      { time: now - 3600, value: val },
+      { time: now - 86400, value: val },
       { time: now, value: meme.price },
     ]
-  }, [meme.data, meme.price])
+  }, [bars, meme.data, meme.price])
 
   return (
     <div className="flex h-full min-h-0 cursor-pointer flex-col gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-accent/30 sm:p-6">
