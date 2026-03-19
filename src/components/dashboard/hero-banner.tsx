@@ -213,7 +213,7 @@ export function HeroBanner() {
       >
         {/* Left: Featured card */}
         {currentItem && (
-          <div className="hidden min-h-0 w-full max-w-xl flex-1 flex-col lg:flex">
+          <div className="hidden min-h-0 w-full max-w-4xl flex-1 flex-col lg:flex">
             {currentItem.kind === 'token' ? (
               <Link
                 to="/asset/$type/$id"
