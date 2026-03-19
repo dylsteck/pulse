@@ -1,11 +1,11 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, test } from 'bun:test'
 import {
   parseCancelStatuses,
   parseOrderStatuses,
 } from '@/lib/hyperliquid/status'
 
 describe('status parsers', () => {
-  it('parses mixed order statuses', () => {
+  test('parses mixed order statuses', () => {
     const parsed = parseOrderStatuses({
       status: 'ok',
       response: {
@@ -29,7 +29,7 @@ describe('status parsers', () => {
     expect(parsed[3]?.kind).toBe('pending')
   })
 
-  it('parses cancel statuses', () => {
+  test('parses cancel statuses', () => {
     const parsed = parseCancelStatuses({
       status: 'ok',
       response: {

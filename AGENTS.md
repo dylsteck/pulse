@@ -31,11 +31,22 @@ src/
 │       └── tortoise/               Songs, trending, audio
 ├── components/
 │   ├── layout/header.tsx
+│   ├── ui/                         shadcn components only
 │   ├── dashboard/
-│   │   ├── unified-list.tsx        List/grid for all modes (tokens, markets, memes, etc.)
-│   │   └── hero-banner.tsx         Carousel (tokens, markets, memes)
-│   ├── trading/liveline-chart.tsx  Liveline wrapper (LivelineChart, SparklineChart)
-│   └── asset-detail-page.tsx       Detail views per asset type
+│   │   ├── unified-list.tsx        Orchestrator for list/grid (tokens, markets, memes, etc.)
+│   │   ├── hero-banner.tsx         Carousel orchestrator
+│   │   ├── shared/                 LoadingPanel, ErrorPanel, MemeRetryState, ChanceGauge
+│   │   ├── inline-charts/           InlineTokenChart, InlineMemeChart, InlineMarketChart, etc.
+│   │   ├── cards/                  TokenGridCard, MarketGridCard, MemeGridCard, etc.
+│   │   ├── grids/                  TokenGrid, MarketGrid, MemeGrid, etc.
+│   │   ├── tables/                 TokenTable, MarketTable, MemeTable, etc.
+│   │   ├── tabs/mode-tabs.tsx      Mode tab buttons
+│   │   ├── hero/                   AssetCard, MemeCard, MarketCard, SidebarRow
+│   │   └── layout-toggle.tsx        List/grid toggle
+│   ├── asset-detail/               TokenDetail, MarketDetail, CreatorDetail, etc.
+│   ├── asset-detail-page.tsx       Orchestrator for asset detail views
+│   ├── command-palette/            AssetIcon, ChartPreview, CommandPalette
+│   └── trading/liveline-chart.tsx  Liveline wrapper (LivelineChart, SparklineChart)
 ├── hooks/
 │   ├── use-token-price.ts          Live price (tokens)
 │   ├── use-token-bars.ts          Codex bars for Base tokens
@@ -129,6 +140,14 @@ bun run build   # production build (catches type errors)
 - **Bun is pre-installed** via the update script. Just run `bun install` if deps look stale, then `bun run dev`.
 - **`.env` setup**: Copy `.env.example` to `.env`. All API keys are optional — the app falls back to mock data in `src/lib/mock/`. The `/tokens` page uses live Codex data when `CODEX_API_KEY` is set; without it, mock data is shown.
 - **Lint**: `bun run lint` (ESLint). The codebase has pre-existing lint errors (import ordering, array-type style). `bun run check` runs Prettier + ESLint with `--fix`.
-- **Tests**: `bun run test` (Vitest). Tests are under `src/lib/hyperliquid/__tests__/`. Vitest may log a "hanging-process" warning after tests pass — this is benign.
+- **Tests**: `bun run test` (bun:test). Tests are under `src/lib/__tests__/`, `src/lib/hyperliquid/__tests__/`, `src/hooks/__tests__/`, and `src/components/.../__tests__/`.
 - **Build**: `bun run build` produces a Nitro server bundle in `.output/`. This also surfaces TypeScript errors.
 - **Route generation**: TanStack Router auto-generates `src/routeTree.gen.ts` when the dev server runs. If routes look stale, start the dev server to regenerate.
+
+## Component layout and design principles
+
+- **Feature-based layout**: Components are organized by feature, not by atoms/molecules/organisms. Use nested folders for related subcomponents (e.g. `dashboard/cards/`, `dashboard/grids/`).
+- **`components/ui/`**: Reserved for shadcn components only. Do not add feature-specific components here.
+- **Orchestrators**: Large pages (UnifiedList, HeroBanner, AssetDetailPage) are orchestrators that import and compose smaller components. Keep orchestrators slim; move inline logic into extracted components.
+- **Shared hooks**: Use `useIsMobile`, `useInfiniteScroll`, `useDocumentHidden` from `@/hooks/` instead of duplicating logic.
+- **File size**: Prefer files under ~300 lines. Extract subcomponents when a file grows large. ESLint enforces `max-lines` (300) and `max-lines-per-function` (80) with overrides for test files.
