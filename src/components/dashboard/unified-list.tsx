@@ -303,8 +303,7 @@ export function UnifiedList({
     if (mode !== 'memes') return
     if (!memeTokensQuery.hasMore || memeTokensQuery.isFetching) return
     const target = memesLoadMoreRef.current
-    const scrollEl = scrollRef.current
-    if (!target || !scrollEl) return
+    if (!target) return
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -317,7 +316,7 @@ export function UnifiedList({
           void memeTokensQuery.loadMore()
         }
       },
-      { root: scrollEl, rootMargin: '400px 0px', threshold: 0 },
+      { root: null, rootMargin: '400px 0px', threshold: 0 },
     )
 
     observer.observe(target)
@@ -338,8 +337,12 @@ export function UnifiedList({
   }
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-37px)] w-full max-w-7xl flex-col py-2 sm:px-6">
+    <div className="mx-auto flex w-full max-w-7xl flex-col py-2 sm:px-6">
       <HeroBanner />
+      <div
+        ref={scrollRef}
+        className="scroll-mt-4 py-6"
+      >
       <div className="mb-2 flex items-end justify-between gap-2 px-2 sm:px-0">
         <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
           {(
@@ -362,7 +365,7 @@ export function UnifiedList({
                   setMode(tab)
                   setExpandedId(null)
                   setSelectedIndex(0)
-                  scrollRef.current?.scrollTo(0, 0)
+                  scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
                 }}
                 className={cn(
                   'flex shrink-0 items-center gap-1.5 text-sm font-medium capitalize transition-colors',
@@ -411,9 +414,7 @@ export function UnifiedList({
       </div>
 
       <div
-        ref={scrollRef}
         className={cn(
-          'min-h-0 flex-1 overflow-y-auto scrollbar-none',
           layout === 'grid' && 'px-2 sm:px-0',
         )}
       >
@@ -649,6 +650,7 @@ export function UnifiedList({
             </button>
           </div>
         )}
+      </div>
       </div>
     </div>
   )
