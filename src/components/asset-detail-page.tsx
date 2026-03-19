@@ -30,24 +30,19 @@ import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatPrice, formatDate } from '@/lib/format'
 
-const BACK_ROUTES: Record<string, string> = {
-  tokens: '/tokens',
-  markets: '/markets',
-  creators: '/creators',
-  music: '/music',
-  perps: '/perps',
-  memes: '/memes',
-}
-
 export function AssetDetailPage({ type, id }: { type: string; id: string }) {
   const navigate = useNavigate()
-  const backTo = BACK_ROUTES[type] ?? '/tokens'
 
   return (
     <div className="mx-auto flex min-h-[calc(100vh-37px)] w-full max-w-7xl flex-col px-3 py-4 sm:px-6">
       <button
         type="button"
-        onClick={() => navigate({ to: backTo })}
+        onClick={() =>
+          navigate({
+            to: '/',
+            search: type === 'tokens' ? {} : { type },
+          })
+        }
         className="mb-4 inline-flex w-fit items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
         aria-label="Back"
       >

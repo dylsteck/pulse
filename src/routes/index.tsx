@@ -1,8 +1,23 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
+import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
+import { UnifiedList } from '@/components/dashboard/unified-list'
+
+const VALID_TYPES = ['tokens', 'markets', 'creators', 'music', 'perps', 'memes'] as const
+type ViewType = (typeof VALID_TYPES)[number]
 
 export const Route = createFileRoute('/')({
-  beforeLoad: () => {
-    throw redirect({ to: '/tokens' })
+  validateSearch: (search: Record<string, unknown>): { type: ViewType } => {
+    const t = search?.type
+    return {
+      type: VALID_TYPES.includes(t as ViewType) ? (t as ViewType) : 'tokens',
+    }
   },
-  component: () => null,
+  search: {
+    middlewares: [stripSearchParams({ type: 'tokens' })],
+  },
+  component: IndexPage,
 })
+
+function IndexPage() {
+  const { type } = Route.useSearch()
+  return <UnifiedList initialMode={type} />
+}

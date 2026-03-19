@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import {
   LayoutGridIcon,
   Rows3Icon,
@@ -61,7 +61,6 @@ type ViewLayout = 'list' | 'grid'
 
 interface UnifiedListProps {
   initialMode?: ViewMode
-  onModeChange?: (mode: ViewMode) => void
 }
 
 const MOBILE_BREAKPOINT = 768
@@ -80,10 +79,8 @@ function useIsMobile() {
   return isMobile
 }
 
-export function UnifiedList({
-  initialMode = 'tokens',
-  onModeChange,
-}: UnifiedListProps) {
+export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
+  const navigate = useNavigate()
   const isMobile = useIsMobile()
   const [mode, setMode] = useState<ViewMode>(initialMode)
   const [layout, setLayoutRaw] = useState<ViewLayout>(persistedLayout ?? 'list')
@@ -141,10 +138,6 @@ export function UnifiedList({
     setExpandedId(null)
     setSelectedIndex(0)
   }, [initialMode])
-
-  useEffect(() => {
-    onModeChange?.(mode)
-  }, [mode, onModeChange])
 
   useEffect(() => {
     if (!items.length) {
@@ -362,7 +355,7 @@ export function UnifiedList({
                 key={tab}
                 type="button"
                 onClick={() => {
-                  setMode(tab)
+                  navigate({ to: '/', search: { type: tab } })
                   setExpandedId(null)
                   setSelectedIndex(0)
                   scrollRef.current?.scrollIntoView({ behavior: 'smooth' })
