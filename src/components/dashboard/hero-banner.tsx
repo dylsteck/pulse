@@ -208,7 +208,7 @@ export function HeroBanner() {
 
       <div
         className={cn(
-          'mt-4 flex flex-1 flex-col gap-6 sm:mt-5 sm:flex-row sm:items-stretch sm:gap-8',
+          'mt-4 hidden flex-1 flex-col gap-6 sm:mt-5 sm:flex-row sm:items-stretch sm:gap-8 lg:flex',
         )}
       >
         {/* Left: Featured card */}
