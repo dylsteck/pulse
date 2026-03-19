@@ -192,11 +192,13 @@ export function transformTokenByAddress(json: {
     }
     getTokenPrices?: Array<{ address: string; priceUsd: number }>
   }
-}): Omit<Token, 'change24h' | 'volume24h' | 'marketCap'> & {
-  change24h: number
-  volume24h: number
-  marketCap: number
-} | null {
+}):
+  | (Omit<Token, 'change24h' | 'volume24h' | 'marketCap'> & {
+      change24h: number
+      volume24h: number
+      marketCap: number
+    })
+  | null {
   if (json.errors?.length) {
     throw new Error(
       `Codex query failed: ${json.errors[0]?.message ?? 'Unknown error'}`,
@@ -264,7 +266,10 @@ export async function fetchCodexBaseTokens(
   offset = 0,
 ): Promise<Array<Token>> {
   return transformBaseTokens(
-    await makeRequest('/api/codex', CODEX_POST_OPTIONS(buildBaseTokensQuery(limit, offset))),
+    await makeRequest(
+      '/api/codex',
+      CODEX_POST_OPTIONS(buildBaseTokensQuery(limit, offset)),
+    ),
   )
 }
 
@@ -273,7 +278,10 @@ export async function fetchCodexTokenByAddress(
 ): Promise<Token | null> {
   const addr = address.toLowerCase()
   const tokenBase = transformTokenByAddress(
-    await makeRequest('/api/codex', CODEX_POST_OPTIONS(buildTokenByAddressQuery(addr))),
+    await makeRequest(
+      '/api/codex',
+      CODEX_POST_OPTIONS(buildTokenByAddressQuery(addr)),
+    ),
   )
   if (!tokenBase) return null
 
@@ -282,7 +290,7 @@ export async function fetchCodexTokenByAddress(
   try {
     const bars = await fetchCodexBars(addr, '1D')
     if (bars.bars.length >= 2) {
-      const firstPrice = bars.bars[0]!.value
+      const firstPrice = bars.bars[0].value
       const lastPrice = bars.bars.at(-1)!.value
       if (firstPrice > 0) {
         change24h = ((lastPrice - firstPrice) / firstPrice) * 100
@@ -300,6 +308,9 @@ export async function fetchCodexBars(
   windowLabel: string,
 ): Promise<BarsResponse> {
   return transformBars(
-    await makeRequest('/api/codex', CODEX_POST_OPTIONS(buildBarsQuery(address, windowLabel))),
+    await makeRequest(
+      '/api/codex',
+      CODEX_POST_OPTIONS(buildBarsQuery(address, windowLabel)),
+    ),
   )
 }

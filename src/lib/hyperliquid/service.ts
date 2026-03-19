@@ -1,25 +1,29 @@
 import type {
   CancelSuccessResponse,
   ClearinghouseStateResponse,
+  ExchangeClient,
   FrontendOpenOrdersResponse,
+  OrderParameters,
   OrderSuccessResponse,
   UserFillsResponse,
 } from '@nktkas/hyperliquid'
-import { type ExchangeClient, type OrderParameters } from '@nktkas/hyperliquid'
+import type { PreparedOrder } from '@/lib/hyperliquid/order-utils'
+import type {
+  ParsedCancelStatus,
+  ParsedOrderStatus,
+} from '@/lib/hyperliquid/status'
+import type { WalletClient } from 'viem'
 import { createHyperliquidExchangeClient } from '@/lib/hyperliquid/clients'
 import { makeRequest } from '@/lib/request'
-import { type PreparedOrder, prepareOrder } from '@/lib/hyperliquid/order-utils'
+import { prepareOrder } from '@/lib/hyperliquid/order-utils'
 import { normalizeHyperliquidError } from '@/lib/hyperliquid/errors'
 import {
   parseCancelStatuses,
   parseOrderStatuses,
-  type ParsedCancelStatus,
-  type ParsedOrderStatus,
 } from '@/lib/hyperliquid/status'
 import { OrderBatchQueue } from '@/lib/hyperliquid/batch-queue'
 import { ScheduleCancelHeartbeat } from '@/lib/hyperliquid/heartbeat'
 import { toHyperliquidWallet } from '@/lib/hyperliquid/signer'
-import type { WalletClient } from 'viem'
 
 export interface PerpMarketSnapshot {
   id: string
@@ -43,8 +47,10 @@ const hlPost = (body: Record<string, unknown>): RequestInit => ({
   body: JSON.stringify(body),
 })
 
-export async function fetchPerpMarketsSnapshot(): Promise<PerpMarketSnapshot[]> {
-  return makeRequest<PerpMarketSnapshot[]>(
+export async function fetchPerpMarketsSnapshot(): Promise<
+  Array<PerpMarketSnapshot>
+> {
+  return makeRequest<Array<PerpMarketSnapshot>>(
     '/api/hyperliquid',
     hlPost({ type: 'markets' }),
   )
@@ -111,7 +117,7 @@ export function newCloid(): `0x${string}` {
   const bytes = new Uint8Array(16)
   crypto.getRandomValues(bytes)
   const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('')
-  return `0x${hex}` as `0x${string}`
+  return `0x${hex}`
 }
 
 export interface PlaceOrderInput {
@@ -122,7 +128,7 @@ export interface PlaceOrderInput {
 
 export interface PlaceOrderResult {
   raw: OrderSuccessResponse
-  statuses: ParsedOrderStatus[]
+  statuses: Array<ParsedOrderStatus>
 }
 
 export async function placeOrder(
@@ -143,7 +149,7 @@ export async function placeOrder(
 
 export interface PlaceBatchOrdersInput {
   walletClient: WalletClient
-  orders: PreparedOrder[]
+  orders: Array<PreparedOrder>
 }
 
 export async function placeBatchOrders(
@@ -164,7 +170,10 @@ export async function placeBatchOrders(
 export async function cancelOrders(
   walletClient: WalletClient,
   cancels: Array<{ a: number; o: number }>,
-): Promise<{ raw: CancelSuccessResponse; statuses: ParsedCancelStatus[] }> {
+): Promise<{
+  raw: CancelSuccessResponse
+  statuses: Array<ParsedCancelStatus>
+}> {
   const { queue } = getTradingContext(walletClient)
   try {
     const raw = await queue.enqueueCancel({ cancels })
@@ -303,6 +312,6 @@ export interface PerpCandleDataPoint {
 }
 
 export interface PerpCandlesResponse {
-  candles: PerpCandleDataPoint[]
+  candles: Array<PerpCandleDataPoint>
   status: string
 }

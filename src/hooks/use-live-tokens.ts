@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { fetchCodexBaseTokens } from '@/lib/codex'
 import type { Token } from '@/lib/types'
+import { fetchCodexBaseTokens } from '@/lib/codex'
 
 const PAGE_SIZE = 50
 
@@ -15,14 +15,14 @@ export function useLiveTokens(initialLimit = PAGE_SIZE) {
     refetchInterval: 15_000,
   })
 
-  const [tokens, setTokens] = useState<Token[]>([])
+  const [tokens, setTokens] = useState<Array<Token>>([])
 
   useEffect(() => {
     if (!query.data) return
     const now = Date.now() / 1000
     setTokens((previous) => {
       const prevById = new Map(previous.map((token) => [token.id, token]))
-      return query.data!.map((token) => {
+      return query.data.map((token) => {
         const prev = prevById.get(token.id)
         const history = [
           ...(prev?.priceHistory ?? []),

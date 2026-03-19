@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useWalletClient } from 'wagmi'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import { useWallet } from '@/hooks/use-wallet'
 import {
   armDeadManSwitch,
@@ -17,7 +18,6 @@ import {
   newCloid,
   placeBatchOrders,
   placeOrder,
-  type PerpMarketSnapshot,
   updateIsolatedMargin,
   updateLeverage,
 } from '@/lib/hyperliquid/service'
@@ -25,11 +25,12 @@ import { assertSignerReady } from '@/lib/hyperliquid/signer'
 
 const PERPS_QUERY_KEYS = {
   markets: ['hyperliquid', 'markets'] as const,
-  account: (address: string | null) => ['hyperliquid', 'account', address] as const,
-  openOrders: (address: string | null) => ['hyperliquid', 'openOrders', address] as const,
+  account: (address: string | null) =>
+    ['hyperliquid', 'account', address] as const,
+  openOrders: (address: string | null) =>
+    ['hyperliquid', 'openOrders', address] as const,
   fills: (address: string | null) => ['hyperliquid', 'fills', address] as const,
 }
-
 
 export function usePerpMarkets() {
   return useQuery({
@@ -136,7 +137,9 @@ export function usePerpsTrading() {
           params.map((entry) => ({ a: entry.assetId, o: entry.orderId })),
         )
       },
-      async cancelByClientOrderId(params: Array<{ assetId: number; cloid: `0x${string}` }>) {
+      async cancelByClientOrderId(
+        params: Array<{ assetId: number; cloid: `0x${string}` }>,
+      ) {
         const client = guardedClient()
         return cancelByCloid(
           client,

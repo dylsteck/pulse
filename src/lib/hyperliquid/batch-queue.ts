@@ -1,5 +1,9 @@
-import type { CancelSuccessResponse, ExchangeClient, OrderSuccessResponse } from '@nktkas/hyperliquid'
-import type { OrderParameters } from '@nktkas/hyperliquid'
+import type {
+  CancelSuccessResponse,
+  ExchangeClient,
+  OrderParameters,
+  OrderSuccessResponse,
+} from '@nktkas/hyperliquid'
 
 type QueueTask =
   | {
@@ -16,7 +20,7 @@ type QueueTask =
     }
 
 export class OrderBatchQueue {
-  private tasks: QueueTask[] = []
+  private tasks: Array<QueueTask> = []
   private timer: ReturnType<typeof setTimeout> | null = null
 
   constructor(
@@ -31,7 +35,9 @@ export class OrderBatchQueue {
     })
   }
 
-  enqueueCancel(params: { cancels: Array<{ a: number; o: number }> }): Promise<CancelSuccessResponse> {
+  enqueueCancel(params: {
+    cancels: Array<{ a: number; o: number }>
+  }): Promise<CancelSuccessResponse> {
     return new Promise((resolve, reject) => {
       this.tasks.push({ kind: 'cancel', params, resolve, reject })
       this.scheduleFlush()
@@ -50,8 +56,14 @@ export class OrderBatchQueue {
     const pending = this.tasks.splice(0, this.tasks.length)
     if (pending.length === 0) return
 
-    const orders = pending.filter((task): task is Extract<QueueTask, { kind: 'order' }> => task.kind === 'order')
-    const cancels = pending.filter((task): task is Extract<QueueTask, { kind: 'cancel' }> => task.kind === 'cancel')
+    const orders = pending.filter(
+      (task): task is Extract<QueueTask, { kind: 'order' }> =>
+        task.kind === 'order',
+    )
+    const cancels = pending.filter(
+      (task): task is Extract<QueueTask, { kind: 'cancel' }> =>
+        task.kind === 'cancel',
+    )
 
     if (orders.length > 0) {
       for (const task of orders) {

@@ -59,13 +59,14 @@ export const Route = createFileRoute('/api/geckoterminal/ohlcv')({
           )) as {
             data?: {
               attributes?: {
-                ohlcv_list?: Array<[number, number, number, number, number, number]>
+                ohlcv_list?: Array<
+                  [number, number, number, number, number, number]
+                >
               }
             }
           }
 
-          const ohlcvList =
-            json.data?.attributes?.ohlcv_list ?? []
+          const ohlcvList = json.data?.attributes?.ohlcv_list ?? []
           const bars = ohlcvList
             .map((row) => {
               const [timestamp, , , , close] = row

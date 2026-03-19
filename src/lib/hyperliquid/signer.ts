@@ -14,20 +14,28 @@ export class SignerPreflightError extends Error {
   }
 }
 
-export function assertSignerReady(input: SignerPreflightInput): asserts input is {
+export function assertSignerReady(
+  input: SignerPreflightInput,
+): asserts input is {
   connected: true
   address: `0x${string}`
   walletClient: WalletClient
 } {
   if (!input.connected || !input.address) {
-    throw new SignerPreflightError('Connect your wallet before placing Hyperliquid orders.')
+    throw new SignerPreflightError(
+      'Connect your wallet before placing Hyperliquid orders.',
+    )
   }
   if (!input.walletClient) {
-    throw new SignerPreflightError('Wallet signer unavailable. Reconnect your wallet and try again.')
+    throw new SignerPreflightError(
+      'Wallet signer unavailable. Reconnect your wallet and try again.',
+    )
   }
 }
 
-export function toHyperliquidWallet(walletClient: WalletClient): AbstractViemJsonRpcAccount {
+export function toHyperliquidWallet(
+  walletClient: WalletClient,
+): AbstractViemJsonRpcAccount {
   return {
     getAddresses: async () => {
       const account = walletClient.account

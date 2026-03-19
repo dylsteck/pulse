@@ -5,7 +5,11 @@ export interface HyperliquidRuntimeConfig {
 
 export function getHyperliquidRuntimeConfig(): HyperliquidRuntimeConfig {
   return {
-    apiUrl: (import.meta.env.VITE_HYPERLIQUID_API_URL as string | undefined) || undefined,
-    wsUrl: (import.meta.env.VITE_HYPERLIQUID_WS_URL as string | undefined) || undefined,
+    apiUrl:
+      (import.meta.env.VITE_HYPERLIQUID_API_URL as string | undefined) ||
+      undefined,
+    wsUrl:
+      (import.meta.env.VITE_HYPERLIQUID_WS_URL as string | undefined) ||
+      undefined,
   }
 }

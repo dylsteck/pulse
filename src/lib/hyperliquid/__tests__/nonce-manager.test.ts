@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, test } from 'bun:test'
 import { NonceManager } from '@/lib/hyperliquid/nonce-manager'
 
 describe('NonceManager', () => {
-  it('returns strictly increasing values', () => {
+  test('returns strictly increasing values', () => {
     const manager = new NonceManager()
     const first = manager.next()
     const second = manager.next()

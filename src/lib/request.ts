@@ -10,8 +10,7 @@ export async function makeRequest<T>(
 
     try {
       const json = JSON.parse(body) as { error?: string; message?: string }
-      message =
-        json.error?.trim() || json.message?.trim() || message
+      message = json.error?.trim() || json.message?.trim() || message
     } catch {
       if (body.trim()) {
         message = `${message} ${body.trim().slice(0, 120)}`

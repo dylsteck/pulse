@@ -1,23 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { UnifiedList } from '@/components/dashboard/unified-list'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/tokens')({
-  component: TokensPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/' })
+  },
+  component: () => null,
 })
-
-function TokensPage() {
-  const navigate = useNavigate()
-  return (
-    <UnifiedList
-      initialMode="tokens"
-      onModeChange={(mode) => {
-        if (mode === 'markets') navigate({ to: '/markets', resetScroll: false })
-        if (mode === 'creators')
-          navigate({ to: '/creators', resetScroll: false })
-        if (mode === 'music') navigate({ to: '/music', resetScroll: false })
-        if (mode === 'perps') navigate({ to: '/perps', resetScroll: false })
-        if (mode === 'memes') navigate({ to: '/memes', resetScroll: false })
-      }}
-    />
-  )
-}

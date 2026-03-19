@@ -13,13 +13,19 @@
     "build": "vite build",
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
-    "test": "vitest run",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage",
     "lint": "eslint",
     "format": "prettier",
     "check": "prettier --write . && eslint --fix"
   },
   "dependencies": {
     "@base-ui/react": "^1.2.0",
+    "@coinbase/cdp-core": "^0.0.96",
+    "@coinbase/cdp-hooks": "^0.0.96",
+    "@coinbase/cdp-react": "^0.0.96",
+    "@coinbase/cdp-wagmi": "^0.0.96",
     "@fontsource-variable/geist": "^5.2.8",
     "@nktkas/hyperliquid": "^0.31.0",
     "@tailwindcss/vite": "^4.0.6",
@@ -47,9 +53,11 @@
     "wagmi": "^3.5.0"
   },
   "devDependencies": {
+    "@happy-dom/global-registrator": "^20.8.4",
     "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/eslint-config": "^0.3.0",
     "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.2.0",
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.0",
@@ -59,7 +67,6 @@
     "prettier": "^3.5.3",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
-    "vitest": "^3.0.5",
     "web-vitals": "^5.1.0"
   }
 }

@@ -1,42 +1,21 @@
-import { useEffect, useState, useMemo, useSyncExternalStore } from 'react'
+import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
-import { Liveline } from 'liveline'
+import { FlameIcon } from 'lucide-react'
 import { useTheme } from '@/components/theme-provider'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
-import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
-import { formatCompact } from '@/lib/format'
-import type { Market } from '@/lib/types'
-import type { MemeToken } from '@/lib/geckoterminal'
+import {
+  AssetCard,
+  MarketCard,
+  MemeCard,
+  SidebarRow,
+  type CarouselItem,
+  type SidebarItem,
+} from './hero'
 
 const ACCENT_COLOR = '#0066ff'
-const HERO_CHART_PADDING = { top: 4, right: 16, bottom: 0, left: 0 } as const
-
-type CarouselItem =
-  | {
-      kind: 'token'
-      id: string
-      symbol: string
-      name: string
-      price: number
-      change: number
-      data: { time: number; value: number }[]
-      imageUrl?: string
-    }
-  | {
-      kind: 'meme'
-      id: string
-      symbol: string
-      name: string
-      price: number
-      change: number
-      data: { time: number; value: number }[]
-      imageUrl?: string
-      liquidity: number
-    }
-  | { kind: 'market'; market: Market }
 
 export function HeroBanner() {
   const { theme } = useTheme()
@@ -46,8 +25,8 @@ export function HeroBanner() {
   const { data: markets } = useLiveMarkets()
   const { data: memes } = useMemeTokens()
 
-  const carouselItems: CarouselItem[] = useMemo(() => {
-    const tokenItems: CarouselItem[] = (tokens ?? [])
+  const carouselItems: Array<CarouselItem> = useMemo(() => {
+    const tokenItems: Array<CarouselItem> = (tokens ?? [])
       .filter((t) => t.priceHistory.length >= 2)
       .map((t) => ({
         kind: 'token',
@@ -60,7 +39,7 @@ export function HeroBanner() {
         imageUrl: t.imageUrl,
       }))
 
-    const memeItems: CarouselItem[] = (memes ?? [])
+    const memeItems: Array<CarouselItem> = (memes ?? [])
       .slice(0, 6)
       .filter((m) => m.priceHistory.length >= 2)
       .map((m) => ({
@@ -75,55 +54,113 @@ export function HeroBanner() {
         liquidity: m.liquidity,
       }))
 
-    const marketItems: CarouselItem[] = (markets ?? [])
+    const marketItems: Array<CarouselItem> = (markets ?? [])
       .slice(0, 6)
       .map((m) => ({ kind: 'market', market: m }))
 
-    const merged: CarouselItem[] = []
+    const merged: Array<CarouselItem> = []
     const maxLen = Math.max(
       tokenItems.length,
       memeItems.length,
       marketItems.length,
     )
     for (let i = 0; i < maxLen; i++) {
-      if (i < tokenItems.length) merged.push(tokenItems[i]!)
-      if (i < memeItems.length) merged.push(memeItems[i]!)
-      if (i < marketItems.length) merged.push(marketItems[i]!)
+      if (i < tokenItems.length) merged.push(tokenItems[i])
+      if (i < memeItems.length) merged.push(memeItems[i])
+      if (i < marketItems.length) merged.push(marketItems[i])
     }
     return merged
   }, [tokens, markets, memes])
 
-  const [currentIndex, setCurrentIndex] = useState(0)
+  const sidebarItems = useMemo(() => {
+    const items: Array<SidebarItem> = []
 
-  useEffect(() => {
-    if (carouselItems.length === 0) return
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % carouselItems.length)
-    }, 5000)
-    return () => clearInterval(interval)
-  }, [carouselItems.length])
+    ;(tokens ?? []).forEach((t) => {
+      items.push({
+        kind: 'token',
+        id: t.id,
+        type: 'tokens',
+        label: t.symbol,
+        sublabel: t.name,
+        change: t.change24h,
+        volume: t.volume24h,
+        price: t.price,
+        imageUrl: t.imageUrl,
+      })
+    })
+    ;(memes ?? []).forEach((m) => {
+      items.push({
+        kind: 'meme',
+        id: m.id,
+        type: 'memes',
+        label: m.symbol,
+        sublabel: m.name,
+        change: m.change24h,
+        volume: m.volume24h,
+        price: m.price,
+        imageUrl: m.imageUrl,
+      })
+    })
+    ;(markets ?? []).forEach((m) => {
+      items.push({
+        kind: 'market',
+        id: m.id,
+        type: 'markets',
+        label: m.title,
+        change: 0,
+        volume: m.volume,
+        imageUrl: m.imageUrl,
+      })
+    })
 
-  const currentItem = carouselItems[currentIndex % carouselItems.length]
+    const seen = new Set<string>()
+    const merged: Array<SidebarItem> = []
+    const withChange = items.filter(
+      (i) => (i.kind === 'token' || i.kind === 'meme') && i.change !== 0,
+    )
+    const breaking = [...withChange]
+      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .slice(0, 5)
+    const trending = [...items].sort((a, b) => b.volume - a.volume).slice(0, 5)
+
+    for (const item of [...breaking, ...trending]) {
+      const key = `${item.type}-${item.id}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        merged.push(item)
+      }
+    }
+    return merged.slice(0, 7)
+  }, [tokens, markets, memes])
+
+  const currentItem = carouselItems[0]
 
   return (
-    <div className="relative mb-4 w-full overflow-hidden">
-      <div className="flex items-start gap-6 px-2 py-2 sm:px-0 sm:py-3">
-        <div className="flex-1 pt-1">
-          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
-            Stay on the <span style={{ color: ACCENT_COLOR }}>pulse</span> of
-            crypto
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Every market, every asset, every chain. One interface.
-          </p>
-        </div>
+    <div
+      className={cn(
+        'flex w-full flex-col px-2 py-6 sm:px-0 sm:py-8 lg:min-h-[70vh]',
+      )}
+    >
+      <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+        Stay on the <span style={{ color: ACCENT_COLOR }}>pulse</span> of crypto
+      </h1>
+      <p className="mt-1.5 text-sm text-muted-foreground sm:text-base">
+        Every market, every asset, every chain. One interface.
+      </p>
 
+      <div
+        className={cn(
+          'mt-4 hidden flex-1 flex-col gap-6 sm:mt-5 sm:flex-row sm:items-stretch sm:gap-8 lg:flex',
+        )}
+      >
+        {/* Left: Featured card */}
         {currentItem && (
-          <div className="hidden w-1/2 max-w-lg sm:block">
+          <div className="hidden min-h-0 w-full max-w-4xl flex-1 flex-col lg:flex">
             {currentItem.kind === 'token' ? (
               <Link
                 to="/asset/$type/$id"
                 params={{ type: 'tokens', id: currentItem.id }}
+                className="flex min-h-0 flex-1 flex-col"
               >
                 <AssetCard
                   key={currentItem.id}
@@ -135,15 +172,17 @@ export function HeroBanner() {
               <Link
                 to="/asset/$type/$id"
                 params={{ type: 'memes', id: currentItem.id }}
+                className="flex min-h-0 flex-1 flex-col"
               >
-                <MemeHeroCard meme={currentItem} isDark={isDark} />
+                <MemeCard meme={currentItem} isDark={isDark} />
               </Link>
             ) : (
               <Link
                 to="/asset/$type/$id"
                 params={{ type: 'markets', id: currentItem.market.id }}
+                className="flex min-h-0 flex-1 flex-col"
               >
-                <HeroMarketCard
+                <MarketCard
                   key={currentItem.market.id}
                   market={currentItem.market}
                 />
@@ -151,225 +190,27 @@ export function HeroBanner() {
             )}
           </div>
         )}
-      </div>
-    </div>
-  )
-}
 
-function useDocumentHidden() {
-  return useSyncExternalStore(
-    (cb) => {
-      document.addEventListener('visibilitychange', cb)
-      return () => document.removeEventListener('visibilitychange', cb)
-    },
-    () => document.hidden,
-    () => false,
-  )
-}
-
-function AssetCard({
-  asset,
-  isDark,
-}: {
-  asset: Extract<CarouselItem, { kind: 'token' }>
-  isDark: boolean
-}) {
-  const isPositive = asset.change >= 0
-  const color = isPositive ? '#22c55e' : '#ef4444'
-  const isTabHidden = useDocumentHidden()
-
-  const chartData = useMemo(() => {
-    if (asset.data.length >= 2) return asset.data
-    const now = Date.now() / 1000
-    const val = asset.data[0]?.value ?? asset.price
-    return [
-      { time: now - 3600, value: val },
-      { time: now, value: asset.price },
-    ]
-  }, [asset.data, asset.price])
-
-  return (
-    <div className="flex cursor-pointer flex-col gap-1 animate-in fade-in duration-500">
-      <div className="flex items-baseline gap-2">
-        {asset.imageUrl && (
-          <FadeImage
-            src={asset.imageUrl}
-            alt=""
-            wrapperClassName="size-6 shrink-0 rounded-full"
-            className="size-6 rounded-full object-cover"
-          />
-        )}
-        <span className="text-sm font-bold text-foreground">
-          {asset.symbol}
-        </span>
-        <span
-          className={cn(
-            'text-xs tabular-nums',
-            isPositive ? 'text-green-500' : 'text-red-500',
-          )}
-        >
-          {isPositive ? '+' : ''}
-          {asset.change.toFixed(2)}%
-        </span>
-        <span className="text-sm font-semibold tabular-nums text-foreground">
-          $
-          {asset.price < 1
-            ? asset.price.toFixed(4)
-            : asset.price.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })}
-        </span>
-      </div>
-
-      <div className="h-[60px] w-full">
-        <Liveline
-          data={chartData}
-          value={asset.price}
-          color={color}
-          theme={isDark ? 'dark' : 'light'}
-          badge={false}
-          grid={false}
-          scrub={false}
-          pulse
-          fill
-          momentum
-          paused={isTabHidden}
-          padding={HERO_CHART_PADDING}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </div>
-    </div>
-  )
-}
-
-function HeroMarketCard({ market }: { market: Market }) {
-  const hasOutcomes = market.outcomes && market.outcomes.length > 0
-
-  return (
-    <div className="flex cursor-pointer flex-col gap-2 animate-in fade-in duration-500">
-      <div className="flex items-start gap-3">
-        {market.imageUrl && (
-          <FadeImage
-            src={market.imageUrl}
-            alt=""
-            wrapperClassName="size-9 shrink-0 rounded-lg"
-            className="size-9 rounded-lg object-cover"
-          />
-        )}
-        <div className="min-w-0 flex-1 pt-0.5">
-          <div className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
-            {market.title}
-          </div>
-        </div>
-      </div>
-
-      {hasOutcomes ? (
-        <div className="space-y-1">
-          {market.outcomes!.slice(0, 3).map((o) => (
-            <div key={o.name} className="flex items-center gap-2">
-              <span className="min-w-0 flex-1 truncate text-xs text-foreground">
-                {o.name}
-              </span>
-              <span className="shrink-0 text-xs font-medium tabular-nums text-foreground">
-                {Math.round(o.percent)}%
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex gap-2">
-          <div className="flex-1 rounded-lg bg-[#22c55e]/15 py-1.5 text-center text-xs font-semibold text-[#22c55e] dark:bg-[#22c55e]/20">
-            Yes {Math.round(market.yesPercent)}%
-          </div>
-          <div className="flex-1 rounded-lg bg-[#ef4444]/15 py-1.5 text-center text-xs font-semibold text-[#ef4444] dark:bg-[#ef4444]/20">
-            No {Math.round(market.noPercent)}%
-          </div>
-        </div>
-      )}
-
-      <div className="text-xs text-muted-foreground">
-        {formatCompact(market.volume)} Vol.
-      </div>
-    </div>
-  )
-}
-
-function MemeHeroCard({
-  meme,
-  isDark,
-}: {
-  meme: Extract<CarouselItem, { kind: 'meme' }>
-  isDark: boolean
-}) {
-  const isPositive = meme.change >= 0
-  const color = isPositive ? '#22c55e' : '#ef4444'
-  const isTabHidden = useDocumentHidden()
-
-  const chartData = useMemo(() => {
-    if (meme.data.length >= 2) return meme.data
-    const now = Date.now() / 1000
-    const val = meme.data[0]?.value ?? meme.price
-    return [
-      { time: now - 3600, value: val },
-      { time: now, value: meme.price },
-    ]
-  }, [meme.data, meme.price])
-
-  return (
-    <div className="flex cursor-pointer flex-col gap-2 animate-in fade-in duration-500">
-      <div className="flex items-center gap-3">
-        {meme.imageUrl && (
-          <FadeImage
-            src={meme.imageUrl}
-            alt=""
-            wrapperClassName="size-9 shrink-0 rounded-full"
-            className="size-9 rounded-full object-cover"
-          />
-        )}
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <span className="truncate text-sm font-bold text-foreground">
-              {meme.symbol}
-            </span>
-            <span
-              className={cn(
-                'text-xs tabular-nums',
-                isPositive ? 'text-green-500' : 'text-red-500',
+        {/* Right: Sidebar */}
+        <div className="ml-auto flex w-full shrink-0 flex-col sm:w-[320px] lg:w-[360px]">
+          <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-border bg-card/50 p-4">
+            <h3 className="mb-2 flex shrink-0 items-center gap-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <FlameIcon className="size-3.5" />
+              Top assets
+            </h3>
+            <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto">
+              {sidebarItems.length === 0 ? (
+                <li className="py-4 text-center text-sm text-muted-foreground">
+                  No data yet
+                </li>
+              ) : (
+                sidebarItems.map((item) => (
+                  <SidebarRow key={`${item.type}-${item.id}`} item={item} />
+                ))
               )}
-            >
-              {isPositive ? '+' : ''}
-              {meme.change.toFixed(2)}%
-            </span>
-          </div>
-          <div className="truncate text-xs text-muted-foreground">
-            {meme.name}
+            </ul>
           </div>
         </div>
-        <div className="text-sm font-semibold tabular-nums text-foreground">
-          ${meme.price < 1 ? meme.price.toFixed(6) : meme.price.toFixed(2)}
-        </div>
-      </div>
-
-      <div className="h-[60px] w-full">
-        <Liveline
-          data={chartData}
-          value={meme.price}
-          color={color}
-          theme={isDark ? 'dark' : 'light'}
-          badge={false}
-          grid={false}
-          scrub={false}
-          pulse
-          fill
-          momentum
-          paused={isTabHidden}
-          padding={HERO_CHART_PADDING}
-          style={{ width: '100%', height: '100%' }}
-        />
-      </div>
-
-      <div className="text-xs text-muted-foreground">
-        {formatCompact(meme.liquidity)} Liquidity
       </div>
     </div>
   )

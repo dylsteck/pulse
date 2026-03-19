@@ -1,8 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, test } from 'bun:test'
 import { prepareOrder } from '@/lib/hyperliquid/order-utils'
 
 describe('prepareOrder', () => {
-  it('formats market order with IOC and slippage', () => {
+  test('formats market order with IOC and slippage', () => {
     const order = prepareOrder({
       side: 'buy',
       type: 'market',
@@ -19,7 +19,7 @@ describe('prepareOrder', () => {
     expect(Number(order.p)).toBeGreaterThan(1000)
   })
 
-  it('throws on notional below minimum', () => {
+  test('throws on notional below minimum', () => {
     expect(() =>
       prepareOrder({
         side: 'buy',

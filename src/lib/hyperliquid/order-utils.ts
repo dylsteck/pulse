@@ -26,10 +26,16 @@ export interface PreparedOrder {
   c?: `0x${string}`
 }
 
-export function validateNotional(size: number, price: number, minNotional = 10): void {
+export function validateNotional(
+  size: number,
+  price: number,
+  minNotional = 10,
+): void {
   const notional = size * price
   if (notional < minNotional) {
-    throw new Error(`Order too small: $${notional.toFixed(2)} < $${minNotional.toFixed(2)}`)
+    throw new Error(
+      `Order too small: $${notional.toFixed(2)} < $${minNotional.toFixed(2)}`,
+    )
   }
 }
 
@@ -56,7 +62,11 @@ export function prepareOrder(input: PrepareOrderInput): PreparedOrder {
         : 1 - slippageBps / 10_000
       : 1
 
-  const formattedPrice = formatPrice(rawPrice * slippageMultiplier, szDecimals, 'perp')
+  const formattedPrice = formatPrice(
+    rawPrice * slippageMultiplier,
+    szDecimals,
+    'perp',
+  )
   const formattedSize = formatSize(rawSize, szDecimals)
 
   return {

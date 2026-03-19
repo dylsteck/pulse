@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query'
-import { fetchTrendingSongs, fetchAudioDetail } from '@/lib/tortoise'
+import { fetchAudioDetail, fetchTrendingSongs } from '@/lib/tortoise'
 
 const PAGE_SIZE = 12
 
@@ -20,15 +20,14 @@ export function useTortoiseSongs(limit = PAGE_SIZE) {
     const lastPage = pages.at(-1)
     return {
       songs: pages.flatMap((page) => page.songs),
-      pagination:
-        lastPage?.pagination ?? {
-          page: 1,
-          limit,
-          total: 0,
-          totalPages: 0,
-          hasNextPage: false,
-          hasPrevPage: false,
-        },
+      pagination: lastPage?.pagination ?? {
+        page: 1,
+        limit,
+        total: 0,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+      },
       timeframe: lastPage?.timeframe,
     }
   }, [query.data, limit])

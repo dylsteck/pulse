@@ -7,7 +7,7 @@ export interface SegmentOption<T extends string> {
 }
 
 interface SegmentControlProps<T extends string> {
-  options: SegmentOption<T>[]
+  options: Array<SegmentOption<T>>
   value: T
   onValueChange: (value: T) => void
   className?: string
@@ -51,7 +51,9 @@ export function SegmentControl<T extends string>({
               <span
                 className={cn(
                   'flex size-5 items-center justify-center rounded-full text-[10px] font-semibold tabular-nums',
-                  isActive ? 'bg-muted text-foreground' : 'bg-muted-foreground/20 text-muted-foreground',
+                  isActive
+                    ? 'bg-muted text-foreground'
+                    : 'bg-muted-foreground/20 text-muted-foreground',
                 )}
               >
                 {opt.badge}

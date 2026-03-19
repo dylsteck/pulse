@@ -1,9 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
+import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import {
   getHyperliquidInfoClient,
   getHyperliquidSymbolConverter,
 } from '@/lib/hyperliquid/clients'
-import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 
 const PERP_INTERVAL_MAP: Record<string, '1m' | '15m' | '1h' | '4h' | '1d'> = {
   '15m': '1m',
@@ -21,7 +21,9 @@ const PERP_WINDOW_SECS: Record<string, number> = {
 
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
 
-function validateUserParam(params: Record<string, unknown> | undefined): string | null {
+function validateUserParam(
+  params: Record<string, unknown> | undefined,
+): string | null {
   const user = params?.user
   if (typeof user !== 'string') return null
   return ETH_ADDRESS_REGEX.test(user) ? user : null
@@ -46,7 +48,7 @@ export const Route = createFileRoute('/api/hyperliquid')({
             ])
             const [meta, ctxs] = metaAndCtxs
 
-            const markets: PerpMarketSnapshot[] = meta.universe
+            const markets: Array<PerpMarketSnapshot> = meta.universe
               .map((asset, index) => {
                 const ctx = ctxs[index]
                 if (!ctx || asset.isDelisted) return null
@@ -150,7 +152,10 @@ export const Route = createFileRoute('/api/hyperliquid')({
             if (!user) {
               return new Response(
                 JSON.stringify({ error: 'Invalid user address.' }),
-                { status: 400, headers: { 'Content-Type': 'application/json' } },
+                {
+                  status: 400,
+                  headers: { 'Content-Type': 'application/json' },
+                },
               )
             }
             const result = await info.clearinghouseState({ user })
@@ -165,7 +170,10 @@ export const Route = createFileRoute('/api/hyperliquid')({
             if (!user) {
               return new Response(
                 JSON.stringify({ error: 'Invalid user address.' }),
-                { status: 400, headers: { 'Content-Type': 'application/json' } },
+                {
+                  status: 400,
+                  headers: { 'Content-Type': 'application/json' },
+                },
               )
             }
             const result = await info.frontendOpenOrders({ user })
@@ -180,7 +188,10 @@ export const Route = createFileRoute('/api/hyperliquid')({
             if (!user) {
               return new Response(
                 JSON.stringify({ error: 'Invalid user address.' }),
-                { status: 400, headers: { 'Content-Type': 'application/json' } },
+                {
+                  status: 400,
+                  headers: { 'Content-Type': 'application/json' },
+                },
               )
             }
             const result = await info.userFills({

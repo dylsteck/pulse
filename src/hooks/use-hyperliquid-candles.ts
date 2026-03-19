@@ -1,14 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
-import {
-  fetchHyperliquidCandles,
-  type PerpCandleDataPoint,
-} from '@/lib/hyperliquid/service'
+import type { PerpCandleDataPoint } from '@/lib/hyperliquid/service'
+import { fetchHyperliquidCandles } from '@/lib/hyperliquid/service'
 
 export function useHyperliquidCandles(
   coin: string,
   windowLabel: string,
 ): {
-  data: PerpCandleDataPoint[]
+  data: Array<PerpCandleDataPoint>
   isLoading: boolean
   isError: boolean
 } {

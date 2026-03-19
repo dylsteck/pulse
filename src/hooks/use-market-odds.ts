@@ -4,7 +4,7 @@ import type { Market } from '@/lib/types'
 export interface LiveOdds {
   yesPercent: number
   noPercent: number
-  history: { time: number; value: number }[]
+  history: Array<{ time: number; value: number }>
 }
 
 export function useMarketOdds(market: Market): LiveOdds {
