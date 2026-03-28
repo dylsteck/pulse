@@ -6,7 +6,7 @@ import type { CreatorToken } from '@/lib/zora/service'
 import type { MemeToken } from '@/lib/geckoterminal'
 import type { ViewMode } from '@/components/dashboard/tabs'
 import type { ViewLayout } from '@/components/dashboard/layout-toggle'
-import { HeroBanner } from '@/components/dashboard/hero-banner'
+
 import { useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useZoraCreators } from '@/hooks/use-zora-creators'
@@ -185,9 +185,8 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col py-2 sm:px-6">
-      <HeroBanner />
-      <div ref={scrollRef} className="scroll-mt-4 py-6">
-        <div className="sticky top-[2.75rem] z-20 -mx-2 mb-2 flex items-end justify-between gap-2 bg-background px-2 pb-2 pt-1 sm:-mx-6 sm:px-6">
+      <div ref={scrollRef} className="scroll-mt-4 pt-4">
+        <div className="sticky top-[3.0625rem] z-20 -mx-2 mb-2 flex items-end justify-between gap-2 bg-background px-2 pb-2 pt-1 sm:-mx-6 sm:px-6">
           <ModeTabs
             mode={mode}
             onModeChange={(tab) => {
