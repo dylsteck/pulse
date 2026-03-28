@@ -3,7 +3,6 @@ import { MoonIcon, SearchIcon, SunIcon } from 'lucide-react'
 import { openCommandPalette } from '@/components/command-palette'
 import { useTheme } from '@/components/theme-provider'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
 
 export function Header() {
   const { theme, toggleTheme } = useTheme()
@@ -11,7 +10,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 bg-background">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/" className="text-sm font-semibold tracking-tight text-foreground">
+        <Link to="/" search={{ type: 'tokens' }} className="text-sm font-semibold tracking-tight text-foreground">
           Pulse
         </Link>
         <div className="flex items-center gap-1">
@@ -23,7 +22,6 @@ export function Header() {
           </Button>
         </div>
       </div>
-      <Separator />
     </header>
   )
 }

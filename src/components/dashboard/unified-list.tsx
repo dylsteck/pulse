@@ -1,11 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import type { Market, Token } from '@/lib/types'
-import type { Song } from '@/lib/tortoise'
-import type { CreatorToken } from '@/lib/zora/service'
-import type { MemeToken } from '@/lib/geckoterminal'
 import type { ViewMode } from '@/components/dashboard/tabs'
-import type { ViewLayout } from '@/components/dashboard/layout-toggle'
 
 import { useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
@@ -22,22 +17,13 @@ import {
   TokenGrid,
 } from '@/components/dashboard/grids'
 import {
-  CreatorsTable,
-  MarketTable,
-  MemeTable,
-  MusicTable,
-  TokenTable,
-} from '@/components/dashboard/tables'
-import {
   ErrorPanel,
   LoadingPanel,
   MemeRetryState,
 } from '@/components/dashboard/shared'
 import { ModeTabs } from '@/components/dashboard/tabs'
-import { LayoutToggle } from '@/components/dashboard/layout-toggle'
-import { useIsMobile } from '@/hooks/use-is-mobile'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
-import { cn } from '@/lib/utils'
+import { TrendingSidebar } from '@/components/dashboard/trending-sidebar'
 
 export type { ViewMode } from '@/components/dashboard/tabs'
 
@@ -45,29 +31,9 @@ interface UnifiedListProps {
   initialMode?: ViewMode
 }
 
-let persistedLayout: ViewLayout | null = null
-
 export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
   const navigate = useNavigate()
-  const isMobile = useIsMobile()
   const [mode, setMode] = useState<ViewMode>(initialMode)
-  const [layout, setLayoutRaw] = useState<ViewLayout>(persistedLayout ?? 'list')
-  const hasSetInitialLayout = useRef(false)
-
-  const setLayout = useCallback((l: ViewLayout) => {
-    persistedLayout = l
-    setLayoutRaw(l)
-  }, [])
-
-  useEffect(() => {
-    if (isMobile && !hasSetInitialLayout.current && persistedLayout === null) {
-      hasSetInitialLayout.current = true
-      setLayout('grid')
-    }
-  }, [isMobile, setLayout])
-  const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [selectedIndex, setSelectedIndex] = useState(0)
-  const rowRefs = useRef<Array<HTMLButtonElement | null>>([])
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -88,60 +54,9 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
   const liveMarkets = liveMarketsQuery.data
   const memeTokens = memeTokensQuery.data
 
-  const items: Array<{ id: string }> =
-    mode === 'tokens'
-      ? liveTokens
-      : mode === 'markets'
-        ? liveMarkets
-        : mode === 'creators'
-          ? creators
-          : mode === 'music'
-            ? songsData.songs
-            : mode === 'memes'
-              ? memeTokens
-              : (perpMarkets ?? [])
-
   useEffect(() => {
     setMode(initialMode)
-    setExpandedId(null)
-    setSelectedIndex(0)
   }, [initialMode])
-
-  useEffect(() => {
-    if (!items.length) {
-      setSelectedIndex(0)
-      return
-    }
-    setSelectedIndex((current) => Math.min(current, items.length - 1))
-  }, [items.length])
-
-  useEffect(() => {
-    if (layout !== 'list') return
-
-    function handleKey(e: KeyboardEvent) {
-      if (!items.length) return
-      if (e.key === 'ArrowDown') {
-        e.preventDefault()
-        setSelectedIndex((i) => {
-          const next = Math.min(i + 1, items.length - 1)
-          rowRefs.current[next].scrollIntoView({ block: 'nearest' })
-          return next
-        })
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault()
-        setSelectedIndex((i) => {
-          const next = Math.max(i - 1, 0)
-          rowRefs.current[next].scrollIntoView({ block: 'nearest' })
-          return next
-        })
-      } else if (e.key === 'Enter') {
-        const item = items[selectedIndex]
-        setExpandedId((prev) => (prev === item.id ? null : item.id))
-      }
-    }
-    window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
-  }, [items, selectedIndex, layout])
 
   useInfiniteScroll(creatorsLoadMoreRef, {
     hasMore: creatorsQuery.hasNextPage ?? false,
@@ -176,17 +91,11 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
     threshold: 0,
   })
 
-  const handleRowClick = (index: number) => {
-    if (!items.length) return
-    setSelectedIndex(index)
-    const item = items[index]
-    setExpandedId((prev) => (prev === item.id ? null : item.id))
-  }
-
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-col py-2 sm:px-6">
+    <div className="mx-auto flex w-full max-w-7xl py-2 sm:px-6">
+      <div className="min-w-0 flex-1">
       <div ref={scrollRef} className="scroll-mt-4 pt-4">
-        <div className="sticky top-[3.0625rem] z-20 -mx-2 mb-2 flex items-end justify-between gap-2 bg-background px-2 pb-2 pt-1 sm:-mx-6 sm:px-6">
+        <div className="sticky top-12 z-20 -mx-2 mb-2 flex items-end justify-between gap-2 bg-background px-2 pb-2 pt-1 sm:-mx-6 sm:px-6">
           <ModeTabs
             mode={mode}
             onModeChange={(tab) => {
@@ -195,133 +104,12 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
                 search: { type: tab },
                 resetScroll: false,
               })
-              setExpandedId(null)
-              setSelectedIndex(0)
             }}
           />
-          <LayoutToggle layout={layout} onLayoutChange={setLayout} />
         </div>
 
-        <div className={cn(layout === 'grid' && 'px-2 sm:px-0')}>
-          {layout === 'list' ? (
-            mode === 'tokens' ? (
-              liveTokensQuery.isLoading ? (
-                <LoadingPanel label="Loading live token data..." />
-              ) : liveTokensQuery.error ? (
-                <ErrorPanel
-                  label={
-                    liveTokensQuery.error instanceof Error
-                      ? liveTokensQuery.error.message
-                      : 'Failed to load live token data.'
-                  }
-                />
-              ) : (
-                <TokenTable
-                  tokens={liveTokens}
-                  selectedIndex={selectedIndex}
-                  expandedId={expandedId}
-                  rowRefs={rowRefs}
-                  onRowClick={handleRowClick}
-                />
-              )
-            ) : mode === 'markets' ? (
-              liveMarketsQuery.isLoading ? (
-                <LoadingPanel label="Loading Polymarket events..." />
-              ) : liveMarketsQuery.error ? (
-                <ErrorPanel
-                  label={
-                    liveMarketsQuery.error instanceof Error
-                      ? liveMarketsQuery.error.message
-                      : 'Failed to load live market data.'
-                  }
-                />
-              ) : (
-                <MarketTable
-                  markets={liveMarkets}
-                  selectedIndex={selectedIndex}
-                  expandedId={expandedId}
-                  rowRefs={rowRefs}
-                  onRowClick={handleRowClick}
-                />
-              )
-            ) : mode === 'creators' ? (
-              creatorsQuery.isLoading ? (
-                <LoadingPanel label="Loading creators..." />
-              ) : creatorsQuery.error ? (
-                <ErrorPanel
-                  label={
-                    creatorsQuery.error instanceof Error
-                      ? creatorsQuery.error.message
-                      : 'Failed to load creator data.'
-                  }
-                />
-              ) : (
-                <CreatorsTable
-                  creators={creators}
-                  isLoading={false}
-                  selectedIndex={selectedIndex}
-                  expandedId={expandedId}
-                  rowRefs={rowRefs}
-                  onRowClick={handleRowClick}
-                />
-              )
-            ) : mode === 'music' ? (
-              songsQuery.isLoading ? (
-                <LoadingPanel label="Loading music..." />
-              ) : songsQuery.error ? (
-                <ErrorPanel
-                  label={
-                    songsQuery.error instanceof Error
-                      ? songsQuery.error.message
-                      : 'Failed to load music data.'
-                  }
-                />
-              ) : (
-                <MusicTable
-                  songs={songsData.songs}
-                  isLoading={false}
-                  selectedIndex={selectedIndex}
-                  expandedId={expandedId}
-                  rowRefs={rowRefs}
-                  onRowClick={handleRowClick}
-                />
-              )
-            ) : mode === 'memes' ? (
-              memeTokensQuery.isLoading ? (
-                <LoadingPanel label="Loading memes..." />
-              ) : memeTokensQuery.error ? (
-                <MemeRetryState onRetry={() => memeTokensQuery.refetch()} />
-              ) : (
-                <MemeTable
-                  memes={memeTokens}
-                  selectedIndex={selectedIndex}
-                  expandedId={expandedId}
-                  rowRefs={rowRefs}
-                  onRowClick={handleRowClick}
-                />
-              )
-            ) : isPerpsLoading ? (
-              <LoadingPanel label="Loading perps..." />
-            ) : perpsQuery.error ? (
-              <ErrorPanel
-                label={
-                  perpsQuery.error instanceof Error
-                    ? perpsQuery.error.message
-                    : 'Failed to load perps data.'
-                }
-              />
-            ) : (
-              <PerpsPanel
-                markets={perpMarkets ?? []}
-                isLoading={false}
-                layout="list"
-                selectedIndex={selectedIndex}
-                expandedId={expandedId}
-                rowRefs={rowRefs}
-                onRowClick={handleRowClick}
-              />
-            )
-          ) : mode === 'tokens' ? (
+        <div className="px-2 sm:px-0">
+          {mode === 'tokens' ? (
             liveTokensQuery.isLoading ? (
               <LoadingPanel label="Loading live token data..." />
             ) : liveTokensQuery.error ? (
@@ -400,10 +188,6 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
               markets={perpMarkets ?? []}
               isLoading={false}
               layout="grid"
-              selectedIndex={selectedIndex}
-              expandedId={expandedId}
-              rowRefs={rowRefs}
-              onRowClick={handleRowClick}
             />
           )}
           {mode === 'creators' && creatorsQuery.hasNextPage && (
@@ -438,6 +222,8 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
           )}
         </div>
       </div>
+      </div>
+      <TrendingSidebar tokens={liveTokens} />
     </div>
   )
 }

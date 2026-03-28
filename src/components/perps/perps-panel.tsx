@@ -21,10 +21,10 @@ interface PerpsPanelProps {
   markets: Array<PerpMarketSnapshot>
   isLoading: boolean
   layout: 'list' | 'grid'
-  selectedIndex: number
-  expandedId: string | null
-  rowRefs: React.MutableRefObject<Array<HTMLButtonElement | null>>
-  onRowClick: (index: number) => void
+  selectedIndex?: number
+  expandedId?: string | null
+  rowRefs?: React.MutableRefObject<Array<HTMLButtonElement | null>>
+  onRowClick?: (index: number) => void
 }
 
 export function PerpsPanel({
@@ -54,7 +54,7 @@ export function PerpsPanel({
 
   return (
     <div className="space-y-3">
-      {layout === 'list' ? (
+      {layout === 'list' && selectedIndex != null && expandedId !== undefined && rowRefs && onRowClick ? (
         <PerpsTable
           markets={markets}
           selectedIndex={selectedIndex}
