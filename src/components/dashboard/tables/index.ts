@@ -1,5 +1,3 @@
 export { TokenTable } from './token-table'
 export { MarketTable } from './market-table'
-export { MusicTable } from './music-table'
 export { MemeTable } from './meme-table'
-export { CreatorsTable } from './creators-table'

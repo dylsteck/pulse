@@ -1,21 +1,15 @@
 import { useMemo } from 'react'
 import type { Market, Token } from '@/lib/types'
-import type { CreatorToken } from '@/lib/zora/service'
 import type { MemeToken } from '@/lib/geckoterminal'
-import type { Song } from '@/lib/tortoise'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
-import { useZoraCreators } from '@/hooks/use-zora-creators'
-import { useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
 
 export type CommandSearchAssetType =
   | 'tokens'
   | 'markets'
-  | 'creators'
-  | 'music'
   | 'perps'
   | 'memes'
 
@@ -26,22 +20,18 @@ export interface CommandSearchItem {
   subtitle?: string
   value: string
   hasChart: boolean
-  raw: Token | Market | CreatorToken | MemeToken | Song | PerpMarketSnapshot
+  raw: Token | Market | MemeToken | PerpMarketSnapshot
 }
 
 export function useCommandSearch() {
   const liveTokens = useLiveTokens()
   const liveMarkets = useLiveMarkets()
   const memeTokens = useMemeTokens()
-  const creatorsQuery = useZoraCreators(20)
-  const songsQuery = useTortoiseSongs()
   const perpsQuery = usePerpMarkets()
 
   const tokens = liveTokens.data ?? []
   const markets = liveMarkets.data ?? []
   const memes = memeTokens.data ?? []
-  const creators = creatorsQuery.items
-  const songs = songsQuery.data?.songs ?? []
   const perps = perpsQuery.data ?? []
 
   const items = useMemo(() => {
@@ -69,28 +59,6 @@ export function useCommandSearch() {
         raw: m,
       })
     }
-    for (const c of creators) {
-      result.push({
-        type: 'creators',
-        id: c.id,
-        label: c.name,
-        subtitle: c.symbol,
-        value: `creators:${c.id}`,
-        hasChart: true,
-        raw: c,
-      })
-    }
-    for (const s of songs) {
-      result.push({
-        type: 'music',
-        id: s.id,
-        label: s.title,
-        subtitle: s.artist,
-        value: `music:${s.id}`,
-        hasChart: false,
-        raw: s,
-      })
-    }
     for (const p of perps) {
       result.push({
         type: 'perps',
@@ -115,7 +83,7 @@ export function useCommandSearch() {
     }
 
     return result
-  }, [tokens, markets, creators, songs, perps, memes])
+  }, [tokens, markets, perps, memes])
 
   return { items }
 }

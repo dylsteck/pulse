@@ -2,18 +2,14 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import type { ViewMode } from '@/components/dashboard/tabs'
 
-import { useTortoiseSongs } from '@/hooks/use-tortoise-songs'
 import { usePerpMarkets } from '@/hooks/use-perps'
-import { useZoraCreators } from '@/hooks/use-zora-creators'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { PerpsPanel } from '@/components/perps/perps-panel'
 import {
-  CreatorsGrid,
   MarketGrid,
   MemeGrid,
-  MusicGrid,
   TokenGrid,
 } from '@/components/dashboard/grids'
 import {
@@ -35,18 +31,12 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
   const navigate = useNavigate()
   const [mode, setMode] = useState<ViewMode>(initialMode)
   const scrollRef = useRef<HTMLDivElement | null>(null)
-  const creatorsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const marketsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const memesLoadMoreRef = useRef<HTMLDivElement | null>(null)
-  const musicLoadMoreRef = useRef<HTMLDivElement | null>(null)
-  const songsQuery = useTortoiseSongs()
-  const songsData = songsQuery.data
   const perpsQuery = usePerpMarkets()
   const perpMarkets = perpsQuery.data
   const isPerpsLoading = perpsQuery.isLoading
-  const creatorsQuery = useZoraCreators(20)
-  const creators = creatorsQuery.items
   const liveTokensQuery = useLiveTokens()
   const liveMarketsQuery = useLiveMarkets()
   const memeTokensQuery = useMemeTokens()
@@ -58,12 +48,6 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
     setMode(initialMode)
   }, [initialMode])
 
-  useInfiniteScroll(creatorsLoadMoreRef, {
-    hasMore: creatorsQuery.hasNextPage ?? false,
-    isFetching: creatorsQuery.isFetchingNextPage,
-    loadMore: () => void creatorsQuery.fetchNextPage(),
-    enabled: mode === 'creators',
-  })
   useInfiniteScroll(tokensLoadMoreRef, {
     hasMore: liveTokensQuery.hasMore,
     isFetching: liveTokensQuery.isFetching,
@@ -75,12 +59,6 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
     isFetching: liveMarketsQuery.isFetching,
     loadMore: () => liveMarketsQuery.loadMore(),
     enabled: mode === 'markets',
-  })
-  useInfiniteScroll(musicLoadMoreRef, {
-    hasMore: songsQuery.hasMore,
-    isFetching: songsQuery.isFetchingMore,
-    loadMore: () => void songsQuery.loadMore(),
-    enabled: mode === 'music',
   })
   useInfiniteScroll(memesLoadMoreRef, {
     hasMore: memeTokensQuery.hasMore,
@@ -94,7 +72,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
   return (
     <div className="mx-auto flex w-full max-w-7xl py-2 sm:px-6">
       <div className="min-w-0 flex-1">
-      <div ref={scrollRef} className="scroll-mt-4 pt-4">
+      <div ref={scrollRef} className="scroll-mt-2 pt-1">
         <div className="sticky top-12 z-20 -mx-2 mb-2 flex items-end justify-between gap-2 bg-background px-2 pb-2 pt-1 sm:-mx-6 sm:px-6">
           <ModeTabs
             mode={mode}
@@ -137,34 +115,6 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
             ) : (
               <MarketGrid markets={liveMarkets} />
             )
-          ) : mode === 'creators' ? (
-            creatorsQuery.isLoading ? (
-              <LoadingPanel label="Loading creators..." />
-            ) : creatorsQuery.error ? (
-              <ErrorPanel
-                label={
-                  creatorsQuery.error instanceof Error
-                    ? creatorsQuery.error.message
-                    : 'Failed to load creator data.'
-                }
-              />
-            ) : (
-              <CreatorsGrid creators={creators} isLoading={false} />
-            )
-          ) : mode === 'music' ? (
-            songsQuery.isLoading ? (
-              <LoadingPanel label="Loading music..." />
-            ) : songsQuery.error ? (
-              <ErrorPanel
-                label={
-                  songsQuery.error instanceof Error
-                    ? songsQuery.error.message
-                    : 'Failed to load music data.'
-                }
-              />
-            ) : (
-              <MusicGrid songs={songsData.songs} isLoading={false} />
-            )
           ) : mode === 'memes' ? (
             memeTokensQuery.isLoading ? (
               <LoadingPanel label="Loading memes..." />
@@ -190,17 +140,11 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
               layout="grid"
             />
           )}
-          {mode === 'creators' && creatorsQuery.hasNextPage && (
-            <div ref={creatorsLoadMoreRef} className="h-6" aria-hidden />
-          )}
           {mode === 'tokens' && liveTokensQuery.hasMore && (
             <div ref={tokensLoadMoreRef} className="h-6" aria-hidden />
           )}
           {mode === 'markets' && liveMarketsQuery.hasMore && (
             <div ref={marketsLoadMoreRef} className="h-6" aria-hidden />
-          )}
-          {mode === 'music' && songsQuery.hasMore && (
-            <div ref={musicLoadMoreRef} className="h-6" aria-hidden />
           )}
           {mode === 'memes' && memeTokensQuery.hasMore && (
             <div
@@ -223,7 +167,7 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
         </div>
       </div>
       </div>
-      <TrendingSidebar tokens={liveTokens} />
+      <TrendingSidebar tokens={liveTokens} markets={liveMarkets} />
     </div>
   )
 }
