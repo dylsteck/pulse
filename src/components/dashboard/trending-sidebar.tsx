@@ -59,8 +59,8 @@ export function TrendingSidebar({ tokens, markets }: TrendingSidebarProps) {
               {trending.map((token) => (
                 <Link
                   key={token.id}
-                  to="/"
-                  search={{ type: 'tokens' }}
+                  to="/asset/$type/$id"
+                  params={{ type: 'tokens', id: token.id }}
                   className="flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-muted/50"
                 >
                   {token.imageUrl ? (
@@ -105,8 +105,8 @@ export function TrendingSidebar({ tokens, markets }: TrendingSidebarProps) {
               {topMarkets.map((market) => (
                 <Link
                   key={market.id}
-                  to="/"
-                  search={{ type: 'markets' }}
+                  to="/asset/$type/$id"
+                  params={{ type: 'markets', id: market.id }}
                   className="flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-muted/50"
                 >
                   {market.imageUrl ? (

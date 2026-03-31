@@ -11,6 +11,7 @@ import {
   MarketGrid,
   MemeGrid,
   TokenGrid,
+  TrendingGrid,
 } from '@/components/dashboard/grids'
 import {
   ErrorPanel,
@@ -27,7 +28,7 @@ interface UnifiedListProps {
   initialMode?: ViewMode
 }
 
-export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
+export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   const navigate = useNavigate()
   const [mode, setMode] = useState<ViewMode>(initialMode)
   const scrollRef = useRef<HTMLDivElement | null>(null)
@@ -87,7 +88,18 @@ export function UnifiedList({ initialMode = 'tokens' }: UnifiedListProps) {
         </div>
 
         <div className="px-2 sm:px-0">
-          {mode === 'tokens' ? (
+          {mode === 'trending' ? (
+            <TrendingGrid
+              tokens={liveTokens ?? []}
+              markets={liveMarkets ?? []}
+              perps={perpMarkets ?? []}
+              memes={memeTokens ?? []}
+              tokensLoading={liveTokensQuery.isLoading}
+              marketsLoading={liveMarketsQuery.isLoading}
+              perpsLoading={isPerpsLoading}
+              memesLoading={memeTokensQuery.isLoading}
+            />
+          ) : mode === 'tokens' ? (
             liveTokensQuery.isLoading ? (
               <LoadingPanel label="Loading live token data..." />
             ) : liveTokensQuery.error ? (

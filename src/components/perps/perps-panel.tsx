@@ -9,6 +9,7 @@ import {
   WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { FadeImage } from '@/components/ui/fade-image'
+import { PerpGridCard } from '@/components/dashboard/cards'
 import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -244,49 +245,7 @@ function PerpsGrid({ markets }: { markets: Array<PerpMarketSnapshot> }) {
   return (
     <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {markets.map((market) => (
-        <Link
-          key={market.id}
-          to="/asset/$type/$id"
-          params={{ type: 'perps', id: market.id }}
-          className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <FadeImage
-                src={perpIconUrl(market.coin)}
-                alt=""
-                wrapperClassName="size-9 shrink-0 rounded-full"
-                className="size-9 rounded-full object-cover"
-              />
-              <div>
-                <div className="text-sm font-semibold">{market.coin}</div>
-                <div className="text-xs text-muted-foreground">PERP</div>
-              </div>
-            </div>
-            <div
-              className={cn(
-                'text-xs font-medium tabular-nums',
-                market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-              )}
-            >
-              {market.change24h >= 0 ? '+' : ''}
-              {market.change24h.toFixed(2)}%
-            </div>
-          </div>
-          <div className="mt-2 mb-1 text-lg font-semibold tabular-nums">
-            ${formatPerpPrice(market, market.markPx)}
-          </div>
-          <div className="mt-auto pt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-            <span className="text-muted-foreground">Volume</span>
-            <span className="text-right tabular-nums">
-              {formatCompact(market.volume24h)}
-            </span>
-            <span className="text-muted-foreground">Funding</span>
-            <span className="text-right tabular-nums">
-              {(market.funding * 100).toFixed(4)}%
-            </span>
-          </div>
-        </Link>
+        <PerpGridCard key={market.id} market={market} />
       ))}
     </div>
   )

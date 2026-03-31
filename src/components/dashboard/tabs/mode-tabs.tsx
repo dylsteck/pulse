@@ -4,22 +4,24 @@ import {
   CoinsIcon,
   FlameIcon,
   TrendingUpIcon,
+  ZapIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export type ViewMode = 'tokens' | 'markets' | 'perps' | 'memes'
+export type ViewMode = 'trending' | 'tokens' | 'markets' | 'perps' | 'memes'
 
 export const TAB_ICONS: Record<
   ViewMode,
   React.ComponentType<{ className?: string }>
 > = {
+  trending: ZapIcon,
   tokens: CoinsIcon,
   markets: TrendingUpIcon,
   perps: ArrowUpDownIcon,
   memes: FlameIcon,
 }
 
-const TABS: Array<ViewMode> = ['tokens', 'markets', 'perps', 'memes']
+const TABS: Array<ViewMode> = ['trending', 'tokens', 'markets', 'perps', 'memes']
 
 interface ModeTabsProps {
   mode: ViewMode

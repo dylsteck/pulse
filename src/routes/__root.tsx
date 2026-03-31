@@ -55,7 +55,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="min-h-screen bg-background text-foreground">
+      <body className="min-h-screen bg-background text-foreground scrollbar-none">
         {(() => {
           const inner = (
             <WagmiProvider config={wagmiConfig}>
