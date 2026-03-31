@@ -36,6 +36,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   const [mode, setMode] = useState<ViewMode>(initialMode)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
+  const trendingLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const marketsLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const memesLoadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -53,6 +54,20 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
     setMode(initialMode)
   }, [initialMode])
 
+  const trendingHasMore =
+    liveTokensQuery.hasMore || liveMarketsQuery.hasMore || memeTokensQuery.hasMore
+  const trendingIsFetching =
+    liveTokensQuery.isFetching && liveMarketsQuery.isFetching && memeTokensQuery.isFetching
+  useInfiniteScroll(trendingLoadMoreRef, {
+    hasMore: trendingHasMore,
+    isFetching: trendingIsFetching,
+    loadMore: () => {
+      if (liveTokensQuery.hasMore) liveTokensQuery.loadMore()
+      if (liveMarketsQuery.hasMore) liveMarketsQuery.loadMore()
+      if (memeTokensQuery.hasMore) void memeTokensQuery.loadMore()
+    },
+    enabled: mode === 'trending',
+  })
   useInfiniteScroll(tokensLoadMoreRef, {
     hasMore: liveTokensQuery.hasMore,
     isFetching: liveTokensQuery.isFetching,
@@ -168,6 +183,9 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
               isLoading={false}
               layout="grid"
             />
+          )}
+          {mode === 'trending' && trendingHasMore && (
+            <div ref={trendingLoadMoreRef} className="h-6" aria-hidden />
           )}
           {mode === 'tokens' && liveTokensQuery.hasMore && (
             <div ref={tokensLoadMoreRef} className="h-6" aria-hidden />

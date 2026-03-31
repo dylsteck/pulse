@@ -10,8 +10,6 @@ import {
 } from '@/components/dashboard/cards'
 import { LoadingPanel } from '@/components/dashboard/shared'
 
-const ITEMS_PER_TYPE = 6
-
 type TrendingItem =
   | { kind: 'token'; data: Token }
   | { kind: 'market'; data: Market }
@@ -47,22 +45,18 @@ export function TrendingGrid({
   const topTokens = tokens
     .slice()
     .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
-    .slice(0, ITEMS_PER_TYPE)
 
   const topMarkets = markets
     .slice()
     .sort((a, b) => b.volume - a.volume)
-    .slice(0, ITEMS_PER_TYPE)
 
   const topPerps = perps
     .slice()
     .sort((a, b) => b.volume24h - a.volume24h)
-    .slice(0, ITEMS_PER_TYPE)
 
   const topMemes = memes
     .slice()
     .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
-    .slice(0, ITEMS_PER_TYPE)
 
   // Interleave: round-robin across categories
   const items: TrendingItem[] = []
