@@ -1,22 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import {
-  CreatorDetail,
   MarketDetail,
   MemeDetail,
-  MusicDetail,
   PerpDetail,
   TokenDetail,
 } from '@/components/asset-detail'
 
-const ASSET_TYPES = [
-  'tokens',
-  'markets',
-  'creators',
-  'music',
-  'perps',
-  'memes',
-] as const
+const ASSET_TYPES = ['tokens', 'markets', 'perps', 'memes'] as const
 
 export function AssetDetailPage({ type, id }: { type: string; id: string }) {
   const navigate = useNavigate()
@@ -40,8 +31,6 @@ export function AssetDetailPage({ type, id }: { type: string; id: string }) {
 
       {type === 'tokens' && <TokenDetail id={id} />}
       {type === 'markets' && <MarketDetail id={id} />}
-      {type === 'creators' && <CreatorDetail id={id} />}
-      {type === 'music' && <MusicDetail id={id} />}
       {type === 'perps' && <PerpDetail id={id} />}
       {type === 'memes' && <MemeDetail id={id} />}
       {!ASSET_TYPES.includes(type as (typeof ASSET_TYPES)[number]) && (

@@ -24,8 +24,6 @@ import { encodeAssetId } from '@/lib/caip19'
 const GROUP_HEADINGS: Record<CommandSearchItem['type'], string> = {
   tokens: 'Tokens',
   markets: 'Markets',
-  creators: 'Creators',
-  music: 'Music',
   perps: 'Perps',
   memes: 'Memes',
 }
@@ -100,7 +98,7 @@ export function CommandPalette() {
       open={open}
       onOpenChange={setOpen}
       title="Search"
-      description="Search tokens, markets, creators, music, perps, and memes"
+      description="Search tokens, markets, perps, and memes"
       showCloseButton={false}
       className="max-w-xl"
     >
@@ -111,7 +109,7 @@ export function CommandPalette() {
       >
         <div className="relative border-b border-border/50">
           <CommandInput
-            placeholder="Search tokens, markets, creators..."
+            placeholder="Search tokens, markets, memes..."
             className="pr-12 placeholder:text-muted-foreground"
           />
           <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
@@ -126,16 +124,7 @@ export function CommandPalette() {
             )}
           >
             <CommandEmpty>No results found.</CommandEmpty>
-            {(
-              [
-                'tokens',
-                'markets',
-                'creators',
-                'music',
-                'perps',
-                'memes',
-              ] as const
-            ).map((type) => {
+            {(['tokens', 'markets', 'perps', 'memes'] as const).map((type) => {
               const typeItems = itemsByType.get(type) ?? []
               if (typeItems.length === 0) return null
               return (

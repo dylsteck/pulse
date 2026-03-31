@@ -12,13 +12,11 @@ Pulse is a trading interface for Base tokens (via Spandex) and Polymarket predic
 src/
 ├── routes/
 │   ├── __root.tsx       Global shell (Header, fonts, devtools)
-│   ├── index.tsx        Redirects → /tokens
+│   ├── index.tsx        Main landing page with mode tabs
 │   ├── tokens.tsx       Base token trading page
 │   ├── markets.tsx      Polymarket prediction markets page
-│   ├── memes.tsx       Solana meme tokens (Pump.fun via GeckoTerminal)
-│   ├── creators.tsx    Zora creator tokens
-│   ├── music.tsx       Tortoise music/songs
-│   ├── perps.tsx       Hyperliquid perps
+│   ├── memes.tsx        Solana meme tokens (Pump.fun via GeckoTerminal)
+│   ├── perps.tsx        Hyperliquid perps
 │   ├── asset.$identifier  Asset detail page (uses CAIP-19 identifier format)
 │   └── api/
 │       ├── geckoterminal/

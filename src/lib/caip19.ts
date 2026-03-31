@@ -4,26 +4,20 @@
  * Implements a CAIP-19-like identifier scheme for all asset types in Pulse.
  * Format: chain_id/asset_namespace:asset_reference
  *
- * Blockchain assets (tokens, creators, memes) use standard CAIP-19.
- * Non-blockchain assets (markets, perps, music) use custom chain IDs.
+ * Blockchain assets (tokens, memes) use standard CAIP-19.
+ * Non-blockchain assets (markets, perps) use custom chain IDs.
  */
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-export type AssetType =
-  | 'tokens'
-  | 'markets'
-  | 'creators'
-  | 'music'
-  | 'perps'
-  | 'memes'
+export type AssetType = 'tokens' | 'markets' | 'perps' | 'memes'
 
 export interface AssetIdentifier {
   /** CAIP-2 chain ID, e.g. "eip155:8453" or "polymarket:mainnet" */
   chainId: string
-  /** Asset namespace, e.g. "erc20", "event", "perp", "song" */
+  /** Asset namespace, e.g. "erc20", "event", "perp" */
   namespace: string
   /** Asset reference (address, ID, symbol, etc.) */
   reference: string
@@ -45,7 +39,6 @@ const CHAIN_IDS = {
   solana: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
   polymarket: 'polymarket:mainnet',
   hyperliquid: 'hyperliquid:mainnet',
-  tortoise: 'tortoise:mainnet',
 } as const
 
 // ---------------------------------------------------------------------------
@@ -54,19 +47,16 @@ const CHAIN_IDS = {
 
 const TYPE_TO_NAMESPACE: Record<AssetType, string> = {
   tokens: 'erc20',
-  creators: 'erc20',
   memes: 'spl-token',
   markets: 'event',
   perps: 'perp',
-  music: 'song',
 }
 
 const NAMESPACE_TO_TYPE: Record<string, AssetType> = {
-  erc20: 'tokens', // default; context determines if creator
+  erc20: 'tokens',
   'spl-token': 'memes',
   event: 'markets',
   perp: 'perps',
-  song: 'music',
 }
 
 // ---------------------------------------------------------------------------
@@ -109,18 +99,10 @@ function parseRawId(raw: string): AssetIdentifier | null {
 }
 
 /**
- * Determine the AssetType from a namespace (chainId is reserved for future use).
+ * Determine the AssetType from a namespace.
  */
 function resolveType(_chainId: string, namespace: string): AssetType | null {
-  // Direct namespace lookup first
-  const fromNamespace = NAMESPACE_TO_TYPE[namespace]
-  if (fromNamespace) {
-    // For erc20 we default to "tokens"; callers may refine to "creators"
-    // based on context (address ownership etc.), but for decoding purposes
-    // "tokens" is correct.
-    return fromNamespace
-  }
-  return null
+  return NAMESPACE_TO_TYPE[namespace] ?? null
 }
 
 // ---------------------------------------------------------------------------
@@ -155,7 +137,6 @@ export function encodeAssetIdentifier(identifier: AssetIdentifier): string {
 export function getChainIdForType(type: AssetType): string {
   switch (type) {
     case 'tokens':
-    case 'creators':
       return CHAIN_IDS.base
     case 'memes':
       return CHAIN_IDS.solana
@@ -163,8 +144,6 @@ export function getChainIdForType(type: AssetType): string {
       return CHAIN_IDS.polymarket
     case 'perps':
       return CHAIN_IDS.hyperliquid
-    case 'music':
-      return CHAIN_IDS.tortoise
     default:
       return CHAIN_IDS.base
   }
@@ -208,11 +187,6 @@ export function buildTokenId(address: string): string {
   return encodeAssetId('tokens', address.toLowerCase())
 }
 
-/** Build a CAIP-19 identifier for a Zora creator token on Base. */
-export function buildCreatorId(address: string): string {
-  return encodeAssetId('creators', address.toLowerCase())
-}
-
 /** Build a CAIP-19 identifier for a Solana meme token. */
 export function buildMemeId(address: string): string {
   return encodeAssetId('memes', address)
@@ -226,11 +200,6 @@ export function buildMarketId(eventId: string): string {
 /** Build a CAIP-19 identifier for a Hyperliquid perp. */
 export function buildPerpId(coin: string): string {
   return encodeAssetId('perps', `${coin.toLowerCase()}-perp`)
-}
-
-/** Build a CAIP-19 identifier for a Tortoise song. */
-export function buildMusicId(urlSlug: string): string {
-  return encodeAssetId('music', urlSlug)
 }
 
 // ---------------------------------------------------------------------------

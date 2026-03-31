@@ -2,7 +2,7 @@
 
 ![Pulse screenshot Feb 2026](https://i.imgur.com/qTl14CF.png)
 
-Pulse is a fast and minimal trading interface across many different asset: tokens, prediction markets, creator coins, music protocols, perps and more. The goal is both to have a simple interface getting the pulse of what's happening across all these assets, and also to be able to easily transact across them. Built by [@dylsteck](https://github.com/dylsteck)
+Pulse is a fast and minimal trading interface across many different asset: tokens, prediction markets, perps, and memes. The goal is both to have a simple interface getting the pulse of what's happening across all these assets, and also to be able to easily transact across them. Built by [@dylsteck](https://github.com/dylsteck)
 
 ## Stack
 
@@ -11,8 +11,6 @@ Pulse is a fast and minimal trading interface across many different asset: token
 - [Liveline](https://benji.org/liveline) — real-time animated price charts
 - [Codex](https://docs.codex.io/) — onchain token data (prices, volume, chart history)
 - [Polymarket](https://docs.polymarket.com/) — prediction market data
-- [Zora](https://docs.zora.co/) — creator token data
-- [Tortoise](https://tortoise.studio/) — music / audio collectibles
 - [Hyperliquid](https://hyperliquid.gitbook.io/) — perpetual futures data
 - [wagmi v3](https://wagmi.sh/) — wallet connection (injected, Coinbase Wallet, Base Account)
 
@@ -39,9 +37,8 @@ Copy `.env.example` to `.env` and fill in the keys you need.
 | -------------------- | ---------------------------------------------------- |
 | `/tokens`            | Base token list with live prices, volume, market cap |
 | `/markets`           | Polymarket prediction markets with outcome cards     |
-| `/creators`          | Zora creator tokens with market cap and holder data  |
-| `/music`             | Tortoise audio collectibles                          |
 | `/perps`             | Hyperliquid perpetual futures                        |
+| `/memes`             | Solana meme tokens                                   |
 | `/asset/:identifier` | Detail page for any asset with Liveline chart        |
 
 ## Asset Identifier Format (CAIP-19)
@@ -54,14 +51,12 @@ chain_id/asset_namespace:asset_reference
 
 The identifier is percent-encoded when used in URLs.
 
-| Asset Type     | Chain ID                                  | Namespace   | Example                                |
-| -------------- | ----------------------------------------- | ----------- | -------------------------------------- |
-| Base Tokens    | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x4ed4...efed`      |
-| Creator Coins  | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x...`              |
-| Memes (Solana) | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `spl-token` | `solana:.../spl-token:ABC123...`       |
-| Markets        | `polymarket:mainnet`                      | `event`     | `polymarket:mainnet/event:12345`       |
-| Perps          | `hyperliquid:mainnet`                     | `perp`      | `hyperliquid:mainnet/perp:btc-perp`    |
-| Music          | `tortoise:mainnet`                        | `song`      | `tortoise:mainnet/song:song-title-123` |
+| Asset Type     | Chain ID                                  | Namespace   | Example                             |
+| -------------- | ----------------------------------------- | ----------- | ----------------------------------- |
+| Base Tokens    | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x4ed4...efed`   |
+| Memes (Solana) | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `spl-token` | `solana:.../spl-token:ABC123...`    |
+| Markets        | `polymarket:mainnet`                      | `event`     | `polymarket:mainnet/event:12345`    |
+| Perps          | `hyperliquid:mainnet`                     | `perp`      | `hyperliquid:mainnet/perp:btc-perp` |
 
 ### URL Examples
 
@@ -77,9 +72,6 @@ The identifier is percent-encoded when used in URLs.
 
 # Hyperliquid perp
 /asset/hyperliquid%3Amainnet%2Fperp%3Abtc-perp
-
-# Tortoise song
-/asset/tortoise%3Amainnet%2Fsong%3Asong-title-123
 ```
 
 ### Using CAIP-19 Utilities
@@ -90,8 +82,6 @@ import {
   buildMarketId,
   buildMemeId,
   buildPerpId,
-  buildMusicId,
-  buildCreatorId,
   encodeAssetId,
   decodeAssetId,
   encodeForUrl,
@@ -101,6 +91,7 @@ import {
 const tokenId = buildTokenId('0x4ed4e862860bed51a9570b96d89af5e1b0efefed')
 const marketId = buildMarketId('12345')
 const perpId = buildPerpId('BTC')
+const memeId = buildMemeId('ABC123...')
 
 // Encode for URL
 const urlSafeId = encodeForUrl(tokenId)
