@@ -14,7 +14,7 @@ export const MemeGridCard = React.memo(function MemeGridCard({
     <Link
       to="/asset/$type/$id"
       params={{ type: 'memes', id: meme.id }}
-      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 gap-3">
@@ -27,7 +27,7 @@ export const MemeGridCard = React.memo(function MemeGridCard({
             />
           )}
           <div className="min-w-0 flex-1 pt-0.5">
-            <div className="truncate text-sm font-semibold">{meme.symbol}</div>
+            <div className="truncate text-sm font-medium">{meme.symbol}</div>
             <div className="truncate text-xs text-muted-foreground">
               {meme.name}
             </div>
@@ -35,7 +35,7 @@ export const MemeGridCard = React.memo(function MemeGridCard({
         </div>
         <div
           className={cn(
-            'text-xs font-medium tabular-nums',
+            'text-xs tabular-nums',
             meme.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
           )}
         >
@@ -49,9 +49,9 @@ export const MemeGridCard = React.memo(function MemeGridCard({
       </div>
       <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-xs">
         <span className="text-muted-foreground">24h Vol</span>
-        <span className="text-right">{formatCompact(meme.volume24h)}</span>
+        <span className="text-right tabular-nums">{formatCompact(meme.volume24h)}</span>
         <span className="text-muted-foreground">Liquidity</span>
-        <span className="text-right">{formatCompact(meme.liquidity)}</span>
+        <span className="text-right tabular-nums">{formatCompact(meme.liquidity)}</span>
       </div>
     </Link>
   )

@@ -16,7 +16,7 @@ export const MarketGridCard = React.memo(function MarketGridCard({
     <Link
       to="/asset/$type/$id"
       params={{ type: 'markets', id: market.id }}
-      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 gap-3">
@@ -43,7 +43,7 @@ export const MarketGridCard = React.memo(function MarketGridCard({
           {market.outcomes!.map((o) => (
             <div key={o.name} className="flex items-center gap-2">
               <span className="min-w-0 flex-1 truncate text-sm">{o.name}</span>
-              <span className="shrink-0 text-sm font-medium tabular-nums">
+              <span className="shrink-0 text-sm tabular-nums">
                 {Math.round(o.percent)}%
               </span>
               <span className="group/yes shrink-0 cursor-pointer rounded px-2 py-0.5 text-xs font-semibold bg-[#22c55e]/15 text-[#22c55e] hover:bg-[#22c55e] hover:text-white dark:bg-[#22c55e]/20 dark:hover:bg-[#22c55e] transition-colors">
@@ -78,7 +78,7 @@ export const MarketGridCard = React.memo(function MarketGridCard({
         </div>
       )}
 
-      <div className="mt-auto pt-3 text-xs font-medium text-muted-foreground">
+      <div className="mt-auto pt-3 text-xs text-muted-foreground">
         <span>{formatCompact(market.volume)} Vol.</span>
       </div>
     </Link>
