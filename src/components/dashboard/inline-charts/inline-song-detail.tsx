@@ -5,6 +5,7 @@ import type { Song } from '@/lib/tortoise'
 import { useAudioDetail } from '@/hooks/use-tortoise-songs'
 import { imageUrl } from '@/lib/tortoise'
 import { FadeImage } from '@/components/ui/fade-image'
+import { buildMusicId } from '@/lib/caip19'
 
 export function InlineSongDetail({ song }: { song: Song }) {
   const { data: audio, isLoading } = useAudioDetail(song.url_slug)
@@ -42,8 +43,8 @@ export function InlineSongDetail({ song }: { song: Song }) {
             Collect on Tortoise
           </a>
           <Link
-            to="/asset/$type/$id"
-            params={{ type: 'music', id: song.id }}
+            to="/asset/$identifier"
+            params={{ identifier: buildMusicId(song.url_slug) }}
             className="mt-2 ml-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             View full page

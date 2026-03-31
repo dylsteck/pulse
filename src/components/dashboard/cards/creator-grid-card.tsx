@@ -4,6 +4,7 @@ import type { CreatorToken } from '@/lib/zora/service'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { buildCreatorId } from '@/lib/caip19'
 
 export const CreatorGridCard = React.memo(function CreatorGridCard({
   creator,
@@ -12,8 +13,8 @@ export const CreatorGridCard = React.memo(function CreatorGridCard({
 }) {
   return (
     <Link
-      to="/asset/$type/$id"
-      params={{ type: 'creators', id: creator.id }}
+      to="/asset/$identifier"
+      params={{ identifier: buildCreatorId(creator.address) }}
       className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">

@@ -11,6 +11,7 @@ import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { formatPrice } from '@/lib/format'
 import { FadeImage } from '@/components/ui/fade-image'
+import { buildTokenId } from '@/lib/caip19'
 
 export function InlineTokenChart({ token }: { token: Token }) {
   const { price } = useTokenPrice(token)
@@ -45,8 +46,8 @@ export function InlineTokenChart({ token }: { token: Token }) {
         emptyText="No chart data available"
       />
       <Link
-        to="/asset/$type/$id"
-        params={{ type: 'tokens', id: token.id }}
+        to="/asset/$identifier"
+        params={{ identifier: buildTokenId(token.id) }}
         className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         View full page

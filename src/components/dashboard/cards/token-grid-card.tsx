@@ -4,6 +4,7 @@ import type { Token } from '@/lib/types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatPrice } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { buildTokenId } from '@/lib/caip19'
 
 export const TokenGridCard = React.memo(function TokenGridCard({
   token,
@@ -12,8 +13,8 @@ export const TokenGridCard = React.memo(function TokenGridCard({
 }) {
   return (
     <Link
-      to="/asset/$type/$id"
-      params={{ type: 'tokens', id: token.id }}
+      to="/asset/$identifier"
+      params={{ identifier: buildTokenId(token.id) }}
       className="block overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-2">
@@ -50,9 +51,13 @@ export const TokenGridCard = React.memo(function TokenGridCard({
       </div>
       <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
         <span className="text-muted-foreground">Volume</span>
-        <span className="text-right tabular-nums">{formatCompact(token.volume24h)}</span>
+        <span className="text-right tabular-nums">
+          {formatCompact(token.volume24h)}
+        </span>
         <span className="text-muted-foreground">Mkt Cap</span>
-        <span className="text-right tabular-nums">{formatCompact(token.marketCap)}</span>
+        <span className="text-right tabular-nums">
+          {formatCompact(token.marketCap)}
+        </span>
       </div>
     </Link>
   )

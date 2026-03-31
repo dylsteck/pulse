@@ -13,6 +13,7 @@ import { PerpGridCard } from '@/components/dashboard/cards'
 import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { buildPerpId } from '@/lib/caip19'
 
 function perpIconUrl(coin: string): string {
   return `https://app.hyperliquid.xyz/coins/${coin}.svg`
@@ -55,7 +56,11 @@ export function PerpsPanel({
 
   return (
     <div className="space-y-3">
-      {layout === 'list' && selectedIndex != null && expandedId !== undefined && rowRefs && onRowClick ? (
+      {layout === 'list' &&
+      selectedIndex != null &&
+      expandedId !== undefined &&
+      rowRefs &&
+      onRowClick ? (
         <PerpsTable
           markets={markets}
           selectedIndex={selectedIndex}
@@ -175,8 +180,8 @@ function PerpsTable({
                 </span>
                 <span className="flex justify-end pr-1">
                   <Link
-                    to="/asset/$type/$id"
-                    params={{ type: 'perps', id: market.id }}
+                    to="/asset/$identifier"
+                    params={{ identifier: buildPerpId(market.coin) }}
                     className="inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                     aria-label="View details"
                     title="View details"

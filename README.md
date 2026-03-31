@@ -35,14 +35,80 @@ Copy `.env.example` to `.env` and fill in the keys you need.
 
 ## Routes
 
-| Route              | Description                                          |
-| ------------------ | ---------------------------------------------------- |
-| `/tokens`          | Base token list with live prices, volume, market cap |
-| `/markets`         | Polymarket prediction markets with outcome cards     |
-| `/creators`        | Zora creator tokens with market cap and holder data  |
-| `/music`           | Tortoise audio collectibles                          |
-| `/perps`           | Hyperliquid perpetual futures                        |
-| `/asset/:type/:id` | Detail page for any asset with Liveline chart        |
+| Route                | Description                                          |
+| -------------------- | ---------------------------------------------------- |
+| `/tokens`            | Base token list with live prices, volume, market cap |
+| `/markets`           | Polymarket prediction markets with outcome cards     |
+| `/creators`          | Zora creator tokens with market cap and holder data  |
+| `/music`             | Tortoise audio collectibles                          |
+| `/perps`             | Hyperliquid perpetual futures                        |
+| `/asset/:identifier` | Detail page for any asset with Liveline chart        |
+
+## Asset Identifier Format (CAIP-19)
+
+All assets are identified using a CAIP-19-like scheme. The format is:
+
+```
+chain_id/asset_namespace:asset_reference
+```
+
+The identifier is percent-encoded when used in URLs.
+
+| Asset Type     | Chain ID                                  | Namespace   | Example                                |
+| -------------- | ----------------------------------------- | ----------- | -------------------------------------- |
+| Base Tokens    | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x4ed4...efed`      |
+| Creator Coins  | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x...`              |
+| Memes (Solana) | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `spl-token` | `solana:.../spl-token:ABC123...`       |
+| Markets        | `polymarket:mainnet`                      | `event`     | `polymarket:mainnet/event:12345`       |
+| Perps          | `hyperliquid:mainnet`                     | `perp`      | `hyperliquid:mainnet/perp:btc-perp`    |
+| Music          | `tortoise:mainnet`                        | `song`      | `tortoise:mainnet/song:song-title-123` |
+
+### URL Examples
+
+```
+# Base token
+/asset/eip155%3A8453%2Ferc20%3A0x4ed4e862860bed51a9570b96d89af5e1b0efefed
+
+# Polymarket market
+/asset/polymarket%3Amainnet%2Fevent%3A12345
+
+# Solana meme
+/asset/solana%3A5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp%2Fspl-token%3AABC123
+
+# Hyperliquid perp
+/asset/hyperliquid%3Amainnet%2Fperp%3Abtc-perp
+
+# Tortoise song
+/asset/tortoise%3Amainnet%2Fsong%3Asong-title-123
+```
+
+### Using CAIP-19 Utilities
+
+```typescript
+import {
+  buildTokenId,
+  buildMarketId,
+  buildMemeId,
+  buildPerpId,
+  buildMusicId,
+  buildCreatorId,
+  encodeAssetId,
+  decodeAssetId,
+  encodeForUrl,
+} from '@/lib/caip19'
+
+// Build identifiers
+const tokenId = buildTokenId('0x4ed4e862860bed51a9570b96d89af5e1b0efefed')
+const marketId = buildMarketId('12345')
+const perpId = buildPerpId('BTC')
+
+// Encode for URL
+const urlSafeId = encodeForUrl(tokenId)
+
+// Decode an identifier
+const parsed = decodeAssetId(tokenId)
+// { type: 'tokens', identifier: { chainId: 'eip155:8453', namespace: 'erc20', reference: '0x...' }, raw: '...' }
+```
 
 ## Scripts
 

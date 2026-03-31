@@ -4,6 +4,7 @@ import type { MemeToken } from '@/lib/geckoterminal'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatPrice } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { buildMemeId } from '@/lib/caip19'
 
 export const MemeGridCard = React.memo(function MemeGridCard({
   meme,
@@ -12,8 +13,8 @@ export const MemeGridCard = React.memo(function MemeGridCard({
 }) {
   return (
     <Link
-      to="/asset/$type/$id"
-      params={{ type: 'memes', id: meme.id }}
+      to="/asset/$identifier"
+      params={{ identifier: buildMemeId(meme.id) }}
       className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">
@@ -49,9 +50,13 @@ export const MemeGridCard = React.memo(function MemeGridCard({
       </div>
       <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-xs">
         <span className="text-muted-foreground">24h Vol</span>
-        <span className="text-right tabular-nums">{formatCompact(meme.volume24h)}</span>
+        <span className="text-right tabular-nums">
+          {formatCompact(meme.volume24h)}
+        </span>
         <span className="text-muted-foreground">Liquidity</span>
-        <span className="text-right tabular-nums">{formatCompact(meme.liquidity)}</span>
+        <span className="text-right tabular-nums">
+          {formatCompact(meme.liquidity)}
+        </span>
       </div>
     </Link>
   )

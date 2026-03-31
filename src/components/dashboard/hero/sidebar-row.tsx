@@ -4,6 +4,14 @@ import type { SidebarItem } from './types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
+import { buildTokenId, buildMemeId, buildMarketId } from '@/lib/caip19'
+
+function buildSidebarItemId(item: SidebarItem): string {
+  if (item.kind === 'token') return buildTokenId(item.id)
+  if (item.kind === 'meme') return buildMemeId(item.id)
+  if (item.kind === 'market') return buildMarketId(item.id)
+  return item.id
+}
 
 export function SidebarRow({ item }: { item: SidebarItem }) {
   const isPositive = item.change >= 0
@@ -12,8 +20,8 @@ export function SidebarRow({ item }: { item: SidebarItem }) {
   return (
     <li>
       <Link
-        to="/asset/$type/$id"
-        params={{ type: item.type, id: item.id }}
+        to="/asset/$identifier"
+        params={{ identifier: buildSidebarItemId(item) }}
         className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-muted/50"
       >
         {item.imageUrl && (

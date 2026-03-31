@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import type { Song } from '@/lib/tortoise'
 import { imageUrl } from '@/lib/tortoise'
 import { FadeImage } from '@/components/ui/fade-image'
+import { buildMusicId } from '@/lib/caip19'
 
 export const MusicGridCard = React.memo(function MusicGridCard({
   song,
@@ -11,8 +12,8 @@ export const MusicGridCard = React.memo(function MusicGridCard({
 }) {
   return (
     <Link
-      to="/asset/$type/$id"
-      params={{ type: 'music', id: song.id }}
+      to="/asset/$identifier"
+      params={{ identifier: buildMusicId(song.url_slug) }}
       className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left transition-colors hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start gap-3">

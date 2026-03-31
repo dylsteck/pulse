@@ -9,6 +9,7 @@ import {
 } from '@/components/trading/liveline-chart'
 import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useMarketHistory } from '@/hooks/use-market-history'
+import { buildMarketId } from '@/lib/caip19'
 
 export function InlineMarketChart({ market }: { market: Market }) {
   const { yesPercent } = useMarketOdds(market)
@@ -54,8 +55,8 @@ export function InlineMarketChart({ market }: { market: Market }) {
         emptyText="No chart data available"
       />
       <Link
-        to="/asset/$type/$id"
-        params={{ type: 'markets', id: market.id }}
+        to="/asset/$identifier"
+        params={{ identifier: buildMarketId(market.id) }}
         className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         View full page

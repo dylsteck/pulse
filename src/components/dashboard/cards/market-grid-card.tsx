@@ -4,6 +4,7 @@ import type { Market } from '@/lib/types'
 import { ChanceGauge } from '@/components/dashboard/shared'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
+import { buildMarketId } from '@/lib/caip19'
 
 export const MarketGridCard = React.memo(function MarketGridCard({
   market,
@@ -14,8 +15,8 @@ export const MarketGridCard = React.memo(function MarketGridCard({
 
   return (
     <Link
-      to="/asset/$type/$id"
-      params={{ type: 'markets', id: market.id }}
+      to="/asset/$identifier"
+      params={{ identifier: buildMarketId(market.id) }}
       className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">

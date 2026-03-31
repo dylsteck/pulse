@@ -4,6 +4,7 @@ import type { Token, Market } from '@/lib/types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { buildTokenId, buildMarketId } from '@/lib/caip19'
 
 interface TrendingSidebarProps {
   tokens: Token[]
@@ -11,7 +12,11 @@ interface TrendingSidebarProps {
   collapsed: boolean
 }
 
-export function TrendingSidebar({ tokens, markets, collapsed }: TrendingSidebarProps) {
+export function TrendingSidebar({
+  tokens,
+  markets,
+  collapsed,
+}: TrendingSidebarProps) {
   const trending = tokens
     .slice()
     .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
@@ -41,8 +46,8 @@ export function TrendingSidebar({ tokens, markets, collapsed }: TrendingSidebarP
               {trending.map((token) => (
                 <Link
                   key={token.id}
-                  to="/asset/$type/$id"
-                  params={{ type: 'tokens', id: token.id }}
+                  to="/asset/$identifier"
+                  params={{ identifier: buildTokenId(token.id) }}
                   className="flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-muted/50"
                 >
                   {token.imageUrl ? (
@@ -87,8 +92,8 @@ export function TrendingSidebar({ tokens, markets, collapsed }: TrendingSidebarP
               {topMarkets.map((market) => (
                 <Link
                   key={market.id}
-                  to="/asset/$type/$id"
-                  params={{ type: 'markets', id: market.id }}
+                  to="/asset/$identifier"
+                  params={{ identifier: buildMarketId(market.id) }}
                   className="flex items-center gap-2 rounded-md px-1 py-1 transition-colors hover:bg-muted/50"
                 >
                   {market.imageUrl ? (

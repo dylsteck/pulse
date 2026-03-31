@@ -5,6 +5,7 @@ import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
+import { buildPerpId } from '@/lib/caip19'
 
 function perpIconUrl(coin: string): string {
   return `https://app.hyperliquid.xyz/coins/${coin}.svg`
@@ -17,8 +18,8 @@ interface PerpGridCardProps {
 export function PerpGridCard({ market }: PerpGridCardProps) {
   return (
     <Link
-      to="/asset/$type/$id"
-      params={{ type: 'perps', id: market.id }}
+      to="/asset/$identifier"
+      params={{ identifier: buildPerpId(market.coin) }}
       className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">

@@ -8,6 +8,7 @@ import {
   WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { useTokenBars } from '@/hooks/use-token-bars'
+import { buildCreatorId } from '@/lib/caip19'
 
 export function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
   const [windowLabel, setWindowLabel] = useState('15m')
@@ -51,8 +52,8 @@ export function InlineCreatorChart({ creator }: { creator: CreatorToken }) {
         emptyText="No chart data available"
       />
       <Link
-        to="/asset/$type/$id"
-        params={{ type: 'creators', id: creator.id }}
+        to="/asset/$identifier"
+        params={{ identifier: buildCreatorId(creator.address) }}
         className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         View full page

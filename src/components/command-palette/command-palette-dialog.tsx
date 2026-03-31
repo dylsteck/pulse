@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/command'
 import { useCommandSearch } from '@/hooks/use-command-search'
 import { cn } from '@/lib/utils'
+import { encodeAssetId } from '@/lib/caip19'
 
 const GROUP_HEADINGS: Record<CommandSearchItem['type'], string> = {
   tokens: 'Tokens',
@@ -80,8 +81,13 @@ export function CommandPalette() {
       const item = items.find((i) => i.value === value)
       if (item) {
         navigate({
-          to: '/asset/$type/$id',
-          params: { type: item.type, id: item.id },
+          to: '/asset/$identifier',
+          params: {
+            identifier: encodeAssetId(
+              item.type as CommandSearchItem['type'],
+              item.id,
+            ),
+          },
         })
         setOpen(false)
       }

@@ -1,20 +1,14 @@
 import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { FlameIcon } from 'lucide-react'
-import {
-  AssetCard,
-  
-  MarketCard,
-  MemeCard,
-  
-  SidebarRow
-} from './hero'
-import type {CarouselItem, SidebarItem} from './hero';
+import { AssetCard, MarketCard, MemeCard, SidebarRow } from './hero'
+import type { CarouselItem, SidebarItem } from './hero'
 import { useTheme } from '@/components/theme-provider'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { cn } from '@/lib/utils'
+import { buildTokenId, buildMemeId, buildMarketId } from '@/lib/caip19'
 
 const ACCENT_COLOR = '#0066ff'
 
@@ -160,8 +154,8 @@ export function HeroBanner() {
           <div className="hidden min-h-0 w-full max-w-4xl flex-1 flex-col lg:flex">
             {currentItem.kind === 'token' ? (
               <Link
-                to="/asset/$type/$id"
-                params={{ type: 'tokens', id: currentItem.id }}
+                to="/asset/$identifier"
+                params={{ identifier: buildTokenId(currentItem.id) }}
                 className="flex min-h-0 flex-1 flex-col"
               >
                 <AssetCard
@@ -172,16 +166,16 @@ export function HeroBanner() {
               </Link>
             ) : currentItem.kind === 'meme' ? (
               <Link
-                to="/asset/$type/$id"
-                params={{ type: 'memes', id: currentItem.id }}
+                to="/asset/$identifier"
+                params={{ identifier: buildMemeId(currentItem.id) }}
                 className="flex min-h-0 flex-1 flex-col"
               >
                 <MemeCard meme={currentItem} isDark={isDark} />
               </Link>
             ) : (
               <Link
-                to="/asset/$type/$id"
-                params={{ type: 'markets', id: currentItem.market.id }}
+                to="/asset/$identifier"
+                params={{ identifier: buildMarketId(currentItem.market.id) }}
                 className="flex min-h-0 flex-1 flex-col"
               >
                 <MarketCard

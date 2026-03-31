@@ -9,6 +9,7 @@ import {
 } from '@/components/trading/liveline-chart'
 import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { formatPrice } from '@/lib/format'
+import { buildMemeId } from '@/lib/caip19'
 
 export function InlineMemeChart({ meme }: { meme: MemeToken }) {
   const [windowLabel, setWindowLabel] = useState('15m')
@@ -59,8 +60,8 @@ export function InlineMemeChart({ meme }: { meme: MemeToken }) {
         formatValue={(v) => `$${formatPrice(v)}`}
       />
       <Link
-        to="/asset/$type/$id"
-        params={{ type: 'memes', id: meme.id }}
+        to="/asset/$identifier"
+        params={{ identifier: buildMemeId(meme.id) }}
         className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
         View full page

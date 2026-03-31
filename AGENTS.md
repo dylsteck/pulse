@@ -19,7 +19,7 @@ src/
 │   ├── creators.tsx    Zora creator tokens
 │   ├── music.tsx       Tortoise music/songs
 │   ├── perps.tsx       Hyperliquid perps
-│   ├── asset.$type.$id  Asset detail page (tokens, markets, memes, creators, music, perps)
+│   ├── asset.$identifier  Asset detail page (uses CAIP-19 identifier format)
 │   └── api/
 │       ├── geckoterminal/
 │       │   ├── memes.ts            Pump.fun pools (filtered by volume/liquidity)
@@ -58,6 +58,7 @@ src/
 └── lib/
     ├── geckoterminal.ts           MemeToken, fetchMemeTokens, transform
     ├── codex.ts                   Base tokens + bars
+    ├── caip19.ts                  CAIP-19 asset identifier encode/decode
     └── ...
 ```
 
