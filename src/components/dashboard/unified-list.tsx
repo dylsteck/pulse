@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { ChevronRightIcon } from 'lucide-react'
 import type { ViewMode } from '@/components/dashboard/tabs'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 import { usePerpMarkets } from '@/hooks/use-perps'
 import { useLiveTokens } from '@/hooks/use-live-tokens'
@@ -31,6 +34,7 @@ interface UnifiedListProps {
 export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   const navigate = useNavigate()
   const [mode, setMode] = useState<ViewMode>(initialMode)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const marketsLoadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -85,6 +89,19 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
               })
             }}
           />
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed((c) => !c)}
+            className="hidden shrink-0 items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:inline-flex"
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            <ChevronRightIcon
+              className={cn(
+                'size-3.5 transition-transform',
+                sidebarCollapsed ? 'rotate-180' : '',
+              )}
+            />
+          </button>
         </div>
 
         <div className="px-2 sm:px-0">
@@ -179,7 +196,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
         </div>
       </div>
       </div>
-      <TrendingSidebar tokens={liveTokens} markets={liveMarkets} />
+      <TrendingSidebar tokens={liveTokens} markets={liveMarkets} collapsed={sidebarCollapsed} />
     </div>
   )
 }

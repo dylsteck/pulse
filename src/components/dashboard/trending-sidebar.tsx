@@ -1,20 +1,17 @@
-import { useState } from 'react'
-import { ChevronRightIcon, FlameIcon, TrendingUpIcon } from 'lucide-react'
+import { FlameIcon, TrendingUpIcon } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import type { Token, Market } from '@/lib/types'
 import { FadeImage } from '@/components/ui/fade-image'
-import { Button } from '@/components/ui/button'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
 interface TrendingSidebarProps {
   tokens: Token[]
   markets: Market[]
+  collapsed: boolean
 }
 
-export function TrendingSidebar({ tokens, markets }: TrendingSidebarProps) {
-  const [collapsed, setCollapsed] = useState(false)
-
+export function TrendingSidebar({ tokens, markets, collapsed }: TrendingSidebarProps) {
   const trending = tokens
     .slice()
     .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
@@ -27,21 +24,6 @@ export function TrendingSidebar({ tokens, markets }: TrendingSidebarProps) {
 
   return (
     <div className="sticky top-12 hidden h-[calc(100vh-3rem)] lg:flex">
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => setCollapsed((c) => !c)}
-        className="mt-5 h-8 w-6 shrink-0 rounded-r-none"
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        <ChevronRightIcon
-          className={cn(
-            'size-3.5 transition-transform',
-            !collapsed && 'rotate-180',
-          )}
-        />
-      </Button>
-
       <div
         className={cn(
           'flex flex-col transition-[width] duration-200',
