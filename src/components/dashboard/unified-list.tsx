@@ -95,7 +95,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   return (
     <div className="mx-auto flex w-full max-w-7xl py-1 sm:px-6">
       <div className="min-w-0 flex-1">
-        <div ref={scrollRef} className="scroll-mt-1">
+        <div ref={scrollRef} className="scroll-mt-1 overflow-x-clip">
           <div className="sticky top-12 z-20 -mx-2 mb-2 flex items-end justify-between gap-2 bg-background px-2 pb-2 pt-1 sm:-mx-6 sm:px-6">
             <ModeTabs
               mode={mode}
