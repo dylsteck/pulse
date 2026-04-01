@@ -12,6 +12,7 @@ import { fetchCodexTokenByAddress } from '@/lib/codex'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatPrice } from '@/lib/format'
+import { useIsMobile } from '@/hooks/use-is-mobile'
 
 export function TokenDetail({ id }: { id: string }) {
   const {
@@ -62,6 +63,7 @@ export function TokenDetail({ id }: { id: string }) {
 }
 
 function TokenDetailContent({ token }: { token: Token }) {
+  const isMobile = useIsMobile()
   const { price } = useTokenPrice(token)
   const [windowLabel, setWindowLabel] = useState('15m')
   const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
@@ -79,14 +81,14 @@ function TokenDetailContent({ token }: { token: Token }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
             {token.imageUrl && (
               <FadeImage
                 src={token.imageUrl}
                 alt=""
-                wrapperClassName="size-14 shrink-0 rounded-full"
-                className="size-14 rounded-full object-cover"
+                wrapperClassName="size-10 shrink-0 rounded-full sm:size-14"
+                className="size-10 rounded-full object-cover sm:size-14"
               />
             )}
             <div>
@@ -105,15 +107,15 @@ function TokenDetailContent({ token }: { token: Token }) {
               <p className="text-sm text-muted-foreground">{token.name}</p>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-3xl tabular-nums">${formatPrice(price)}</div>
+          <div className="sm:text-right">
+            <div className="text-2xl tabular-nums sm:text-3xl">${formatPrice(price)}</div>
             <p className="text-xs text-muted-foreground">Current Price</p>
           </div>
         </div>
         <LivelineChart
           data={chartData}
           value={price}
-          height={380}
+          height={isMobile ? 200 : 380}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
           isLoading={isLoading && chartData.length === 0}

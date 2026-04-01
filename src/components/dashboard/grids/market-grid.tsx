@@ -8,7 +8,7 @@ interface MarketGridProps {
 
 export function MarketGrid({ markets }: MarketGridProps) {
   return (
-    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+    <div className="grid w-full grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {markets.map((market) => (
         <MarketGridCard key={market.id} market={market} />
       ))}

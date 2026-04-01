@@ -10,6 +10,7 @@ import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useMarketHistory } from '@/hooks/use-market-history'
 import { fetchPolymarketEventById } from '@/lib/polymarket'
 import { formatCompact, formatDate } from '@/lib/format'
+import { useIsMobile } from '@/hooks/use-is-mobile'
 
 export function MarketDetail({ id }: { id: string }) {
   const {
@@ -59,6 +60,7 @@ export function MarketDetail({ id }: { id: string }) {
 }
 
 function MarketDetailContent({ market }: { market: Market }) {
+  const isMobile = useIsMobile()
   const { yesPercent } = useMarketOdds(market)
   const [windowLabel, setWindowLabel] = useState('1D')
   const { data: history, isLoading } = useMarketHistory(
@@ -132,7 +134,7 @@ function MarketDetailContent({ market }: { market: Market }) {
         <LivelineChart
           data={chartData}
           value={yesPercent}
-          height={340}
+          height={isMobile ? 200 : 340}
           formatValue={(v) => `${v.toFixed(1)}%`}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
@@ -141,7 +143,7 @@ function MarketDetailContent({ market }: { market: Market }) {
         />
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-border/50 bg-card/30 p-4">
           <p className="mb-1 text-xs text-muted-foreground">Volume</p>
           <p className="text-lg font-semibold tabular-nums">

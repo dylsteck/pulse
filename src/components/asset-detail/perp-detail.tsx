@@ -11,6 +11,7 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
+import { useIsMobile } from '@/hooks/use-is-mobile'
 
 export function PerpDetail({ id }: { id: string }) {
   const { data: markets, isLoading, isError } = usePerpMarkets()
@@ -56,6 +57,7 @@ export function PerpDetail({ id }: { id: string }) {
 }
 
 function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
+  const isMobile = useIsMobile()
   const [windowLabel, setWindowLabel] = useState('15m')
   const { data: candles, isLoading } = useHyperliquidCandles(
     market.coin,
@@ -78,13 +80,13 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3 sm:gap-4">
             <FadeImage
               src={`https://app.hyperliquid.xyz/coins/${market.coin}.svg`}
               alt=""
-              wrapperClassName="size-14 shrink-0 rounded-full"
-              className="size-14 rounded-full object-cover"
+              wrapperClassName="size-10 shrink-0 rounded-full sm:size-14"
+              className="size-10 rounded-full object-cover sm:size-14"
             />
             <div>
               <div className="flex items-center gap-2">
@@ -104,8 +106,8 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
               <p className="text-sm text-muted-foreground">Perpetual Futures</p>
             </div>
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-bold tabular-nums">
+          <div className="sm:text-right">
+            <div className="text-2xl font-bold tabular-nums sm:text-3xl">
               ${formatPerpPrice(market, market.markPx)}
             </div>
             <p className="text-xs text-muted-foreground">Mark Price</p>
@@ -114,7 +116,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
         <LivelineChart
           data={chartData}
           value={market.markPx}
-          height={380}
+          height={isMobile ? 200 : 380}
           color={color}
           window={WINDOW_LABEL_TO_SECS[windowLabel]}
           onWindowChange={handleWindowChange}
@@ -174,25 +176,25 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
           Position Details
         </h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
-          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-2 sm:p-3">
             <span className="text-muted-foreground">Mark Price</span>
             <span className="font-semibold tabular-nums">
               ${formatPerpPrice(market, market.markPx)}
             </span>
           </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-2 sm:p-3">
             <span className="text-muted-foreground">Mid Price</span>
             <span className="font-semibold tabular-nums">
               ${formatPerpPrice(market, market.midPx)}
             </span>
           </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-2 sm:p-3">
             <span className="text-muted-foreground">Prev Day</span>
             <span className="font-semibold tabular-nums">
               ${formatPerpPrice(market, market.prevDayPx)}
             </span>
           </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+          <div className="flex items-center justify-between rounded-lg bg-muted/50 p-2 sm:p-3">
             <span className="text-muted-foreground">Max Leverage</span>
             <span className="font-semibold tabular-nums">
               {market.maxLeverage}x

@@ -112,7 +112,7 @@ export function CommandPalette() {
             placeholder="Search tokens, markets, memes..."
             className="pr-12 placeholder:text-muted-foreground"
           />
-          <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded bg-muted/50 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline">
             ⌘K
           </kbd>
         </div>

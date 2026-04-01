@@ -40,7 +40,7 @@ export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
             type="button"
             onClick={() => onModeChange(tab)}
             className={cn(
-              'flex shrink-0 items-center gap-1.5 text-sm font-medium capitalize transition-colors',
+              'flex shrink-0 items-center gap-1.5 py-2 text-sm font-medium capitalize transition-colors',
               active
                 ? 'text-foreground'
                 : 'text-muted-foreground hover:text-foreground',

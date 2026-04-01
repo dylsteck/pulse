@@ -8,7 +8,7 @@ interface TokenGridProps {
 
 export function TokenGrid({ tokens }: TokenGridProps) {
   return (
-    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+    <div className="grid w-full grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
       {tokens.map((token) => (
         <TokenGridCard key={token.id} token={token} />
       ))}
