@@ -1,5 +1,15 @@
 import { describe, expect, test } from 'bun:test'
-import { transformBars, transformBaseTokens } from '@/lib/codex'
+import {
+  buildCodexBarsPath,
+  buildCodexBaseTokensPath,
+  buildCodexTokenPath,
+  normalizeCodexAddress,
+  parseCodexBarsParams,
+  parseCodexBaseTokensParams,
+  parseCodexTokenParams,
+  transformBars,
+  transformBaseTokens,
+} from '@/lib/codex'
 
 describe('transformBaseTokens', () => {
   test('transforms Codex token results', () => {
@@ -63,6 +73,63 @@ describe('transformBaseTokens', () => {
     expect(() =>
       transformBaseTokens({ errors: [{ message: 'Query failed' }] }),
     ).toThrow('Codex query failed')
+  })
+})
+
+describe('Codex parameter parsing', () => {
+  test('parses base token params with defaults', () => {
+    const params = new URLSearchParams()
+    expect(parseCodexBaseTokensParams(params)).toEqual({
+      limit: 50,
+      offset: 0,
+    })
+  })
+
+  test('rejects invalid base token params', () => {
+    const params = new URLSearchParams({ limit: '500', offset: '-1' })
+    expect(parseCodexBaseTokensParams(params)).toBeNull()
+  })
+
+  test('normalizes valid token addresses', () => {
+    expect(normalizeCodexAddress('0xAbC1230000000000000000000000000000000000')).toBe(
+      '0xabc1230000000000000000000000000000000000',
+    )
+  })
+
+  test('rejects invalid token addresses', () => {
+    expect(normalizeCodexAddress('not-an-address')).toBeNull()
+    expect(parseCodexTokenParams(new URLSearchParams())).toBeNull()
+  })
+
+  test('parses bars params only for allowed windows', () => {
+    const ok = new URLSearchParams({
+      address: '0xabc1230000000000000000000000000000000000',
+      windowLabel: '1D',
+    })
+    expect(parseCodexBarsParams(ok)).toEqual({
+      address: '0xabc1230000000000000000000000000000000000',
+      windowLabel: '1D',
+    })
+
+    const bad = new URLSearchParams({
+      address: '0xabc1230000000000000000000000000000000000',
+      windowLabel: '30D',
+    })
+    expect(parseCodexBarsParams(bad)).toBeNull()
+  })
+
+  test('builds typed endpoint paths', () => {
+    expect(buildCodexBaseTokensPath(25, 50)).toBe(
+      '/api/codex/base-tokens?limit=25&offset=50',
+    )
+    expect(
+      buildCodexTokenPath('0xabc1230000000000000000000000000000000000'),
+    ).toBe('/api/codex/token?address=0xabc1230000000000000000000000000000000000')
+    expect(
+      buildCodexBarsPath('0xabc1230000000000000000000000000000000000', '15m'),
+    ).toBe(
+      '/api/codex/bars?address=0xabc1230000000000000000000000000000000000&windowLabel=15m',
+    )
   })
 })
 

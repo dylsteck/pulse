@@ -22,6 +22,9 @@ import { Route as ApiPolymarketEventsRouteImport } from './routes/api/polymarket
 import { Route as ApiGeckoterminalTokenDetailRouteImport } from './routes/api/geckoterminal/token-detail'
 import { Route as ApiGeckoterminalOhlcvRouteImport } from './routes/api/geckoterminal/ohlcv'
 import { Route as ApiGeckoterminalMemesRouteImport } from './routes/api/geckoterminal/memes'
+import { Route as ApiCodexTokenRouteImport } from './routes/api/codex/token'
+import { Route as ApiCodexBaseTokensRouteImport } from './routes/api/codex/base-tokens'
+import { Route as ApiCodexBarsRouteImport } from './routes/api/codex/bars'
 
 const TokensRoute = TokensRouteImport.update({
   id: '/tokens',
@@ -89,6 +92,21 @@ const ApiGeckoterminalMemesRoute = ApiGeckoterminalMemesRouteImport.update({
   path: '/api/geckoterminal/memes',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCodexTokenRoute = ApiCodexTokenRouteImport.update({
+  id: '/token',
+  path: '/token',
+  getParentRoute: () => ApiCodexRoute,
+} as any)
+const ApiCodexBaseTokensRoute = ApiCodexBaseTokensRouteImport.update({
+  id: '/base-tokens',
+  path: '/base-tokens',
+  getParentRoute: () => ApiCodexRoute,
+} as any)
+const ApiCodexBarsRoute = ApiCodexBarsRouteImport.update({
+  id: '/bars',
+  path: '/bars',
+  getParentRoute: () => ApiCodexRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,9 +114,12 @@ export interface FileRoutesByFullPath {
   '/memes': typeof MemesRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
-  '/api/codex': typeof ApiCodexRoute
+  '/api/codex': typeof ApiCodexRouteWithChildren
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/asset/$identifier': typeof AssetIdentifierRoute
+  '/api/codex/bars': typeof ApiCodexBarsRoute
+  '/api/codex/base-tokens': typeof ApiCodexBaseTokensRoute
+  '/api/codex/token': typeof ApiCodexTokenRoute
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
@@ -111,9 +132,12 @@ export interface FileRoutesByTo {
   '/memes': typeof MemesRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
-  '/api/codex': typeof ApiCodexRoute
+  '/api/codex': typeof ApiCodexRouteWithChildren
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/asset/$identifier': typeof AssetIdentifierRoute
+  '/api/codex/bars': typeof ApiCodexBarsRoute
+  '/api/codex/base-tokens': typeof ApiCodexBaseTokensRoute
+  '/api/codex/token': typeof ApiCodexTokenRoute
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
@@ -127,9 +151,12 @@ export interface FileRoutesById {
   '/memes': typeof MemesRoute
   '/perps': typeof PerpsRoute
   '/tokens': typeof TokensRoute
-  '/api/codex': typeof ApiCodexRoute
+  '/api/codex': typeof ApiCodexRouteWithChildren
   '/api/hyperliquid': typeof ApiHyperliquidRoute
   '/asset/$identifier': typeof AssetIdentifierRoute
+  '/api/codex/bars': typeof ApiCodexBarsRoute
+  '/api/codex/base-tokens': typeof ApiCodexBaseTokensRoute
+  '/api/codex/token': typeof ApiCodexTokenRoute
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
@@ -147,6 +174,9 @@ export interface FileRouteTypes {
     | '/api/codex'
     | '/api/hyperliquid'
     | '/asset/$identifier'
+    | '/api/codex/bars'
+    | '/api/codex/base-tokens'
+    | '/api/codex/token'
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
@@ -162,6 +192,9 @@ export interface FileRouteTypes {
     | '/api/codex'
     | '/api/hyperliquid'
     | '/asset/$identifier'
+    | '/api/codex/bars'
+    | '/api/codex/base-tokens'
+    | '/api/codex/token'
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
@@ -177,6 +210,9 @@ export interface FileRouteTypes {
     | '/api/codex'
     | '/api/hyperliquid'
     | '/asset/$identifier'
+    | '/api/codex/bars'
+    | '/api/codex/base-tokens'
+    | '/api/codex/token'
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
@@ -190,7 +226,7 @@ export interface RootRouteChildren {
   MemesRoute: typeof MemesRoute
   PerpsRoute: typeof PerpsRoute
   TokensRoute: typeof TokensRoute
-  ApiCodexRoute: typeof ApiCodexRoute
+  ApiCodexRoute: typeof ApiCodexRouteWithChildren
   ApiHyperliquidRoute: typeof ApiHyperliquidRoute
   AssetIdentifierRoute: typeof AssetIdentifierRoute
   ApiGeckoterminalMemesRoute: typeof ApiGeckoterminalMemesRoute
@@ -293,8 +329,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGeckoterminalMemesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/codex/token': {
+      id: '/api/codex/token'
+      path: '/token'
+      fullPath: '/api/codex/token'
+      preLoaderRoute: typeof ApiCodexTokenRouteImport
+      parentRoute: typeof ApiCodexRoute
+    }
+    '/api/codex/base-tokens': {
+      id: '/api/codex/base-tokens'
+      path: '/base-tokens'
+      fullPath: '/api/codex/base-tokens'
+      preLoaderRoute: typeof ApiCodexBaseTokensRouteImport
+      parentRoute: typeof ApiCodexRoute
+    }
+    '/api/codex/bars': {
+      id: '/api/codex/bars'
+      path: '/bars'
+      fullPath: '/api/codex/bars'
+      preLoaderRoute: typeof ApiCodexBarsRouteImport
+      parentRoute: typeof ApiCodexRoute
+    }
   }
 }
+
+interface ApiCodexRouteChildren {
+  ApiCodexBarsRoute: typeof ApiCodexBarsRoute
+  ApiCodexBaseTokensRoute: typeof ApiCodexBaseTokensRoute
+  ApiCodexTokenRoute: typeof ApiCodexTokenRoute
+}
+
+const ApiCodexRouteChildren: ApiCodexRouteChildren = {
+  ApiCodexBarsRoute: ApiCodexBarsRoute,
+  ApiCodexBaseTokensRoute: ApiCodexBaseTokensRoute,
+  ApiCodexTokenRoute: ApiCodexTokenRoute,
+}
+
+const ApiCodexRouteWithChildren = ApiCodexRoute._addFileChildren(
+  ApiCodexRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -302,7 +375,7 @@ const rootRouteChildren: RootRouteChildren = {
   MemesRoute: MemesRoute,
   PerpsRoute: PerpsRoute,
   TokensRoute: TokensRoute,
-  ApiCodexRoute: ApiCodexRoute,
+  ApiCodexRoute: ApiCodexRouteWithChildren,
   ApiHyperliquidRoute: ApiHyperliquidRoute,
   AssetIdentifierRoute: AssetIdentifierRoute,
   ApiGeckoterminalMemesRoute: ApiGeckoterminalMemesRoute,
