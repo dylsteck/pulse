@@ -1,4 +1,4 @@
-import { TrendingUpIcon } from 'lucide-react'
+import { FlameIcon, TrendingUpIcon } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
 import type { Token, Market } from '@/lib/types'
 import { FadeImage } from '@/components/ui/fade-image'
@@ -38,7 +38,8 @@ export function TrendingSidebar({
         <div className="flex h-full w-64 flex-col gap-1">
           {/* Trending Tokens */}
           <div className="flex min-h-0 flex-1 flex-col pl-4 pr-1">
-            <div className="mb-1.5 flex items-center gap-1.5 pt-1 text-xs font-medium text-muted-foreground">
+            <div className="mb-1.5 flex items-center gap-1.5 pt-4 text-xs font-medium text-muted-foreground">
+              <FlameIcon className="size-3" />
               Trending
             </div>
             <div className="scrollbar-none flex-1 overflow-y-auto pr-1">
