@@ -10,6 +10,7 @@ import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { formatCompact, formatDate, formatPrice } from '@/lib/format'
+import { sanitizeExternalHttpUrl } from '@/lib/url'
 
 export function MemeDetail({ id }: { id: string }) {
   const { data: meme, isLoading, isError } = useMemeTokenDetail(id)
@@ -55,6 +56,7 @@ export function MemeDetail({ id }: { id: string }) {
 
 function MemeDetailContent({ meme }: { meme: MemeToken }) {
   const primaryWebsite = meme.websites?.[0]
+  const safePrimaryWebsite = sanitizeExternalHttpUrl(primaryWebsite)
   const [windowLabel, setWindowLabel] = useState('15m')
   const { data: bars, isLoading } = useMemeOhlcv(meme.poolAddress, windowLabel)
   const chartData =
@@ -224,16 +226,17 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
             <span className="text-muted-foreground">GT Score</span>
             <span>{meme.gtScore ? meme.gtScore.toFixed(1) : '—'}</span>
           </div>
-          {primaryWebsite && (
+          {safePrimaryWebsite && (
             <div className="flex items-center justify-between gap-3">
               <span className="text-muted-foreground">Website</span>
               <a
-                href={primaryWebsite}
+                href={safePrimaryWebsite}
                 target="_blank"
                 rel="noopener noreferrer"
+                referrerPolicy="no-referrer"
                 className="truncate text-foreground underline underline-offset-2 hover:no-underline"
               >
-                {primaryWebsite}
+                {safePrimaryWebsite}
               </a>
             </div>
           )}

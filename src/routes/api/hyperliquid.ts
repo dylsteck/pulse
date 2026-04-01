@@ -29,6 +29,28 @@ function validateUserParam(
   return ETH_ADDRESS_REGEX.test(user) ? user : null
 }
 
+function jsonResponse(
+  body: unknown,
+  cacheControl: string,
+  status = 200,
+): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': cacheControl,
+    },
+  })
+}
+
+function getWindowConfig(windowLabel: unknown) {
+  if (typeof windowLabel !== 'string') return null
+  const interval = PERP_INTERVAL_MAP[windowLabel]
+  const windowSecs = PERP_WINDOW_SECS[windowLabel]
+  if (!interval || !windowSecs) return null
+  return { interval, windowSecs }
+}
+
 export const Route = createFileRoute('/api/hyperliquid')({
   server: {
     handlers: {
@@ -93,10 +115,23 @@ export const Route = createFileRoute('/api/hyperliquid')({
           }
 
           case 'candles': {
-            const coin = params?.coin as string
-            const windowLabel = params?.windowLabel as string
-            const interval = PERP_INTERVAL_MAP[windowLabel] ?? '15m'
-            const windowSecs = PERP_WINDOW_SECS[windowLabel] ?? 3600
+            const coin = typeof params?.coin === 'string' ? params.coin : null
+            const windowConfig = getWindowConfig(params?.windowLabel)
+            if (!coin || !windowConfig) {
+              return jsonResponse(
+                { error: 'Invalid candle parameters.' },
+                'no-store',
+                400,
+              )
+            }
+
+            const universe = await info.meta()
+            const supportedCoins = new Set(universe.universe.map((asset) => asset.name))
+            if (!supportedCoins.has(coin)) {
+              return jsonResponse({ error: 'Invalid coin.' }, 'no-store', 400)
+            }
+
+            const { interval, windowSecs } = windowConfig
             const now = Date.now()
             const startTime = now - windowSecs * 1000
 
@@ -109,15 +144,9 @@ export const Route = createFileRoute('/api/hyperliquid')({
               })
 
               if (!result || result.length === 0) {
-                return new Response(
-                  JSON.stringify({ candles: [], status: 'no_data' }),
-                  {
-                    status: 200,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Cache-Control': 'public, max-age=30',
-                    },
-                  },
+                return jsonResponse(
+                  { candles: [], status: 'no_data' },
+                  'public, max-age=30',
                 )
               }
 
@@ -126,23 +155,14 @@ export const Route = createFileRoute('/api/hyperliquid')({
                 value: Number(candle.c),
               }))
 
-              return new Response(JSON.stringify({ candles, status: 'ok' }), {
-                status: 200,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Cache-Control': 'public, max-age=30',
-                },
-              })
+              return jsonResponse(
+                { candles, status: 'ok' },
+                'public, max-age=30',
+              )
             } catch {
-              return new Response(
-                JSON.stringify({ candles: [], status: 'error' }),
-                {
-                  status: 200,
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'public, max-age=30',
-                  },
-                },
+              return jsonResponse(
+                { candles: [], status: 'error' },
+                'public, max-age=30',
               )
             }
           }
@@ -159,10 +179,7 @@ export const Route = createFileRoute('/api/hyperliquid')({
               )
             }
             const result = await info.clearinghouseState({ user })
-            return new Response(JSON.stringify(result), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            })
+            return jsonResponse(result, 'private, no-store')
           }
 
           case 'orders': {
@@ -177,10 +194,7 @@ export const Route = createFileRoute('/api/hyperliquid')({
               )
             }
             const result = await info.frontendOpenOrders({ user })
-            return new Response(JSON.stringify(result), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            })
+            return jsonResponse(result, 'private, no-store')
           }
 
           case 'fills': {
@@ -198,10 +212,7 @@ export const Route = createFileRoute('/api/hyperliquid')({
               user,
               aggregateByTime: params?.aggregateByTime !== false,
             })
-            return new Response(JSON.stringify(result), {
-              status: 200,
-              headers: { 'Content-Type': 'application/json' },
-            })
+            return jsonResponse(result, 'private, no-store')
           }
 
           default:

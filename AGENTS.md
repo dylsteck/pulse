@@ -70,6 +70,13 @@ src/
 - **Mock vs live**: All data comes from `src/lib/mock/`. When wiring real APIs, keep mock as fallback.
 - **No auto-commit**: Don't commit unless explicitly asked.
 
+## Security guardrails
+
+- **No generic upstream relays**: Never expose a route that forwards arbitrary client-controlled request bodies to third-party APIs. Build upstream request bodies on the server from validated params only.
+- **Secret-backed APIs**: Never pair `process.env` API keys or auth headers with raw client-controlled upstream payloads. Secret-backed routes must validate input, rate-limit callers, and use operation-specific endpoints.
+- **Outbound URLs**: Treat upstream-provided URLs as untrusted input. Only render clickable links after explicit `http:` / `https:` validation.
+- **Cache headers for account data**: Any account-, wallet-, or user-specific API response must use `Cache-Control: private, no-store` unless there is a deliberate, documented reason not to.
+
 ## Integrations to wire (post-MVP)
 
 | Integration      | Docs                         | What it replaces                                                                    |

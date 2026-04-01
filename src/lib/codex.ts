@@ -18,6 +18,11 @@ interface CodexTokenResult {
 }
 
 const BASE_NETWORK_ID = 8453
+const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
+const CODEX_LIMIT_DEFAULT = 50
+const CODEX_LIMIT_MAX = 100
+const CODEX_OFFSET_DEFAULT = 0
+const CODEX_OFFSET_MAX = 5_000
 
 export interface BarDataPoint {
   time: number
@@ -30,18 +35,118 @@ export interface BarsResponse {
 }
 
 /** Map our UI time-window labels to Codex resolution strings */
-const RESOLUTION_MAP: Record<string, string> = {
+const RESOLUTION_MAP = {
   '15m': '1', // 1-minute bars over 15 minutes
   '1H': '1', // 1-minute bars over 1 hour
   '6H': '15', // 15-minute bars over 6 hours
   '1D': '60', // 60-minute bars over 1 day
-}
+} as const
 
-const WINDOW_SECS_MAP: Record<string, number> = {
+const WINDOW_SECS_MAP = {
   '15m': 900,
   '1H': 3600,
   '6H': 21600,
   '1D': 86400,
+} as const
+
+export type CodexWindowLabel = keyof typeof RESOLUTION_MAP
+
+type IntegerRange = {
+  min: number
+  max: number
+  fallback: number
+}
+
+function parseIntegerParam(
+  value: string | null,
+  { min, max, fallback }: IntegerRange,
+): number | null {
+  if (value == null || value === '') return fallback
+  if (!/^\d+$/.test(value)) return null
+
+  const parsed = Number(value)
+  if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) {
+    return null
+  }
+
+  return parsed
+}
+
+export function normalizeCodexAddress(address: string): string | null {
+  const trimmed = address.trim()
+  return ETH_ADDRESS_REGEX.test(trimmed) ? trimmed.toLowerCase() : null
+}
+
+export function parseCodexBaseTokensParams(
+  searchParams: URLSearchParams,
+): { limit: number; offset: number } | null {
+  const limit = parseIntegerParam(searchParams.get('limit'), {
+    min: 1,
+    max: CODEX_LIMIT_MAX,
+    fallback: CODEX_LIMIT_DEFAULT,
+  })
+  const offset = parseIntegerParam(searchParams.get('offset'), {
+    min: 0,
+    max: CODEX_OFFSET_MAX,
+    fallback: CODEX_OFFSET_DEFAULT,
+  })
+
+  if (limit == null || offset == null) return null
+  return { limit, offset }
+}
+
+export function parseCodexTokenParams(
+  searchParams: URLSearchParams,
+): { address: string } | null {
+  const address = searchParams.get('address')
+  if (!address) return null
+
+  const normalizedAddress = normalizeCodexAddress(address)
+  if (!normalizedAddress) return null
+
+  return { address: normalizedAddress }
+}
+
+export function parseCodexBarsParams(
+  searchParams: URLSearchParams,
+): { address: string; windowLabel: CodexWindowLabel } | null {
+  const tokenParams = parseCodexTokenParams(searchParams)
+  const windowLabel = searchParams.get('windowLabel')
+
+  if (!tokenParams || !windowLabel || !(windowLabel in RESOLUTION_MAP)) {
+    return null
+  }
+
+  return {
+    address: tokenParams.address,
+    windowLabel: windowLabel as CodexWindowLabel,
+  }
+}
+
+export function buildCodexBaseTokensPath(limit: number, offset = 0): string {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  })
+
+  return `/api/codex/base-tokens?${params.toString()}`
+}
+
+export function buildCodexTokenPath(address: string): string {
+  const params = new URLSearchParams({ address })
+  return `/api/codex/token?${params.toString()}`
+}
+
+export function buildCodexBarsPath(
+  address: string,
+  windowLabel: CodexWindowLabel,
+): string {
+  const params = new URLSearchParams({
+    address,
+    windowLabel,
+  })
+
+  return `/api/codex/bars?${params.toString()}`
 }
 
 export function buildBaseTokensQuery(
@@ -108,7 +213,7 @@ export function buildTokenByAddressQuery(
 
 export function buildBarsQuery(
   address: string,
-  windowLabel: string,
+  windowLabel: CodexWindowLabel,
 ): Record<string, unknown> {
   const resolution = RESOLUTION_MAP[windowLabel] ?? '15'
   const windowSecs = WINDOW_SECS_MAP[windowLabel] ?? 3600
@@ -255,33 +360,25 @@ export function transformBars(json: {
   return { bars, status: 'ok' }
 }
 
-const CODEX_POST_OPTIONS = (body: Record<string, unknown>): RequestInit => ({
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(body),
-})
-
 export async function fetchCodexBaseTokens(
   limit = 50,
   offset = 0,
 ): Promise<Array<Token>> {
   return transformBaseTokens(
-    await makeRequest(
-      '/api/codex',
-      CODEX_POST_OPTIONS(buildBaseTokensQuery(limit, offset)),
-    ),
+    await makeRequest(buildCodexBaseTokensPath(limit, offset)),
   )
 }
 
 export async function fetchCodexTokenByAddress(
   address: string,
 ): Promise<Token | null> {
-  const addr = address.toLowerCase()
+  const addr = normalizeCodexAddress(address)
+  if (!addr) {
+    throw new Error('Invalid token address.')
+  }
+
   const tokenBase = transformTokenByAddress(
-    await makeRequest(
-      '/api/codex',
-      CODEX_POST_OPTIONS(buildTokenByAddressQuery(addr)),
-    ),
+    await makeRequest(buildCodexTokenPath(addr)),
   )
   if (!tokenBase) return null
 
@@ -305,12 +402,14 @@ export async function fetchCodexTokenByAddress(
 
 export async function fetchCodexBars(
   address: string,
-  windowLabel: string,
+  windowLabel: CodexWindowLabel,
 ): Promise<BarsResponse> {
+  const normalizedAddress = normalizeCodexAddress(address)
+  if (!normalizedAddress) {
+    throw new Error('Invalid token address.')
+  }
+
   return transformBars(
-    await makeRequest(
-      '/api/codex',
-      CODEX_POST_OPTIONS(buildBarsQuery(address, windowLabel)),
-    ),
+    await makeRequest(buildCodexBarsPath(normalizedAddress, windowLabel)),
   )
 }
