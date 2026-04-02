@@ -1,6 +1,7 @@
 import React from 'react'
 import type { Token } from '@/lib/types'
 import { TokenGridCard } from '@/components/dashboard/cards'
+import { CardGrid } from '@/components/dashboard/shared'
 
 interface TokenGridProps {
   tokens: Array<Token>
@@ -8,10 +9,10 @@ interface TokenGridProps {
 
 export function TokenGrid({ tokens }: TokenGridProps) {
   return (
-    <div className="grid w-full grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+    <CardGrid>
       {tokens.map((token) => (
         <TokenGridCard key={token.id} token={token} />
       ))}
-    </div>
+    </CardGrid>
   )
 }

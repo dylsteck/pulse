@@ -1,7 +1,7 @@
 import React from 'react'
 import type { MemeToken } from '@/lib/geckoterminal'
 import { MemeGridCard } from '@/components/dashboard/cards'
-import { LoadingPanel } from '@/components/dashboard/shared'
+import { CardGrid, LoadingPanel } from '@/components/dashboard/shared'
 
 interface MemeGridProps {
   memes: Array<MemeToken>
@@ -20,10 +20,10 @@ export function MemeGrid({ memes, isLoading }: MemeGridProps) {
     )
   }
   return (
-    <div className="grid w-full grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+    <CardGrid>
       {memes.map((meme) => (
         <MemeGridCard key={meme.id} meme={meme} />
       ))}
-    </div>
+    </CardGrid>
   )
 }

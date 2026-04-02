@@ -15,7 +15,7 @@ export const TokenGridCard = React.memo(function TokenGridCard({
     <Link
       to="/asset/$identifier"
       params={{ identifier: buildTokenId(token.id) }}
-      className="block overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
+      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -49,7 +49,7 @@ export const TokenGridCard = React.memo(function TokenGridCard({
       <div className="mt-3 text-lg tabular-nums">
         ${formatPrice(token.price)}
       </div>
-      <div className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
+      <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-xs">
         <span className="text-muted-foreground">Volume</span>
         <span className="text-right tabular-nums">
           {formatCompact(token.volume24h)}

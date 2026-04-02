@@ -8,7 +8,7 @@ import {
   MemeGridCard,
   PerpGridCard,
 } from '@/components/dashboard/cards'
-import { LoadingPanel } from '@/components/dashboard/shared'
+import { CardGrid, LoadingPanel } from '@/components/dashboard/shared'
 
 type TrendingItem =
   | { kind: 'token'; data: Token }
@@ -69,7 +69,7 @@ export function TrendingGrid({
   }
 
   return (
-    <div className="grid w-full grid-cols-1 gap-1.5 sm:grid-cols-2 sm:gap-3 lg:grid-cols-3">
+    <CardGrid>
       {items.map((item) => {
         switch (item.kind) {
           case 'token':
@@ -82,6 +82,6 @@ export function TrendingGrid({
             return <MemeGridCard key={`e-${item.data.id}`} meme={item.data} />
         }
       })}
-    </div>
+    </CardGrid>
   )
 }

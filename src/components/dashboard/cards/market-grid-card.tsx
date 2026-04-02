@@ -40,7 +40,7 @@ export const MarketGridCard = React.memo(function MarketGridCard({
       </div>
 
       {hasOutcomes ? (
-        <div className="mt-3 space-y-1.5">
+        <div className="mt-3 max-h-[140px] space-y-1.5 overflow-y-auto scrollbar-none">
           {market.outcomes!.map((o) => (
             <div key={o.name} className="flex items-center gap-2">
               <span className="min-w-0 flex-1 truncate text-sm">{o.name}</span>

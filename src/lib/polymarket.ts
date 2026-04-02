@@ -12,11 +12,16 @@ interface PolymarketMarket {
 interface PolymarketEvent {
   id: string
   title: string
+  description?: string
   volume24hr?: number
   volume?: number
   endDate?: string
   image?: string
   markets?: Array<PolymarketMarket>
+  tags?: string[]
+  liquidity?: number
+  liquidityClob?: number
+  negRisk?: boolean
 }
 
 export interface PolymarketPage {
@@ -117,15 +122,17 @@ function extractOutcomes(
     if (!names || !prices) continue
     const percent =
       Math.round(Math.max(0, Math.min(100, prices[0] * 100)) * 100) / 100
+    const clobIds = parseClobTokenIds(m.clobTokenIds)
     outcomes.push({
       name:
         m.groupItemTitle ??
         shortenOutcomeName(m.question ?? names[0] ?? 'Unknown'),
       percent,
+      clobTokenId: clobIds?.[0],
     })
   }
 
-  return outcomes.sort((a, b) => b.percent - a.percent).slice(0, 2)
+  return outcomes.sort((a, b) => b.percent - a.percent)
 }
 
 export function transformPolymarketEvents(
@@ -179,6 +186,7 @@ export function transformPolymarketEventById(
     Math.round(Math.max(0, Math.min(100, prices[1] * 100)) * 100) / 100
   const outcomes = extractOutcomes(json.markets ?? [])
   const clobIds = parseClobTokenIds(firstMarket?.clobTokenIds)
+  const liq = Number(json.liquidityClob ?? json.liquidity ?? 0)
 
   return {
     id: String(json.id),
@@ -191,6 +199,10 @@ export function transformPolymarketEventById(
     imageUrl: json.image,
     outcomes: outcomes.length > 0 ? outcomes : undefined,
     clobTokenId: clobIds?.[0],
+    description: json.description || undefined,
+    tags: json.tags && json.tags.length > 0 ? json.tags : undefined,
+    liquidity: liq > 0 ? liq : undefined,
+    negRisk: json.negRisk,
   }
 }
 

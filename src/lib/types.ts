@@ -14,6 +14,7 @@ export interface Token {
 export interface MarketOutcome {
   name: string
   percent: number
+  clobTokenId?: string
 }
 
 export interface Market {
@@ -27,4 +28,8 @@ export interface Market {
   imageUrl?: string
   outcomes?: Array<MarketOutcome>
   clobTokenId?: string
+  description?: string
+  tags?: string[]
+  liquidity?: number
+  negRisk?: boolean
 }
