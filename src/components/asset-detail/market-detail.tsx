@@ -24,18 +24,19 @@ export function MarketDetail({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="mb-6 space-y-2">
-          <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
-          <div className="h-3 w-1/3 animate-pulse rounded bg-muted" />
+      <div className="space-y-6">
+        <div>
+          <div className="mb-4 space-y-2">
+            <div className="h-7 w-3/4 animate-pulse rounded bg-muted" />
+            <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="mb-6 h-2 w-full animate-pulse rounded-full bg-muted" />
+          <div className="h-[340px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="mb-6 h-2 w-full animate-pulse rounded-full bg-muted" />
-        <div className="h-[320px] w-full animate-pulse rounded-lg bg-muted" />
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="h-12 animate-pulse rounded bg-muted" />
-          <div className="h-12 animate-pulse rounded bg-muted" />
-          <div className="h-12 animate-pulse rounded bg-muted" />
-          <div className="h-12 animate-pulse rounded bg-muted" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="h-16 animate-pulse rounded-xl bg-muted" />
+          <div className="h-16 animate-pulse rounded-xl bg-muted" />
+          <div className="h-16 animate-pulse rounded-xl bg-muted" />
         </div>
       </div>
     )
@@ -87,41 +88,38 @@ function MarketDetailContent({ market }: { market: Market }) {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-border/50 bg-card/50 p-6 sm:p-8">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex-1">
-            <h1 className="mb-3 text-2xl font-semibold leading-tight sm:text-3xl">
-              {market.title}
-            </h1>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-              {market.clobTokenId && (
-                <span className="font-mono text-xs">
-                  ID: {market.clobTokenId.slice(0, 8)}...
-                </span>
-              )}
-              <span>Ends {formatDate(market.expiry)}</span>
-            </div>
-          </div>
-          <div className="flex shrink-0 gap-2">
-            <button
-              type="button"
-              className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#22c55e]/15 px-4 py-2 transition-all hover:bg-[#22c55e]/25"
-            >
-              <span className="text-sm font-medium text-[#22c55e]">Yes</span>
-              <span className="font-semibold text-[#22c55e]">
-                {yesPercent.toFixed(0)}%
-              </span>
-            </button>
-            <button
-              type="button"
-              className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#ef4444]/15 px-4 py-2 transition-all hover:bg-[#ef4444]/25"
-            >
-              <span className="text-sm font-medium text-[#ef4444]">No</span>
-              <span className="font-semibold text-[#ef4444]">
-                {(100 - yesPercent).toFixed(0)}%
-              </span>
-            </button>
-          </div>
+      <div>
+        <h1 className="mb-3 text-2xl font-semibold leading-tight sm:text-3xl">
+          {market.title}
+        </h1>
+        <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+          {market.clobTokenId && (
+            <span className="font-mono text-xs">
+              ID: {market.clobTokenId.slice(0, 8)}...
+            </span>
+          )}
+          <span>Ends {formatDate(market.expiry)}</span>
+        </div>
+
+        <div className="mb-4 flex gap-2">
+          <button
+            type="button"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#22c55e]/15 px-4 py-2 transition-all hover:bg-[#22c55e]/25"
+          >
+            <span className="text-sm font-medium text-[#22c55e]">Yes</span>
+            <span className="font-semibold text-[#22c55e]">
+              {yesPercent.toFixed(0)}%
+            </span>
+          </button>
+          <button
+            type="button"
+            className="flex cursor-pointer items-center gap-2 rounded-lg bg-[#ef4444]/15 px-4 py-2 transition-all hover:bg-[#ef4444]/25"
+          >
+            <span className="text-sm font-medium text-[#ef4444]">No</span>
+            <span className="font-semibold text-[#ef4444]">
+              {(100 - yesPercent).toFixed(0)}%
+            </span>
+          </button>
         </div>
 
         <div className="mb-6 h-2 overflow-hidden rounded-full bg-muted">

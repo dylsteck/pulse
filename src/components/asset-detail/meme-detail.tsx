@@ -17,15 +17,19 @@ export function MemeDetail({ id }: { id: string }) {
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="mb-6 flex items-center gap-4">
-          <div className="size-16 animate-pulse rounded-full bg-muted" />
-          <div className="space-y-2">
-            <div className="h-5 w-32 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+      <div className="space-y-6">
+        <div>
+          <div className="mb-4 flex items-center gap-4">
+            <div className="size-14 animate-pulse rounded-full bg-muted" />
+            <div className="space-y-2">
+              <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+            </div>
           </div>
+          <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
+          <div className="h-[380px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <div className="h-16 animate-pulse rounded-xl bg-muted" />
           <div className="h-16 animate-pulse rounded-xl bg-muted" />
           <div className="h-16 animate-pulse rounded-xl bg-muted" />
@@ -81,55 +85,60 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
   const color = meme.change24h >= 0 ? '#22c55e' : '#ef4444'
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex min-w-0 items-center gap-4">
-            {meme.imageUrl && (
-              <FadeImage
-                src={meme.imageUrl}
-                alt=""
-                wrapperClassName="size-16 shrink-0 rounded-full"
-                className="size-16 rounded-full object-cover"
-              />
-            )}
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="truncate text-xl font-semibold">
-                  {meme.symbol}
-                </h1>
-                <span
-                  className={cn(
-                    'rounded-full px-2 py-0.5 text-xs font-medium',
-                    meme.change24h >= 0
-                      ? 'bg-[#22c55e]/10 text-[#22c55e]'
-                      : 'bg-[#ef4444]/10 text-[#ef4444]',
-                  )}
-                >
-                  {meme.change24h >= 0 ? '+' : ''}
-                  {meme.change24h.toFixed(2)}%
-                </span>
-              </div>
-              <p className="truncate text-sm text-muted-foreground">
-                {meme.name}
-              </p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {meme.description?.trim() ||
-                  'No description available for this token yet.'}
-              </p>
-            </div>
+    <div className="space-y-6">
+      <div>
+        <div className="mb-4 flex items-center gap-4">
+          {meme.imageUrl && (
+            <FadeImage
+              src={meme.imageUrl}
+              alt=""
+              wrapperClassName="size-12 shrink-0 rounded-full sm:size-14"
+              className="size-12 rounded-full object-cover sm:size-14"
+            />
+          )}
+          <div className="min-w-0">
+            <h1 className="truncate text-xl font-semibold">{meme.symbol}</h1>
+            <p className="truncate text-sm text-muted-foreground">
+              {meme.name}
+            </p>
           </div>
+        </div>
 
-          <div className="text-right">
-            <div className="text-3xl tabular-nums">
+        {meme.description?.trim() && (
+          <p className="mb-4 text-sm leading-6 text-muted-foreground">
+            {meme.description.trim()}
+          </p>
+        )}
+
+        <div className="mb-1 flex items-end justify-between gap-4">
+          <div className="flex items-baseline gap-3">
+            <span className="text-3xl font-semibold tabular-nums sm:text-4xl">
               ${formatPrice(meme.price)}
-            </div>
-            <p className="text-xs text-muted-foreground">Current Price</p>
+            </span>
+            <span
+              className={cn(
+                'rounded-full px-2.5 py-0.5 text-sm font-medium',
+                meme.change24h >= 0
+                  ? 'bg-[#22c55e]/10 text-[#22c55e]'
+                  : 'bg-[#ef4444]/10 text-[#ef4444]',
+              )}
+            >
+              {meme.change24h >= 0 ? '+' : ''}
+              {meme.change24h.toFixed(2)}%
+            </span>
+          </div>
+          <div className="text-right">
+            <p className="text-lg font-semibold tabular-nums">
+              {formatCompact(meme.valuation)}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {meme.valuationLabel}
+            </p>
           </div>
         </div>
 
         {meme.launchProgress != null && (
-          <div className="rounded-xl border border-border bg-muted/30 p-4">
+          <div className="mt-4 rounded-xl border border-border/50 bg-card/30 p-4">
             <div className="mb-2 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Launch progress</span>
               <span className="font-semibold tabular-nums">
@@ -147,57 +156,53 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
           </div>
         )}
 
-        <LivelineChart
-          data={chartData}
-          value={meme.price}
-          height={380}
-          color={color}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-          isLoading={isLoading && bars.length === 0}
-          emptyText="No chart data available"
-          exaggerate
-          formatValue={(v) => `$${formatPrice(v)}`}
-        />
+        <div className="mt-6">
+          <LivelineChart
+            data={chartData}
+            value={meme.price}
+            height={380}
+            color={color}
+            window={WINDOW_LABEL_TO_SECS[windowLabel]}
+            onWindowChange={handleWindowChange}
+            isLoading={isLoading && bars.length === 0}
+            emptyText="No chart data available"
+            exaggerate
+            formatValue={(v) => `$${formatPrice(v)}`}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            24h Volume
-          </p>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <p className="mb-1 text-xs text-muted-foreground">24h Volume</p>
           <p className="text-lg font-semibold tabular-nums">
             {formatCompact(meme.volume24h)}
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Liquidity
-          </p>
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <p className="mb-1 text-xs text-muted-foreground">Liquidity</p>
           <p className="text-lg font-semibold tabular-nums">
             {formatCompact(meme.liquidity)}
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <p className="mb-1 text-xs text-muted-foreground">
             {meme.valuationLabel}
           </p>
           <p className="text-lg font-semibold tabular-nums">
             {formatCompact(meme.valuation)}
           </p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="mb-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Holders
-          </p>
+        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
+          <p className="mb-1 text-xs text-muted-foreground">Holders</p>
           <p className="text-lg font-semibold tabular-nums">
             {meme.holdersCount?.toLocaleString('en-US') ?? '—'}
           </p>
         </div>
       </div>
 
-      <div className="rounded-xl border border-border bg-card p-4 sm:p-6">
-        <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+      <div className="rounded-xl border border-border/50 bg-card/30 p-4 sm:p-6">
+        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
           Token Details
         </h2>
         <div className="space-y-3 text-sm">
