@@ -124,7 +124,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
             </button>
           </div>
 
-          <div className="px-2 sm:px-0">
+          <div className="mt-2 px-2 sm:px-0">
             {mode === 'trending' ? (
               <TrendingGrid
                 tokens={liveTokens ?? []}
