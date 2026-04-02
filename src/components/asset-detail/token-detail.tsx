@@ -1,18 +1,23 @@
-import { useCallback, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { Token } from '@/lib/types'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
-  WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
+import { useWindowChange } from '@/hooks/use-window-change'
 import { fetchCodexTokenByAddress } from '@/lib/codex'
 import { FadeImage } from '@/components/ui/fade-image'
-import { cn } from '@/lib/utils'
 import { formatCompact, formatPrice } from '@/lib/format'
 import { useIsMobile } from '@/hooks/use-is-mobile'
+import {
+  StatItem,
+  DetailSection,
+  DetailRow,
+  ChangeBadge,
+  DetailMessage,
+} from './shared'
 
 export function TokenDetail({ id }: { id: string }) {
   const {
@@ -48,39 +53,17 @@ export function TokenDetail({ id }: { id: string }) {
     )
   }
 
-  if (isError) {
-    return (
-      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
-        Unable to load token
-      </div>
-    )
-  }
-
-  if (!token) {
-    return (
-      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
-        Token not found
-      </div>
-    )
-  }
+  if (isError) return <DetailMessage>Unable to load token</DetailMessage>
+  if (!token) return <DetailMessage>Token not found</DetailMessage>
   return <TokenDetailContent token={token} />
 }
 
 function TokenDetailContent({ token }: { token: Token }) {
   const isMobile = useIsMobile()
   const { price } = useTokenPrice(token)
-  const [windowLabel, setWindowLabel] = useState('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange('15m')
   const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
   const chartData = bars.length >= 2 ? bars : token.priceHistory
-
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
-  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
-  const handleWindowChange = useCallback((secs: number) => {
-    if (secs === windowSecsRef.current) return
-    windowSecsRef.current = secs
-    const label = WINDOW_SECS_TO_LABEL[secs]
-    if (label) setWindowLabel(label)
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -105,17 +88,7 @@ function TokenDetailContent({ token }: { token: Token }) {
             <span className="text-3xl font-semibold tabular-nums sm:text-4xl">
               ${formatPrice(price)}
             </span>
-            <span
-              className={cn(
-                'rounded-full px-2.5 py-0.5 text-sm font-medium',
-                token.change24h >= 0
-                  ? 'bg-[#22c55e]/10 text-[#22c55e]'
-                  : 'bg-[#ef4444]/10 text-[#ef4444]',
-              )}
-            >
-              {token.change24h >= 0 ? '+' : ''}
-              {token.change24h.toFixed(2)}%
-            </span>
+            <ChangeBadge value={token.change24h} pill />
           </div>
           {token.marketCap > 0 && (
             <div className="text-right">
@@ -141,67 +114,52 @@ function TokenDetailContent({ token }: { token: Token }) {
       </div>
 
       <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
-        <div>
-          <p className="mb-0.5 text-xs text-muted-foreground">Volume 24h</p>
-          <p className="text-lg font-semibold tabular-nums">
-            {token.volume24h > 0 ? formatCompact(token.volume24h) : '—'}
-          </p>
-        </div>
-        <div>
-          <p className="mb-0.5 text-xs text-muted-foreground">Market Cap</p>
-          <p className="text-lg font-semibold tabular-nums">
-            {token.marketCap > 0 ? formatCompact(token.marketCap) : '—'}
-          </p>
-        </div>
-        <div>
-          <p className="mb-0.5 text-xs text-muted-foreground">24h High</p>
-          <p className="text-lg font-semibold tabular-nums">
-            {price > 0 ? formatPrice(price * 1.05) : '—'}
-          </p>
-        </div>
-        <div>
-          <p className="mb-0.5 text-xs text-muted-foreground">24h Low</p>
-          <p className="text-lg font-semibold tabular-nums">
-            {price > 0 ? formatPrice(price * 0.95) : '—'}
-          </p>
-        </div>
+        <StatItem
+          label="Volume 24h"
+          value={token.volume24h > 0 ? formatCompact(token.volume24h) : '—'}
+        />
+        <StatItem
+          label="Market Cap"
+          value={token.marketCap > 0 ? formatCompact(token.marketCap) : '—'}
+        />
+        <StatItem
+          label="24h High"
+          value={price > 0 ? formatPrice(price * 1.05) : '—'}
+        />
+        <StatItem
+          label="24h Low"
+          value={price > 0 ? formatPrice(price * 0.95) : '—'}
+        />
       </div>
 
-      <div>
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-          Token Details
-        </h2>
-        <div className="space-y-3 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Contract</span>
-            <a
-              href={`https://basescan.org/address/${token.address}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 font-mono text-xs text-foreground underline underline-offset-2 hover:no-underline"
+      <DetailSection title="Token Details">
+        <DetailRow label="Contract">
+          <a
+            href={`https://basescan.org/address/${token.address}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 font-mono text-xs text-foreground underline underline-offset-2 hover:no-underline"
+          >
+            {token.address.slice(0, 6)}...{token.address.slice(-4)}
+            <svg
+              className="size-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              {token.address.slice(0, 6)}...{token.address.slice(-4)}
-              <svg
-                className="size-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                />
-              </svg>
-            </a>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Token ID</span>
-            <span className="font-mono text-xs">{token.id}</span>
-          </div>
-        </div>
-      </div>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+          </a>
+        </DetailRow>
+        <DetailRow label="Token ID">
+          <span className="font-mono text-xs">{token.id}</span>
+        </DetailRow>
+      </DetailSection>
     </div>
   )
 }

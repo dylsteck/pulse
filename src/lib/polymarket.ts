@@ -18,7 +18,7 @@ interface PolymarketEvent {
   endDate?: string
   image?: string
   markets?: Array<PolymarketMarket>
-  tags?: string[]
+  tags?: Array<string | { label?: string }>
   liquidity?: number
   liquidityClob?: number
   negRisk?: boolean
@@ -200,7 +200,12 @@ export function transformPolymarketEventById(
     outcomes: outcomes.length > 0 ? outcomes : undefined,
     clobTokenId: clobIds?.[0],
     description: json.description || undefined,
-    tags: json.tags && json.tags.length > 0 ? json.tags : undefined,
+    tags:
+      json.tags && json.tags.length > 0
+        ? json.tags
+            .map((t: any) => (typeof t === 'string' ? t : t.label))
+            .filter(Boolean)
+        : undefined,
     liquidity: liq > 0 ? liq : undefined,
     negRisk: json.negRisk,
   }

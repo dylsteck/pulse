@@ -1,32 +1,22 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight } from 'lucide-react'
 import type { Token } from '@/lib/types'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
-  WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
+import { useWindowChange } from '@/hooks/use-window-change'
 import { formatPrice } from '@/lib/format'
-import { FadeImage } from '@/components/ui/fade-image'
 import { buildTokenId } from '@/lib/caip19'
 
 export function InlineTokenChart({ token }: { token: Token }) {
   const { price } = useTokenPrice(token)
-  const [windowLabel, setWindowLabel] = useState('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange('15m')
   const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
   const chartData = bars.length >= 2 ? bars : token.priceHistory
-
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
-  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]!
-  const handleWindowChange = useCallback((secs: number) => {
-    if (secs === windowSecsRef.current) return
-    windowSecsRef.current = secs
-    const label = WINDOW_SECS_TO_LABEL[secs]
-    if (label) setWindowLabel(label)
-  }, [])
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">

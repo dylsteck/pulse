@@ -4,8 +4,8 @@ import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
-import { cn } from '@/lib/utils'
 import { buildPerpId } from '@/lib/caip19'
+import { ChangeBadge } from '@/components/asset-detail/shared'
 
 function perpIconUrl(coin: string): string {
   return `https://app.hyperliquid.xyz/coins/${coin}.svg`
@@ -35,15 +35,7 @@ export function PerpGridCard({ market }: PerpGridCardProps) {
             <div className="text-xs text-muted-foreground">PERP</div>
           </div>
         </div>
-        <div
-          className={cn(
-            'text-xs tabular-nums',
-            market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-          )}
-        >
-          {market.change24h >= 0 ? '+' : ''}
-          {market.change24h.toFixed(2)}%
-        </div>
+        <ChangeBadge value={market.change24h} />
       </div>
       <div className="mt-2 mb-1 text-lg tabular-nums">
         ${formatPerpPrice(market, market.markPx)}

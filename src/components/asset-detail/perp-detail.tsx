@@ -1,17 +1,23 @@
-import { useCallback, useRef, useState } from 'react'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
-  WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { useHyperliquidCandles } from '@/hooks/use-hyperliquid-candles'
 import { usePerpMarkets } from '@/hooks/use-perps'
+import { useWindowChange } from '@/hooks/use-window-change'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
-import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
 import { useIsMobile } from '@/hooks/use-is-mobile'
+import {
+  StatItem,
+  DetailSection,
+  DetailRow,
+  ChangeBadge,
+  DetailMessage,
+} from './shared'
+import { cn } from '@/lib/utils'
 
 export function PerpDetail({ id }: { id: string }) {
   const { data: markets, isLoading, isError } = usePerpMarkets()
@@ -31,53 +37,29 @@ export function PerpDetail({ id }: { id: string }) {
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
           <div className="h-[380px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
         </div>
       </div>
     )
   }
 
-  if (isError) {
-    return (
-      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
-        Unable to load perp market
-      </div>
-    )
-  }
-
-  if (!market) {
-    return (
-      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
-        Perp market not found
-      </div>
-    )
-  }
+  if (isError) return <DetailMessage>Unable to load perp market</DetailMessage>
+  if (!market) return <DetailMessage>Perp market not found</DetailMessage>
   return <PerpDetailContent market={market} />
 }
 
 function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
   const isMobile = useIsMobile()
-  const [windowLabel, setWindowLabel] = useState('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange('15m')
   const { data: candles, isLoading } = useHyperliquidCandles(
     market.coin,
     windowLabel,
   )
-
   const chartData = candles.length >= 2 ? candles : []
-
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
-  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
-  const handleWindowChange = useCallback((secs: number) => {
-    if (secs === windowSecsRef.current) return
-    windowSecsRef.current = secs
-    const label = WINDOW_SECS_TO_LABEL[secs]
-    if (label) setWindowLabel(label)
-  }, [])
-
   const color = market.change24h >= 0 ? '#22c55e' : '#ef4444'
 
   return (
@@ -101,17 +83,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
             <span className="text-3xl font-semibold tabular-nums sm:text-4xl">
               ${formatPerpPrice(market, market.markPx)}
             </span>
-            <span
-              className={cn(
-                'rounded-full px-2.5 py-0.5 text-sm font-medium',
-                market.change24h >= 0
-                  ? 'bg-[#22c55e]/10 text-[#22c55e]'
-                  : 'bg-[#ef4444]/10 text-[#ef4444]',
-              )}
-            >
-              {market.change24h >= 0 ? '+' : ''}
-              {market.change24h.toFixed(2)}%
-            </span>
+            <ChangeBadge value={market.change24h} pill />
           </div>
           <div className="text-right">
             <p className="text-lg font-semibold tabular-nums">
@@ -135,75 +107,50 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">24h Volume</p>
-          <p className="text-lg font-semibold tabular-nums">
-            {formatCompact(market.volume24h)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">Funding Rate</p>
-          <p
-            className={cn(
-              'text-lg font-semibold tabular-nums',
-              market.funding >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-            )}
-          >
-            {(market.funding * 100).toFixed(4)}%
-          </p>
-        </div>
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">Open Interest</p>
-          <p className="text-lg font-semibold tabular-nums">
-            {formatCompact(market.openInterest)}
-          </p>
-        </div>
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">24h Change</p>
-          <p
-            className={cn(
-              'text-lg font-semibold tabular-nums',
-              market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-            )}
-          >
-            {market.change24h >= 0 ? '+' : ''}
-            {market.change24h.toFixed(2)}%
-          </p>
-        </div>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+        <StatItem label="24h Volume" value={formatCompact(market.volume24h)} />
+        <StatItem
+          label="Funding Rate"
+          value={`${(market.funding * 100).toFixed(4)}%`}
+          className={cn(
+            market.funding >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+          )}
+        />
+        <StatItem
+          label="Open Interest"
+          value={formatCompact(market.openInterest)}
+        />
+        <StatItem
+          label="24h Change"
+          value={`${market.change24h >= 0 ? '+' : ''}${market.change24h.toFixed(2)}%`}
+          className={cn(
+            market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
+          )}
+        />
       </div>
 
-      <div className="rounded-xl border border-border/50 bg-card/30 p-4 sm:p-6">
-        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
-          Position Details
-        </h2>
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div className="flex items-center justify-between rounded-lg bg-muted/30 p-2.5 sm:p-3">
-            <span className="text-muted-foreground">Mark Price</span>
-            <span className="font-semibold tabular-nums">
-              ${formatPerpPrice(market, market.markPx)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted/30 p-2.5 sm:p-3">
-            <span className="text-muted-foreground">Mid Price</span>
-            <span className="font-semibold tabular-nums">
-              ${formatPerpPrice(market, market.midPx)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted/30 p-2.5 sm:p-3">
-            <span className="text-muted-foreground">Prev Day</span>
-            <span className="font-semibold tabular-nums">
-              ${formatPerpPrice(market, market.prevDayPx)}
-            </span>
-          </div>
-          <div className="flex items-center justify-between rounded-lg bg-muted/30 p-2.5 sm:p-3">
-            <span className="text-muted-foreground">Max Leverage</span>
-            <span className="font-semibold tabular-nums">
-              {market.maxLeverage}x
-            </span>
-          </div>
-        </div>
-      </div>
+      <DetailSection title="Position Details">
+        <DetailRow label="Mark Price">
+          <span className="font-semibold tabular-nums">
+            ${formatPerpPrice(market, market.markPx)}
+          </span>
+        </DetailRow>
+        <DetailRow label="Mid Price">
+          <span className="font-semibold tabular-nums">
+            ${formatPerpPrice(market, market.midPx)}
+          </span>
+        </DetailRow>
+        <DetailRow label="Prev Day">
+          <span className="font-semibold tabular-nums">
+            ${formatPerpPrice(market, market.prevDayPx)}
+          </span>
+        </DetailRow>
+        <DetailRow label="Max Leverage">
+          <span className="font-semibold tabular-nums">
+            {market.maxLeverage}x
+          </span>
+        </DetailRow>
+      </DetailSection>
     </div>
   )
 }

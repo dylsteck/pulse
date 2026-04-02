@@ -1,18 +1,18 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight } from 'lucide-react'
 import type { MemeToken } from '@/lib/geckoterminal'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
-  WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
+import { useWindowChange } from '@/hooks/use-window-change'
 import { formatPrice } from '@/lib/format'
 import { buildMemeId } from '@/lib/caip19'
 
 export function InlineMemeChart({ meme }: { meme: MemeToken }) {
-  const [windowLabel, setWindowLabel] = useState('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange('15m')
   const { data: bars, isLoading } = useMemeOhlcv(meme.poolAddress, windowLabel)
   const chartData =
     bars.length >= 2
@@ -27,15 +27,6 @@ export function InlineMemeChart({ meme }: { meme: MemeToken }) {
               { time: now, value: meme.price },
             ]
           })()
-
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
-  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]!
-  const handleWindowChange = useCallback((secs: number) => {
-    if (secs === windowSecsRef.current) return
-    windowSecsRef.current = secs
-    const label = WINDOW_SECS_TO_LABEL[secs]
-    if (label) setWindowLabel(label)
-  }, [])
 
   const color = meme.change24h >= 0 ? '#22c55e' : '#ef4444'
 

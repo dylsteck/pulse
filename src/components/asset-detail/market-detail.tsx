@@ -1,18 +1,19 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import type { Market } from '@/lib/types'
 import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
-  WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useMarketHistory } from '@/hooks/use-market-history'
+import { useWindowChange } from '@/hooks/use-window-change'
 import { fetchPolymarketEventById } from '@/lib/polymarket'
 import { formatCompact, formatDate } from '@/lib/format'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/use-is-mobile'
+import { StatItem, DetailMessage } from './shared'
 
 export function MarketDetail({ id }: { id: string }) {
   const {
@@ -47,21 +48,8 @@ export function MarketDetail({ id }: { id: string }) {
     )
   }
 
-  if (isError) {
-    return (
-      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
-        Unable to load market
-      </div>
-    )
-  }
-
-  if (!market) {
-    return (
-      <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
-        Market not found
-      </div>
-    )
-  }
+  if (isError) return <DetailMessage>Unable to load market</DetailMessage>
+  if (!market) return <DetailMessage>Market not found</DetailMessage>
   return <MarketDetailContent market={market} />
 }
 
@@ -76,7 +64,16 @@ function MarketDetailContent({ market }: { market: Market }) {
       ) : (
         <BinaryBody market={market} />
       )}
-      <MarketStats market={market} />
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+        <StatItem label="Volume" value={formatCompact(market.volume)} />
+        {market.liquidity != null && market.liquidity > 0 && (
+          <StatItem
+            label="Liquidity"
+            value={formatCompact(market.liquidity)}
+          />
+        )}
+        <StatItem label="End Date" value={formatDate(market.expiry)} />
+      </div>
       {market.description && (
         <div>
           <h2 className="mb-2 text-sm font-medium text-muted-foreground">
@@ -132,7 +129,7 @@ function MarketHeader({ market }: { market: Market }) {
 function BinaryBody({ market }: { market: Market }) {
   const isMobile = useIsMobile()
   const { yesPercent } = useMarketOdds(market)
-  const [windowLabel, setWindowLabel] = useState('1D')
+  const { windowLabel, handleWindowChange } = useWindowChange('1D')
   const { data: history, isLoading } = useMarketHistory(
     market.clobTokenId,
     windowLabel,
@@ -145,15 +142,6 @@ function BinaryBody({ market }: { market: Market }) {
           { time: Date.now() / 1000 - 60, value: yesPercent },
           { time: Date.now() / 1000, value: yesPercent },
         ]
-
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
-  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
-  const handleWindowChange = useCallback((secs: number) => {
-    if (secs === windowSecsRef.current) return
-    windowSecsRef.current = secs
-    const label = WINDOW_SECS_TO_LABEL[secs]
-    if (label) setWindowLabel(label)
-  }, [])
 
   return (
     <div>
@@ -206,7 +194,7 @@ function MultiOutcomeBody({ market }: { market: Market }) {
   const leadingOutcome = useMemo(() => outcomes[0], [outcomes])
   const chartClobId = leadingOutcome?.clobTokenId
 
-  const [windowLabel, setWindowLabel] = useState('1D')
+  const { windowLabel, handleWindowChange } = useWindowChange('1D')
   const { data: history, isLoading } = useMarketHistory(
     chartClobId,
     windowLabel,
@@ -220,15 +208,6 @@ function MultiOutcomeBody({ market }: { market: Market }) {
           { time: Date.now() / 1000 - 60, value: chartValue },
           { time: Date.now() / 1000, value: chartValue },
         ]
-
-  const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
-  windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]
-  const handleWindowChange = useCallback((secs: number) => {
-    if (secs === windowSecsRef.current) return
-    windowSecsRef.current = secs
-    const label = WINDOW_SECS_TO_LABEL[secs]
-    if (label) setWindowLabel(label)
-  }, [])
 
   const maxPercent = outcomes[0]?.percent ?? 1
 
@@ -278,31 +257,6 @@ function MultiOutcomeBody({ market }: { market: Market }) {
             )
           })}
         </div>
-      </div>
-    </div>
-  )
-}
-
-function MarketStats({ market }: { market: Market }) {
-  return (
-    <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-      <div>
-        <p className="mb-0.5 text-xs text-muted-foreground">Volume</p>
-        <p className="text-lg font-semibold tabular-nums">
-          {formatCompact(market.volume)}
-        </p>
-      </div>
-      {market.liquidity != null && market.liquidity > 0 && (
-        <div>
-          <p className="mb-0.5 text-xs text-muted-foreground">Liquidity</p>
-          <p className="text-lg font-semibold tabular-nums">
-            {formatCompact(market.liquidity)}
-          </p>
-        </div>
-      )}
-      <div>
-        <p className="mb-0.5 text-xs text-muted-foreground">End Date</p>
-        <p className="text-lg font-semibold">{formatDate(market.expiry)}</p>
       </div>
     </div>
   )

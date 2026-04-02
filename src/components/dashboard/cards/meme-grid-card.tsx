@@ -3,8 +3,8 @@ import { Link } from '@tanstack/react-router'
 import type { MemeToken } from '@/lib/geckoterminal'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatPrice } from '@/lib/format'
-import { cn } from '@/lib/utils'
 import { buildMemeId } from '@/lib/caip19'
+import { ChangeBadge } from '@/components/asset-detail/shared'
 
 export const MemeGridCard = React.memo(function MemeGridCard({
   meme,
@@ -34,15 +34,7 @@ export const MemeGridCard = React.memo(function MemeGridCard({
             </div>
           </div>
         </div>
-        <div
-          className={cn(
-            'text-xs tabular-nums',
-            meme.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
-          )}
-        >
-          {meme.change24h >= 0 ? '+' : ''}
-          {meme.change24h.toFixed(2)}%
-        </div>
+        <ChangeBadge value={meme.change24h} />
       </div>
 
       <div className="mt-3 text-lg tabular-nums">
