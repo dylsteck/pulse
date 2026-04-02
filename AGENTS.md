@@ -4,7 +4,7 @@ Context for AI agents working in this codebase.
 
 ## What this is
 
-Pulse is a trading interface for Base tokens (via Spandex) and Polymarket prediction markets.
+Pulse is a trading interface across tokens (Base), prediction markets (Polymarket), perpetual futures (Hyperliquid), and meme tokens (Solana/Pump.fun via GeckoTerminal).
 
 ## Project structure
 
@@ -33,19 +33,22 @@ src/
 │   ├── dashboard/
 │   │   ├── unified-list.tsx        Orchestrator for list/grid (tokens, markets, memes, etc.)
 │   │   ├── hero-banner.tsx         Carousel orchestrator
-│   │   ├── shared/                 LoadingPanel, ErrorPanel, MemeRetryState, ChanceGauge
-│   │   ├── inline-charts/           InlineTokenChart, InlineMemeChart, InlineMarketChart, etc.
+│   │   ├── shared/                 LoadingPanel, ErrorPanel, MemeRetryState, ChanceGauge, CardGrid
+│   │   ├── inline-charts/          InlineTokenChart, InlineMemeChart, InlineMarketChart, etc.
 │   │   ├── cards/                  TokenGridCard, MarketGridCard, MemeGridCard, etc.
-│   │   ├── grids/                  TokenGrid, MarketGrid, MemeGrid, etc.
+│   │   ├── grids/                  TokenGrid, MarketGrid, MemeGrid, etc. (use CardGrid wrapper)
 │   │   ├── tables/                 TokenTable, MarketTable, MemeTable, etc.
 │   │   ├── tabs/mode-tabs.tsx      Mode tab buttons
 │   │   ├── hero/                   AssetCard, MemeCard, MarketCard, SidebarRow
 │   │   └── layout-toggle.tsx        List/grid toggle
-│   ├── asset-detail/               TokenDetail, MarketDetail, CreatorDetail, etc.
+│   ├── asset-detail/
+│   │   ├── shared.tsx              StatItem, DetailSection, DetailRow, ChangeBadge, DetailMessage
+│   │   └── *-detail.tsx            TokenDetail, MarketDetail, PerpDetail, MemeDetail, CreatorDetail
 │   ├── asset-detail-page.tsx       Orchestrator for asset detail views
 │   ├── command-palette/            AssetIcon, ChartPreview, CommandPalette
 │   └── trading/liveline-chart.tsx  Liveline wrapper (LivelineChart, SparklineChart)
 ├── hooks/
+│   ├── use-window-change.ts        Shared chart window/timeframe handler
 │   ├── use-token-price.ts          Live price (tokens)
 │   ├── use-token-bars.ts          Codex bars for Base tokens
 │   ├── use-meme-tokens.ts         GeckoTerminal meme tokens (infinite)
@@ -67,7 +70,7 @@ src/
 - **Path alias**: `@/` maps to `src/` (configured in `tsconfig.json`).
 - **Styling**: Tailwind v4 + shadcn. Design tokens are in `src/styles.css`. Raw color values used: `#FFFFFF` bg, `#F9F9F9` sections, `#E5E5E5` borders, `#22c55e` green, `#ef4444` red.
 - **UI components**: Use **shadcn/ui** for all UI. Prefer existing components in `src/components/ui/` before creating new ones. They're built on `@base-ui/react`. For guidance on adding, styling, and composing shadcn components, refer to the shadcn skill at `.agents/skills/shadcn/SKILL.md` and its rules in `.agents/skills/shadcn/`.
-- **Mock vs live**: All data comes from `src/lib/mock/`. When wiring real APIs, keep mock as fallback.
+- **Live data**: All data is fetched from live APIs via server-side proxy routes in `src/routes/api/`. No mock data layer.
 - **No auto-commit**: Don't commit unless explicitly asked.
 
 ## Security guardrails
@@ -114,12 +117,15 @@ We proxy GeckoTerminal at `/api/geckoterminal/*`. Full OAS: https://api.geckoter
 ## Liveline chart API
 
 ```ts
-<Liveline
-  data={data}        // { time: number; value: number }[]
-  value={number}     // current price (drives live dot)
-  color={string}     // hex color — green (#22c55e) when up, red (#ef4444) when down
-  theme="light"
-  badge momentum fill grid
+<LivelineChart
+  data={data}                    // { time: number; value: number }[]
+  value={number}                 // current price (drives live dot)
+  height={isMobile ? 200 : 340} // responsive height
+  window={WINDOW_LABEL_TO_SECS[windowLabel]}   // timeframe in seconds
+  onWindowChange={handleWindowChange}           // from useWindowChange hook
+  formatValue={(v) => `$${formatPrice(v)}`}     // tooltip formatter
+  isLoading={isLoading}
+  emptyText="No chart data available"
 />
 ```
 
@@ -155,5 +161,8 @@ bun run build   # production build (catches type errors)
 - **Feature-based layout**: Components are organized by feature, not by atoms/molecules/organisms. Use nested folders for related subcomponents (e.g. `dashboard/cards/`, `dashboard/grids/`).
 - **`components/ui/`**: Reserved for shadcn components only. Do not add feature-specific components here.
 - **Orchestrators**: Large pages (UnifiedList, HeroBanner, AssetDetailPage) are orchestrators that import and compose smaller components. Keep orchestrators slim; move inline logic into extracted components.
-- **Shared hooks**: Use `useIsMobile`, `useInfiniteScroll`, `useDocumentHidden` from `@/hooks/` instead of duplicating logic.
+- **Shared hooks**: Use `useIsMobile`, `useInfiniteScroll`, `useDocumentHidden`, `useWindowChange` from `@/hooks/` instead of duplicating logic.
+- **Shared detail components**: `asset-detail/shared.tsx` exports `StatItem`, `DetailSection`, `DetailRow`, `ChangeBadge`, `DetailMessage`. Use these across all detail pages for consistent flat styling. Don't wrap stats in card containers.
+- **CardGrid**: All grid views (`token-grid`, `market-grid`, `meme-grid`, `trending-grid`) use the shared `CardGrid` component from `dashboard/shared/card-grid.tsx` which sets `gridAutoRows: '200px'` and responsive columns. Don't duplicate grid layout.
+- **Flat layout**: Detail pages use flat stats grids and section headings — no card wrappers around stats or detail sections.
 - **File size**: Prefer files under ~300 lines. Extract subcomponents when a file grows large. ESLint enforces `max-lines` (300) and `max-lines-per-function` (80) with overrides for test files.
