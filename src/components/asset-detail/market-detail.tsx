@@ -129,7 +129,7 @@ function MarketHeader({ market }: { market: Market }) {
 function BinaryBody({ market }: { market: Market }) {
   const isMobile = useIsMobile()
   const { yesPercent } = useMarketOdds(market)
-  const { windowLabel, handleWindowChange } = useWindowChange('1D')
+  const { windowLabel, handleWindowChange } = useWindowChange('15m')
   const { data: history, isLoading } = useMarketHistory(
     market.clobTokenId,
     windowLabel,
@@ -194,7 +194,7 @@ function MultiOutcomeBody({ market }: { market: Market }) {
   const leadingOutcome = useMemo(() => outcomes[0], [outcomes])
   const chartClobId = leadingOutcome?.clobTokenId
 
-  const { windowLabel, handleWindowChange } = useWindowChange('1D')
+  const { windowLabel, handleWindowChange } = useWindowChange('15m')
   const { data: history, isLoading } = useMarketHistory(
     chartClobId,
     windowLabel,

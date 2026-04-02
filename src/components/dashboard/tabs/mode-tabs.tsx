@@ -6,7 +6,7 @@ import {
   TrendingUpIcon,
   ZapIcon,
 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export type ViewMode = 'trending' | 'tokens' | 'markets' | 'perps' | 'memes'
 
@@ -30,27 +30,26 @@ interface ModeTabsProps {
 
 export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
   return (
-    <div className="flex min-w-0 flex-1 items-center gap-3 overflow-x-auto pb-1 sm:gap-5 sm:overflow-visible">
-      {TABS.map((tab) => {
-        const active = mode === tab
-        const Icon = TAB_ICONS[tab]
-        return (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => onModeChange(tab)}
-            className={cn(
-              'flex shrink-0 items-center gap-1.5 py-2 text-sm font-medium capitalize transition-colors',
-              active
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
-            )}
-          >
-            <Icon className="size-3.5" />
-            {tab}
-          </button>
-        )
-      })}
-    </div>
+    <Tabs
+      value={mode}
+      onValueChange={(value) => onModeChange(value as ViewMode)}
+      className="min-w-0 flex-1"
+    >
+      <TabsList className="h-auto gap-0.5">
+        {TABS.map((tab) => {
+          const Icon = TAB_ICONS[tab]
+          return (
+            <TabsTrigger
+              key={tab}
+              value={tab}
+              className="text-sm font-medium capitalize"
+            >
+              <Icon className="size-3.5" />
+              {tab}
+            </TabsTrigger>
+          )
+        })}
+      </TabsList>
+    </Tabs>
   )
 }

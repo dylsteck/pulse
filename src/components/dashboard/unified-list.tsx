@@ -96,7 +96,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
     <div className="mx-auto flex w-full max-w-7xl sm:px-6">
       <div className="min-w-0 flex-1">
         <div ref={scrollRef} className="scroll-mt-1 overflow-x-clip">
-          <div className="sticky top-12 z-20 -mx-2 mb-1 flex items-end justify-between gap-2 bg-background px-4 pb-1.5 pt-0.5 sm:-mx-6 sm:px-6">
+          <div className="sticky top-12 z-20 -mx-2 flex items-end justify-between gap-2 bg-background px-4 pb-0.5 pt-0.5 sm:-mx-6 sm:px-6">
             <ModeTabs
               mode={mode}
               onModeChange={(tab) => {
@@ -110,7 +110,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
             <button
               type="button"
               onClick={() => setSidebarCollapsed((c) => !c)}
-              className="hidden shrink-0 items-center justify-center rounded-md border border-border p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:inline-flex"
+              className="hidden shrink-0 items-center justify-center self-center rounded-md border border-border px-1.5 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:inline-flex"
               aria-label={
                 sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
               }
