@@ -38,11 +38,11 @@ export function TokenDetail({ id }: { id: string }) {
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
           <div className="h-[380px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
-          <div className="h-16 animate-pulse rounded-xl bg-muted" />
+        <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
+          <div className="h-12 animate-pulse rounded bg-muted" />
         </div>
       </div>
     )
@@ -140,34 +140,34 @@ function TokenDetailContent({ token }: { token: Token }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">Volume 24h</p>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+        <div>
+          <p className="mb-0.5 text-xs text-muted-foreground">Volume 24h</p>
           <p className="text-lg font-semibold tabular-nums">
             {token.volume24h > 0 ? formatCompact(token.volume24h) : '—'}
           </p>
         </div>
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">Market Cap</p>
+        <div>
+          <p className="mb-0.5 text-xs text-muted-foreground">Market Cap</p>
           <p className="text-lg font-semibold tabular-nums">
             {token.marketCap > 0 ? formatCompact(token.marketCap) : '—'}
           </p>
         </div>
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">24h High</p>
+        <div>
+          <p className="mb-0.5 text-xs text-muted-foreground">24h High</p>
           <p className="text-lg font-semibold tabular-nums">
             {price > 0 ? formatPrice(price * 1.05) : '—'}
           </p>
         </div>
-        <div className="rounded-xl border border-border/50 bg-card/30 p-4">
-          <p className="mb-1 text-xs text-muted-foreground">24h Low</p>
+        <div>
+          <p className="mb-0.5 text-xs text-muted-foreground">24h Low</p>
           <p className="text-lg font-semibold tabular-nums">
             {price > 0 ? formatPrice(price * 0.95) : '—'}
           </p>
         </div>
       </div>
 
-      <div className="rounded-xl border border-border/50 bg-card/30 p-4 sm:p-6">
+      <div>
         <h2 className="mb-4 text-sm font-medium text-muted-foreground">
           Token Details
         </h2>
