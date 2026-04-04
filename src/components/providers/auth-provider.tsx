@@ -7,13 +7,6 @@ import {
   useEffect,
   type ReactNode,
 } from 'react'
-import {
-  useCurrentUser,
-  useIsSignedIn,
-  useSignOut,
-  useEvmAddress,
-  useIsInitialized,
-} from '@coinbase/cdp-hooks'
 import { toViemAccount } from '@coinbase/cdp-core'
 import type { LocalAccount } from 'viem'
 import {
@@ -23,8 +16,16 @@ import {
   useWalletClient,
 } from 'wagmi'
 import { injected } from '@wagmi/connectors'
+import { cdpProjectId } from '@/lib/wagmi'
 
 type AuthMode = 'email' | 'wallet' | null
+
+interface CdpState {
+  isSignedIn: boolean
+  currentUser: { evmAccounts?: { address: string }[] } | undefined
+  evmAddress: string | undefined
+  signOut: () => Promise<void>
+}
 
 interface AuthContextData {
   isSignedIn: boolean
@@ -39,13 +40,58 @@ interface AuthContextData {
 
 const AuthContext = createContext<AuthContextData | undefined>(undefined)
 
+// Separate component that safely calls CDP hooks only when CDPReactProvider exists
+function CdpBridge({ onState }: { onState: (state: CdpState) => void }) {
+  // Dynamic import to avoid calling hooks outside provider during SSR
+  const [hooks, setHooks] = useState<typeof import('@coinbase/cdp-hooks') | null>(null)
+
+  useEffect(() => {
+    import('@coinbase/cdp-hooks').then(setHooks)
+  }, [])
+
+  if (!hooks) return null
+
+  return <CdpBridgeInner hooks={hooks} onState={onState} />
+}
+
+function CdpBridgeInner({
+  hooks,
+  onState,
+}: {
+  hooks: typeof import('@coinbase/cdp-hooks')
+  onState: (state: CdpState) => void
+}) {
+  const { isSignedIn } = hooks.useIsSignedIn()
+  const { currentUser } = hooks.useCurrentUser()
+  const { evmAddress } = hooks.useEvmAddress()
+  const { signOut } = hooks.useSignOut()
+
+  useEffect(() => {
+    onState({
+      isSignedIn,
+      currentUser: currentUser as CdpState['currentUser'],
+      evmAddress: evmAddress as string | undefined,
+      signOut,
+    })
+  }, [isSignedIn, currentUser, evmAddress, signOut, onState])
+
+  return null
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // CDP (email) auth
-  const { isInitialized } = useIsInitialized()
-  const { isSignedIn: cdpIsSignedIn } = useIsSignedIn()
-  const { currentUser } = useCurrentUser()
-  const { evmAddress: cdpEvmAddress } = useEvmAddress()
-  const { signOut: cdpSignOut } = useSignOut()
+  const hasCdp = !!cdpProjectId
+
+  // CDP state (populated by CdpBridge when CDP is available)
+  const [cdpState, setCdpState] = useState<CdpState>({
+    isSignedIn: false,
+    currentUser: undefined,
+    evmAddress: undefined,
+    signOut: async () => {},
+  })
+
+  const handleCdpState = useCallback((state: CdpState) => {
+    setCdpState(state)
+  }, [])
 
   // Wagmi (injected wallet) auth
   const {
@@ -93,6 +139,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Prefer injected wallet if connected
   const preferWallet = wagmiIsConnected && !!wagmiAddress
+
+  const cdpIsSignedIn = cdpState.isSignedIn
+  const cdpEvmAddress = cdpState.evmAddress
+  const currentUser = cdpState.currentUser
 
   const authMode: AuthMode = preferWallet
     ? 'wallet'
@@ -204,11 +254,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = useCallback(async () => {
     setViemAccount(undefined)
     if (cdpIsSignedIn) {
-      await cdpSignOut()
+      await cdpState.signOut()
     } else if (wagmiIsConnected) {
       disconnect()
     }
-  }, [cdpIsSignedIn, wagmiIsConnected, cdpSignOut, disconnect])
+  }, [cdpIsSignedIn, wagmiIsConnected, cdpState, disconnect])
 
   const isLoading = !isSignedIn && !ready
   const isConnecting = wagmiIsConnecting || connectPending
@@ -236,7 +286,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ],
   )
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  return (
+    <AuthContext.Provider value={value}>
+      {hasCdp && <CdpBridge onState={handleCdpState} />}
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export function useAuth(): AuthContextData {
