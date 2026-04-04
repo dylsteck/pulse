@@ -26,9 +26,18 @@ function ensureMinChartData(
   currentValue: number,
 ): Array<{ time: number; value: number }> {
   if (data.length >= 2) return data
+  if (data.length === 0) {
+    const t = Date.now() / 1000
+    const isSeconds = t < 1e10
+    const oneHour = isSeconds ? 3600 : 3600_000
+    return [
+      { time: t - oneHour, value: currentValue },
+      { time: t, value: currentValue },
+    ]
+  }
   const last = data[0]
-  const val = last?.value ?? currentValue
-  const t = last?.time ?? Date.now() / 1000
+  const val = last.value
+  const t = last.time
   const isSeconds = t < 1e10
   const oneHour = isSeconds ? 3600 : 3600_000
   return [
@@ -124,6 +133,9 @@ export function LivelineChart({
   if (chartData.length >= 2 && windowProp) {
     chartData = extendToFullWindow(chartData, windowProp, value)
   }
+  /** Do not cover the chart with Liveline's loading state when sparse data + spot
+   *  price already produce a drawable series (see buildSparseChartSeries). */
+  const showLoadingOverlay = isLoading && chartData.length < 2
   const dataSpanSecs =
     chartData.length >= 2
       ? Math.abs(chartData[chartData.length - 1].time - chartData[0].time)
@@ -155,7 +167,7 @@ export function LivelineChart({
           fill
           grid
           padding={LIVELINE_PADDING}
-          loading={isLoading}
+          loading={showLoadingOverlay}
           paused={paused}
           exaggerate={exaggerate}
           {...(emptyText ? { emptyText } : {})}

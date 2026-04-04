@@ -1,8 +1,10 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  buildBarsQuery,
   buildCodexBarsPath,
   buildCodexBaseTokensPath,
   buildCodexTokenPath,
+  codexBarsTokenSymbol,
   normalizeCodexAddress,
   parseCodexBarsParams,
   parseCodexBaseTokensParams,
@@ -133,6 +135,16 @@ describe('Codex parameter parsing', () => {
   })
 })
 
+describe('buildBarsQuery', () => {
+  test('uses Codex token symbol tokenAddress:networkId', () => {
+    const addr = '0x4200000000000000000000000000000000000006'
+    expect(codexBarsTokenSymbol(addr)).toBe(`${addr}:8453`)
+    const q = buildBarsQuery(addr, '1H')
+    const vars = q.variables as { symbol: string }
+    expect(vars.symbol).toBe(`${addr}:8453`)
+  })
+})
+
 describe('transformBars', () => {
   test('transforms bars response', () => {
     const json = {
@@ -149,6 +161,21 @@ describe('transformBars', () => {
     expect(result.bars[0]).toEqual({ time: 1000, value: 100 })
     expect(result.bars[1]).toEqual({ time: 2000, value: 101 })
     expect(result.status).toBe('ok')
+  })
+
+  test('normalizes millisecond timestamps to seconds', () => {
+    const json = {
+      data: {
+        getTokenBars: {
+          c: [1, 2],
+          t: [1_700_000_000_000, 1_700_000_060_000],
+          s: 'ok',
+        },
+      },
+    }
+    const result = transformBars(json)
+    expect(result.bars[0]?.time).toBe(1_700_000_000)
+    expect(result.bars[1]?.time).toBe(1_700_000_060)
   })
 
   test('returns empty bars for no data', () => {

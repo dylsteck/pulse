@@ -137,6 +137,11 @@ export function buildCodexTokenPath(address: string): string {
   return `/api/codex/token?${params.toString()}`
 }
 
+/** Codex `getTokenBars.symbol` — `tokenAddress:networkId`, not `networkId:address`. */
+export function codexBarsTokenSymbol(address: string): string {
+  return `${address}:${BASE_NETWORK_ID}`
+}
+
 export function buildCodexBarsPath(
   address: string,
   windowLabel: CodexWindowLabel,
@@ -215,8 +220,8 @@ export function buildBarsQuery(
   address: string,
   windowLabel: CodexWindowLabel,
 ): Record<string, unknown> {
-  const resolution = RESOLUTION_MAP[windowLabel] ?? '15'
-  const windowSecs = WINDOW_SECS_MAP[windowLabel] ?? 3600
+  const resolution = RESOLUTION_MAP[windowLabel]
+  const windowSecs = WINDOW_SECS_MAP[windowLabel]
   const now = Math.floor(Date.now() / 1000)
   const from = now - windowSecs
 
@@ -228,7 +233,7 @@ export function buildBarsQuery(
           from: $from
           to: $to
           resolution: $resolution
-          removeEmptyBars: true
+          removeEmptyBars: false
         ) {
           c
           t
@@ -237,7 +242,7 @@ export function buildBarsQuery(
       }
     `,
     variables: {
-      symbol: `${BASE_NETWORK_ID}:${address}`,
+      symbol: codexBarsTokenSymbol(address),
       from,
       to: now,
       resolution,
@@ -265,7 +270,7 @@ export function transformBaseTokens(json: {
   return results
     .filter(
       (item) =>
-        item?.token?.address && item.token.networkId === BASE_NETWORK_ID,
+        Boolean(item.token.address) && item.token.networkId === BASE_NETWORK_ID,
     )
     .map((item) => {
       const price = Number(item.priceUSD || 0)
@@ -353,7 +358,7 @@ export function transformBars(json: {
   }
 
   const bars: Array<BarDataPoint> = result.t.map((timestamp, i) => ({
-    time: timestamp,
+    time: timestamp > 1e12 ? timestamp / 1000 : timestamp,
     value: result.c![i] ?? 0,
   }))
 
