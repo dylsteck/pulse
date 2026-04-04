@@ -3,14 +3,15 @@ import { ExternalLinkIcon, LogOutIcon, WalletIcon } from 'lucide-react'
 import { SignInModal } from '@coinbase/cdp-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardPortal,
-  HoverCardPositioner,
-  HoverCardTrigger,
-} from '@/components/ui/hover-card'
+  Popover,
+  PopoverContent,
+  PopoverPortal,
+  PopoverPositioner,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { useErc20Balance } from '@/hooks/use-erc20-balance'
+import { useIsMobile } from '@/hooks/use-is-mobile'
 import { cn } from '@/lib/utils'
 import {
   baseScanAddressUrl,
@@ -22,6 +23,7 @@ import { base, polygon } from 'wagmi/chains'
 
 export function WalletButton() {
   const { isSignedIn, evmAddress, signOut } = useAuth()
+  const isMobile = useIsMobile()
 
   const { data: baseUsdc } = useErc20Balance(
     base.id,
@@ -62,23 +64,24 @@ export function WalletButton() {
   const scanUrl = evmAddress ? baseScanAddressUrl(evmAddress) : null
 
   return (
-    <HoverCard>
-      <HoverCardTrigger
+    <Popover>
+      <PopoverTrigger
         render={<Button variant="outline" type="button" className="gap-1.5" />}
+        openOnHover={!isMobile}
         delay={220}
         closeDelay={120}
       >
         <WalletIcon className="size-3.5 shrink-0" aria-hidden />
         {evmAddress ? shortWalletAddress(evmAddress) : 'Wallet'}
-      </HoverCardTrigger>
-      <HoverCardPortal>
-        <HoverCardPositioner
+      </PopoverTrigger>
+      <PopoverPortal>
+        <PopoverPositioner
           side="bottom"
           align="end"
           sideOffset={8}
           className="max-w-[min(calc(100vw-1rem),280px)]"
         >
-          <HoverCardContent className="box-border w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-md">
+          <PopoverContent className="box-border w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-md">
             <div className="w-full min-w-0 space-y-3">
               {evmAddress ? (
                 <div className="w-full min-w-0 max-w-full">
@@ -131,9 +134,9 @@ export function WalletButton() {
                 Disconnect
               </Button>
             </div>
-          </HoverCardContent>
-        </HoverCardPositioner>
-      </HoverCardPortal>
-    </HoverCard>
+          </PopoverContent>
+        </PopoverPositioner>
+      </PopoverPortal>
+    </Popover>
   )
 }

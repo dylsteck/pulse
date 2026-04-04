@@ -35,14 +35,14 @@ export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
       onValueChange={(value) => onModeChange(value as ViewMode)}
       className="inline-flex w-max max-w-none min-w-0"
     >
-      <TabsList className="h-auto gap-1 rounded-xl border border-border/50 bg-muted/70 p-1 shadow-sm dark:border-border/40 dark:bg-muted/45 sm:p-[3px]">
+      <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0 shadow-none">
         {TABS.map((tab) => {
           const Icon = TAB_ICONS[tab]
           return (
             <TabsTrigger
               key={tab}
               value={tab}
-              className="h-10 min-h-10 shrink-0 gap-2 rounded-lg px-3.5 text-sm font-medium capitalize sm:h-8 sm:min-h-0 sm:gap-1.5 sm:rounded-md sm:px-2.5 sm:text-sm"
+              className="h-10 min-h-10 shrink-0 gap-2 rounded-none border-0 bg-transparent px-3.5 text-sm font-medium capitalize text-muted-foreground shadow-none data-active:bg-transparent data-active:text-foreground data-active:shadow-none dark:data-active:bg-transparent sm:h-8 sm:min-h-0 sm:gap-1.5 sm:px-2.5 sm:text-sm [&_svg]:text-muted-foreground data-active:[&_svg]:text-foreground"
             >
               <Icon className="size-4 sm:size-3.5" aria-hidden />
               {tab}
