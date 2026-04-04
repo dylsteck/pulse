@@ -17,8 +17,10 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AssetIdentifierRouteImport } from './routes/asset.$identifier'
 import { Route as ApiHyperliquidRouteImport } from './routes/api/hyperliquid'
 import { Route as ApiCodexRouteImport } from './routes/api/codex'
+import { Route as ApiPolymarketOrderRouteImport } from './routes/api/polymarket/order'
 import { Route as ApiPolymarketHistoryRouteImport } from './routes/api/polymarket/history'
 import { Route as ApiPolymarketEventsRouteImport } from './routes/api/polymarket/events'
+import { Route as ApiPolymarketDeriveCredsRouteImport } from './routes/api/polymarket/derive-creds'
 import { Route as ApiGeckoterminalTokenDetailRouteImport } from './routes/api/geckoterminal/token-detail'
 import { Route as ApiGeckoterminalOhlcvRouteImport } from './routes/api/geckoterminal/ohlcv'
 import { Route as ApiGeckoterminalMemesRouteImport } from './routes/api/geckoterminal/memes'
@@ -66,6 +68,11 @@ const ApiCodexRoute = ApiCodexRouteImport.update({
   path: '/api/codex',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPolymarketOrderRoute = ApiPolymarketOrderRouteImport.update({
+  id: '/api/polymarket/order',
+  path: '/api/polymarket/order',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPolymarketHistoryRoute = ApiPolymarketHistoryRouteImport.update({
   id: '/api/polymarket/history',
   path: '/api/polymarket/history',
@@ -76,6 +83,12 @@ const ApiPolymarketEventsRoute = ApiPolymarketEventsRouteImport.update({
   path: '/api/polymarket/events',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPolymarketDeriveCredsRoute =
+  ApiPolymarketDeriveCredsRouteImport.update({
+    id: '/api/polymarket/derive-creds',
+    path: '/api/polymarket/derive-creds',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiGeckoterminalTokenDetailRoute =
   ApiGeckoterminalTokenDetailRouteImport.update({
     id: '/api/geckoterminal/token-detail',
@@ -123,8 +136,10 @@ export interface FileRoutesByFullPath {
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
+  '/api/polymarket/derive-creds': typeof ApiPolymarketDeriveCredsRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
+  '/api/polymarket/order': typeof ApiPolymarketOrderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -141,8 +156,10 @@ export interface FileRoutesByTo {
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
+  '/api/polymarket/derive-creds': typeof ApiPolymarketDeriveCredsRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
+  '/api/polymarket/order': typeof ApiPolymarketOrderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,8 +177,10 @@ export interface FileRoutesById {
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
+  '/api/polymarket/derive-creds': typeof ApiPolymarketDeriveCredsRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
+  '/api/polymarket/order': typeof ApiPolymarketOrderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -180,8 +199,10 @@ export interface FileRouteTypes {
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
+    | '/api/polymarket/derive-creds'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
+    | '/api/polymarket/order'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -198,8 +219,10 @@ export interface FileRouteTypes {
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
+    | '/api/polymarket/derive-creds'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
+    | '/api/polymarket/order'
   id:
     | '__root__'
     | '/'
@@ -216,8 +239,10 @@ export interface FileRouteTypes {
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
+    | '/api/polymarket/derive-creds'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
+    | '/api/polymarket/order'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -232,8 +257,10 @@ export interface RootRouteChildren {
   ApiGeckoterminalMemesRoute: typeof ApiGeckoterminalMemesRoute
   ApiGeckoterminalOhlcvRoute: typeof ApiGeckoterminalOhlcvRoute
   ApiGeckoterminalTokenDetailRoute: typeof ApiGeckoterminalTokenDetailRoute
+  ApiPolymarketDeriveCredsRoute: typeof ApiPolymarketDeriveCredsRoute
   ApiPolymarketEventsRoute: typeof ApiPolymarketEventsRoute
   ApiPolymarketHistoryRoute: typeof ApiPolymarketHistoryRoute
+  ApiPolymarketOrderRoute: typeof ApiPolymarketOrderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -294,6 +321,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCodexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/polymarket/order': {
+      id: '/api/polymarket/order'
+      path: '/api/polymarket/order'
+      fullPath: '/api/polymarket/order'
+      preLoaderRoute: typeof ApiPolymarketOrderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/polymarket/history': {
       id: '/api/polymarket/history'
       path: '/api/polymarket/history'
@@ -306,6 +340,13 @@ declare module '@tanstack/react-router' {
       path: '/api/polymarket/events'
       fullPath: '/api/polymarket/events'
       preLoaderRoute: typeof ApiPolymarketEventsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/polymarket/derive-creds': {
+      id: '/api/polymarket/derive-creds'
+      path: '/api/polymarket/derive-creds'
+      fullPath: '/api/polymarket/derive-creds'
+      preLoaderRoute: typeof ApiPolymarketDeriveCredsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/geckoterminal/token-detail': {
@@ -381,8 +422,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGeckoterminalMemesRoute: ApiGeckoterminalMemesRoute,
   ApiGeckoterminalOhlcvRoute: ApiGeckoterminalOhlcvRoute,
   ApiGeckoterminalTokenDetailRoute: ApiGeckoterminalTokenDetailRoute,
+  ApiPolymarketDeriveCredsRoute: ApiPolymarketDeriveCredsRoute,
   ApiPolymarketEventsRoute: ApiPolymarketEventsRoute,
   ApiPolymarketHistoryRoute: ApiPolymarketHistoryRoute,
+  ApiPolymarketOrderRoute: ApiPolymarketOrderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

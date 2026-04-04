@@ -4,6 +4,7 @@ import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
 } from '@/components/trading/liveline-chart'
+import { SwapPopover } from '@/components/trading/swap-popover'
 import { useTokenPrice } from '@/hooks/use-token-price'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { useWindowChange } from '@/hooks/use-window-change'
@@ -77,10 +78,11 @@ function TokenDetailContent({ token }: { token: Token }) {
               className="size-12 rounded-full object-cover sm:size-14"
             />
           )}
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-semibold">{token.symbol}</h1>
             <p className="text-sm text-muted-foreground">{token.name}</p>
           </div>
+          <SwapPopover defaultFromToken="USDC" defaultToToken="ETH" />
         </div>
 
         <div className="mb-1 flex items-end justify-between gap-4">

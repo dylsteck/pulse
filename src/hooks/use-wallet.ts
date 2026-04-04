@@ -6,6 +6,7 @@ export type WalletState = {
   disconnect: () => void
 }
 
+/** @deprecated Use useAuth() from @/components/providers/auth-provider instead */
 export function useWallet(): WalletState {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()

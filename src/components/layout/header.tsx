@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { MoonIcon, SearchIcon, SunIcon } from 'lucide-react'
 import { openCommandPalette } from '@/components/command-palette'
 import { useTheme } from '@/components/theme-provider'
+import { WalletButton } from '@/components/wallet/wallet-button'
 import { Button } from '@/components/ui/button'
 
 export function Header() {
@@ -17,6 +18,7 @@ export function Header() {
           <Button variant="ghost" size="icon" onClick={openCommandPalette} aria-label="Search">
             <SearchIcon />
           </Button>
+          <WalletButton />
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </Button>

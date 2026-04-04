@@ -5,6 +5,7 @@ import {
   LivelineChart,
   WINDOW_LABEL_TO_SECS,
 } from '@/components/trading/liveline-chart'
+import { MarketTradePopover } from '@/components/trading/market-trade-popover'
 import { useMarketOdds } from '@/hooks/use-market-odds'
 import { useMarketHistory } from '@/hooks/use-market-history'
 import { useWindowChange } from '@/hooks/use-window-change'
@@ -145,7 +146,7 @@ function BinaryBody({ market }: { market: Market }) {
 
   return (
     <div>
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex items-center gap-2">
         <button
           type="button"
           className="flex cursor-default items-center gap-2 rounded-lg bg-[#22c55e]/15 px-4 py-2"
@@ -164,6 +165,7 @@ function BinaryBody({ market }: { market: Market }) {
             {(100 - yesPercent).toFixed(0)}%
           </span>
         </button>
+        <MarketTradePopover market={market} defaultOutcome="yes" />
       </div>
 
       <div className="mb-6 h-2 overflow-hidden rounded-full bg-muted">
@@ -235,14 +237,22 @@ function MultiOutcomeBody({ market }: { market: Market }) {
               <div key={outcome.name} className="space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{outcome.name}</span>
-                  <span
-                    className={cn(
-                      'text-sm font-semibold tabular-nums',
-                      isLeading ? 'text-[#22c55e]' : 'text-muted-foreground',
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        'text-sm font-semibold tabular-nums',
+                        isLeading ? 'text-[#22c55e]' : 'text-muted-foreground',
+                      )}
+                    >
+                      {outcome.percent.toFixed(1)}%
+                    </span>
+                    {outcome.clobTokenId && (
+                      <MarketTradePopover
+                        market={market}
+                        outcome={outcome}
+                      />
                     )}
-                  >
-                    {outcome.percent.toFixed(1)}%
-                  </span>
+                  </div>
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                   <div

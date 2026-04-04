@@ -10,9 +10,15 @@ import appCss from '../styles.css?url'
 import { Header } from '@/components/layout/header'
 import { CommandPalette } from '@/components/command-palette'
 import { ThemeProvider } from '@/components/theme-provider'
+import { AuthProvider } from '@/components/providers/auth-provider'
 import { cdpProjectId, wagmiConfig } from '@/lib/wagmi'
 
-const cdpConfig = cdpProjectId ? { projectId: cdpProjectId } : null
+const cdpConfig = cdpProjectId
+  ? {
+      projectId: cdpProjectId,
+      ethereum: { createOnLogin: 'eoa' as const },
+    }
+  : null
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,11 +66,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           const inner = (
             <WagmiProvider config={wagmiConfig}>
               <QueryClientProvider client={queryClient}>
-                <ThemeProvider>
-                  <Header />
-                  <CommandPalette />
-                  {children}
-                </ThemeProvider>
+                <AuthProvider>
+                  <ThemeProvider>
+                    <Header />
+                    <CommandPalette />
+                    {children}
+                  </ThemeProvider>
+                </AuthProvider>
               </QueryClientProvider>
             </WagmiProvider>
           )
