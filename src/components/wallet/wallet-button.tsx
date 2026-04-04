@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { LogOutIcon, WalletIcon } from 'lucide-react'
-import { AuthButton } from '@coinbase/cdp-react'
+import { SignInModal } from '@coinbase/cdp-react'
 import { formatUnits } from 'viem'
 import { useAuth } from '@/components/providers/auth-provider'
 import { useErc20Balance } from '@/hooks/use-erc20-balance'
@@ -57,7 +57,12 @@ export function WalletButton() {
 
   if (!isSignedIn) {
     return (
-      <AuthButton className="inline-flex" />
+      <SignInModal>
+        <Button variant="outline" className="gap-1.5">
+          <WalletIcon className="size-3.5" />
+          Connect
+        </Button>
+      </SignInModal>
     )
   }
 
