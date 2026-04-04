@@ -61,10 +61,13 @@ export function SwapPopover({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button variant="outline" size="sm" className="gap-1.5 text-xs" />
+          <Button
+            variant="outline"
+            className="gap-2 px-4 py-2 text-sm font-medium"
+          />
         }
       >
-        <ArrowDownUpIcon className="size-3" />
+        <ArrowDownUpIcon className="size-4 shrink-0" />
         Swap
       </DialogTrigger>
       <DialogContent showCloseButton>

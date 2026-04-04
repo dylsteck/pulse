@@ -71,7 +71,7 @@ export function WalletButton() {
       <Button
         variant="outline"
         onClick={() => setOpen(true)}
-        className="gap-1.5 font-mono"
+        className="gap-1.5"
       >
         <WalletIcon className="size-3.5" />
         {evmAddress ? shortAddress(evmAddress) : 'Wallet'}

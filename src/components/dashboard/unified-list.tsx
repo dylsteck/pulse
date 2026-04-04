@@ -146,6 +146,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                       ? liveTokensQuery.error.message
                       : 'Failed to load live token data.'
                   }
+                  onRetry={() => void liveTokensQuery.refetch()}
                 />
               ) : (
                 <TokenGrid tokens={liveTokens} />
@@ -160,6 +161,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                       ? liveMarketsQuery.error.message
                       : 'Failed to load live market data.'
                   }
+                  onRetry={() => void liveMarketsQuery.refetch()}
                 />
               ) : (
                 <MarketGrid markets={liveMarkets} />
@@ -181,6 +183,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                     ? perpsQuery.error.message
                     : 'Failed to load perps data.'
                 }
+                onRetry={() => void perpsQuery.refetch()}
               />
             ) : (
               <PerpsPanel

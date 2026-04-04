@@ -239,7 +239,7 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
         color={color}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}
-        isLoading={isLoading && chartData.length === 0}
+        isLoading={isLoading && candles.length < 2}
         emptyText="No chart data available"
       />
     </div>

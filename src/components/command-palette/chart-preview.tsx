@@ -18,7 +18,7 @@ function TokenChartPreview({ token }: { token: Token }) {
   const { price } = useTokenPrice(token)
   const chartData = bars.length >= 2 ? bars : token.priceHistory
   const color = token.change24h >= 0 ? '#22c55e' : '#ef4444'
-  if (isLoading || chartData.length < 2) return null
+  if (isLoading && bars.length < 2) return null
   return (
     <div className="h-24 w-full">
       <SparklineChart
@@ -36,7 +36,7 @@ function CreatorChartPreview({ creator }: { creator: CreatorToken }) {
   const chartData = bars.length >= 2 ? bars : creator.sparkline
   const value = creator.sparkline[creator.sparkline.length - 1]?.value ?? 0
   const color = creator.marketCapDelta24h >= 0 ? '#22c55e' : '#ef4444'
-  if (isLoading || chartData.length < 2) return null
+  if (isLoading && bars.length < 2) return null
   return (
     <div className="h-24 w-full">
       <SparklineChart
@@ -58,7 +58,7 @@ function MemeChartPreview({ meme }: { meme: MemeToken }) {
         ? meme.priceHistory
         : []
   const color = meme.change24h >= 0 ? '#22c55e' : '#ef4444'
-  if (isLoading || chartData.length < 2) return null
+  if (isLoading && bars.length < 2) return null
   return (
     <div className="h-24 w-full">
       <SparklineChart
@@ -92,7 +92,7 @@ function MarketChartPreview({ market }: { market: Market }) {
 function PerpChartPreview({ perp }: { perp: PerpMarketSnapshot }) {
   const { data: candles, isLoading } = useHyperliquidCandles(perp.coin, '1D')
   const color = perp.change24h >= 0 ? '#22c55e' : '#ef4444'
-  if (isLoading || !candles || candles.length < 2) return null
+  if (isLoading && (!candles || candles.length < 2)) return null
   return (
     <div className="h-24 w-full">
       <SparklineChart

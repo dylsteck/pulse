@@ -37,6 +37,17 @@ function ensureMinChartData(
   ]
 }
 
+/** At least two points for Liveline/Sparkline when APIs return sparse or empty series. */
+function buildSparseChartSeries(
+  raw: Array<{ time: number; value: number }>,
+  currentValue: number,
+): Array<{ time: number; value: number }> {
+  if (raw.length >= 2) return ensureMinChartData(raw, currentValue)
+  if (raw.length === 1) return ensureMinChartData(raw, currentValue)
+  if (Number.isFinite(currentValue)) return ensureMinChartData([], currentValue)
+  return []
+}
+
 /** Normalize timestamp to seconds (APIs may return ms).
  *  Heuristic: values above 1e12 (~year 2001 in ms) are treated as milliseconds. */
 function toSeconds(t: number): number {
@@ -109,8 +120,7 @@ export function LivelineChart({
     setMounted(true)
   }, [])
 
-  const hasEnoughData = data.length >= 2
-  let chartData = hasEnoughData ? ensureMinChartData(data, value) : []
+  let chartData = buildSparseChartSeries(data, value)
   if (chartData.length >= 2 && windowProp) {
     chartData = extendToFullWindow(chartData, windowProp, value)
   }
@@ -176,14 +186,15 @@ export function SparklineChart({
     setMounted(true)
   }, [])
 
-  if (data.length < 2 || !mounted) return null
+  const series = buildSparseChartSeries(data, value)
+  if (series.length < 2 || !mounted) return null
 
   const resolvedColor = color ?? (isDark ? '#3b82f6' : '#111111')
 
   return (
     <div style={{ width: '100%', height: `${height}px` }}>
       <Liveline
-        data={data}
+        data={series}
         value={value}
         color={resolvedColor}
         theme={isDark ? 'dark' : 'light'}

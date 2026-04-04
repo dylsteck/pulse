@@ -45,7 +45,7 @@ export function InlineMemeChart({ meme }: { meme: MemeToken }) {
         color={color}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}
-        isLoading={isLoading && bars.length === 0}
+        isLoading={isLoading && bars.length < 2}
         emptyText="No chart data available"
         exaggerate
         formatValue={(v) => `$${formatPrice(v)}`}
