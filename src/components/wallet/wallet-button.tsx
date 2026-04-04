@@ -72,15 +72,25 @@ export function WalletButton() {
         {evmAddress ? shortWalletAddress(evmAddress) : 'Wallet'}
       </HoverCardTrigger>
       <HoverCardPortal>
-        <HoverCardPositioner side="bottom" align="end" sideOffset={8}>
-          <HoverCardContent className="w-[min(calc(100vw-1rem),280px)] rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-md">
-            <div className="space-y-3">
+        <HoverCardPositioner
+          side="bottom"
+          align="end"
+          sideOffset={8}
+          className="max-w-[min(calc(100vw-1rem),280px)]"
+        >
+          <HoverCardContent className="box-border w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-md">
+            <div className="w-full min-w-0 space-y-3">
               {evmAddress ? (
-                <div>
+                <div className="w-full min-w-0 max-w-full">
                   <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                     Wallet
                   </p>
-                  <p className="mt-0.5 font-mono text-xs">{evmAddress}</p>
+                  <p
+                    className="mt-0.5 max-w-full font-mono text-[11px] leading-snug [overflow-wrap:anywhere] [word-break:break-all]"
+                    title={evmAddress}
+                  >
+                    {evmAddress}
+                  </p>
                   {scanUrl ? (
                     <a
                       href={scanUrl}

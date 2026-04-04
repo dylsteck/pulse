@@ -4,7 +4,6 @@ import * as React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { GithubIcon } from 'lucide-react'
 import { AssetIcon } from './asset-icon'
-import { ChartPreview } from './chart-preview'
 import type { CommandSearchItem } from '@/hooks/use-command-search'
 import {
   Command,
@@ -18,7 +17,6 @@ import {
   CommandShortcut,
 } from '@/components/ui/command'
 import { useCommandSearch } from '@/hooks/use-command-search'
-import { cn } from '@/lib/utils'
 import { encodeAssetId } from '@/lib/caip19'
 
 const GROUP_HEADINGS: Record<CommandSearchItem['type'], string> = {
@@ -53,11 +51,6 @@ export function CommandPalette() {
   React.useEffect(() => {
     if (!open) setSelectedValue('')
   }, [open])
-
-  const selectedItem = React.useMemo(
-    () => items.find((i) => i.value === selectedValue),
-    [items, selectedValue],
-  )
 
   const itemsByType = React.useMemo(() => {
     const map = new Map<CommandSearchItem['type'], Array<CommandSearchItem>>()
@@ -117,12 +110,7 @@ export function CommandPalette() {
           </kbd>
         </div>
         <div className="relative flex min-h-0 flex-1 flex-col">
-          <CommandList
-            className={cn(
-              'max-h-[min(20rem,60vh)] flex-1 overflow-y-auto',
-              selectedItem?.hasChart && 'pb-28',
-            )}
-          >
+          <CommandList className="max-h-[min(20rem,60vh)] flex-1 overflow-y-auto">
             <CommandEmpty>No results found.</CommandEmpty>
             {(['tokens', 'markets', 'perps', 'memes'] as const).map((type) => {
               const typeItems = itemsByType.get(type) ?? []
@@ -163,7 +151,6 @@ export function CommandPalette() {
               </CommandItem>
             </CommandGroup>
           </CommandList>
-          {selectedItem?.hasChart && <ChartPreview item={selectedItem} />}
         </div>
       </Command>
     </CommandDialog>

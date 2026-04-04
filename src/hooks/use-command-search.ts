@@ -19,7 +19,6 @@ export interface CommandSearchItem {
   label: string
   subtitle?: string
   value: string
-  hasChart: boolean
   raw: Token | Market | MemeToken | PerpMarketSnapshot
 }
 
@@ -44,7 +43,6 @@ export function useCommandSearch() {
         label: t.symbol,
         subtitle: t.name,
         value: `tokens:${t.id}`,
-        hasChart: true,
         raw: t,
       })
     }
@@ -55,7 +53,6 @@ export function useCommandSearch() {
         label: m.title,
         subtitle: undefined,
         value: `markets:${m.id}`,
-        hasChart: true,
         raw: m,
       })
     }
@@ -66,7 +63,6 @@ export function useCommandSearch() {
         label: p.coin,
         subtitle: undefined,
         value: `perps:${p.id}`,
-        hasChart: true,
         raw: p,
       })
     }
@@ -77,7 +73,6 @@ export function useCommandSearch() {
         label: m.symbol,
         subtitle: m.name,
         value: `memes:${m.id}`,
-        hasChart: true,
         raw: m,
       })
     }

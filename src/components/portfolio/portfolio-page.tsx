@@ -23,14 +23,17 @@ export function PortfolioPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-start gap-3">
+        <div className="flex min-w-0 items-start gap-3">
           <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-muted">
             <WalletIcon className="size-5 text-muted-foreground" aria-hidden />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="text-lg font-semibold tracking-tight">Portfolio</h1>
             {fullAddress ? (
-              <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+              <p
+                className="mt-0.5 max-w-full break-all font-mono text-xs leading-snug text-muted-foreground"
+                title={fullAddress}
+              >
                 {fullAddress}
               </p>
             ) : null}

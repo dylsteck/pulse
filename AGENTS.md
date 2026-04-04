@@ -45,7 +45,7 @@ src/
 │   │   ├── shared.tsx              StatItem, DetailSection, DetailRow, ChangeBadge, DetailMessage
 │   │   └── *-detail.tsx            TokenDetail, MarketDetail, PerpDetail, MemeDetail, CreatorDetail
 │   ├── asset-detail-page.tsx       Orchestrator for asset detail views
-│   ├── command-palette/            AssetIcon, ChartPreview, CommandPalette
+│   ├── command-palette/            AssetIcon, CommandPalette
 │   └── trading/liveline-chart.tsx  Liveline wrapper (LivelineChart, SparklineChart)
 ├── hooks/
 │   ├── use-window-change.ts        Shared chart window/timeframe handler
