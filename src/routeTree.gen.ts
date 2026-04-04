@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TokensRouteImport } from './routes/tokens'
+import { Route as PortfolioRouteImport } from './routes/portfolio'
 import { Route as PerpsRouteImport } from './routes/perps'
 import { Route as MemesRouteImport } from './routes/memes'
 import { Route as MarketsRouteImport } from './routes/markets'
@@ -31,6 +32,11 @@ import { Route as ApiCodexBarsRouteImport } from './routes/api/codex/bars'
 const TokensRoute = TokensRouteImport.update({
   id: '/tokens',
   path: '/tokens',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortfolioRoute = PortfolioRouteImport.update({
+  id: '/portfolio',
+  path: '/portfolio',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerpsRoute = PerpsRouteImport.update({
@@ -126,6 +132,7 @@ export interface FileRoutesByFullPath {
   '/markets': typeof MarketsRoute
   '/memes': typeof MemesRoute
   '/perps': typeof PerpsRoute
+  '/portfolio': typeof PortfolioRoute
   '/tokens': typeof TokensRoute
   '/api/codex': typeof ApiCodexRouteWithChildren
   '/api/hyperliquid': typeof ApiHyperliquidRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/markets': typeof MarketsRoute
   '/memes': typeof MemesRoute
   '/perps': typeof PerpsRoute
+  '/portfolio': typeof PortfolioRoute
   '/tokens': typeof TokensRoute
   '/api/codex': typeof ApiCodexRouteWithChildren
   '/api/hyperliquid': typeof ApiHyperliquidRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/markets': typeof MarketsRoute
   '/memes': typeof MemesRoute
   '/perps': typeof PerpsRoute
+  '/portfolio': typeof PortfolioRoute
   '/tokens': typeof TokensRoute
   '/api/codex': typeof ApiCodexRouteWithChildren
   '/api/hyperliquid': typeof ApiHyperliquidRoute
@@ -189,6 +198,7 @@ export interface FileRouteTypes {
     | '/markets'
     | '/memes'
     | '/perps'
+    | '/portfolio'
     | '/tokens'
     | '/api/codex'
     | '/api/hyperliquid'
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/markets'
     | '/memes'
     | '/perps'
+    | '/portfolio'
     | '/tokens'
     | '/api/codex'
     | '/api/hyperliquid'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/markets'
     | '/memes'
     | '/perps'
+    | '/portfolio'
     | '/tokens'
     | '/api/codex'
     | '/api/hyperliquid'
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   MarketsRoute: typeof MarketsRoute
   MemesRoute: typeof MemesRoute
   PerpsRoute: typeof PerpsRoute
+  PortfolioRoute: typeof PortfolioRoute
   TokensRoute: typeof TokensRoute
   ApiCodexRoute: typeof ApiCodexRouteWithChildren
   ApiHyperliquidRoute: typeof ApiHyperliquidRoute
@@ -270,6 +283,13 @@ declare module '@tanstack/react-router' {
       path: '/tokens'
       fullPath: '/tokens'
       preLoaderRoute: typeof TokensRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio': {
+      id: '/portfolio'
+      path: '/portfolio'
+      fullPath: '/portfolio'
+      preLoaderRoute: typeof PortfolioRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perps': {
@@ -415,6 +435,7 @@ const rootRouteChildren: RootRouteChildren = {
   MarketsRoute: MarketsRoute,
   MemesRoute: MemesRoute,
   PerpsRoute: PerpsRoute,
+  PortfolioRoute: PortfolioRoute,
   TokensRoute: TokensRoute,
   ApiCodexRoute: ApiCodexRouteWithChildren,
   ApiHyperliquidRoute: ApiHyperliquidRoute,

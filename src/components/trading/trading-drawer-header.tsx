@@ -1,3 +1,4 @@
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog'
 import { ChevronDownIcon, XIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
@@ -25,18 +26,18 @@ export function TradingDrawerHeader({
   onToggleCollapse,
 }: TradingDrawerHeaderProps) {
   return (
-    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2.5">
+    <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
       <div className="flex min-w-0 items-center gap-2">
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-muted/60">
           {icon}
         </div>
         <div className="min-w-0">
-          <h2
+          <DialogPrimitive.Title
             id={titleId}
             className="truncate text-sm font-semibold leading-tight"
           >
             {title}
-          </h2>
+          </DialogPrimitive.Title>
           {subtitle ? (
             <p className="text-[11px] text-muted-foreground">{subtitle}</p>
           ) : null}

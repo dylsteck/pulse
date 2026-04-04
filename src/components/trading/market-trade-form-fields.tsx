@@ -4,6 +4,7 @@ import type { TradeStatus } from '@/hooks/use-polymarket-trading'
 import { MarketTradeOrderSummary } from '@/components/trading/market-trade-order-summary'
 import { MarketTradeSubmitButton } from '@/components/trading/market-trade-submit-button'
 import { MarketTradeYesNoButtons } from '@/components/trading/market-trade-yes-no-buttons'
+import { tradingFieldLabelClass } from '@/components/trading/trading-field-label'
 import { Input } from '@/components/ui/input'
 
 const STATUS_LABELS: Record<TradeStatus, string> = {
@@ -69,10 +70,14 @@ export function MarketTradeFormFields({
       ) : null}
 
       <div>
-        <label className="mb-1 block text-xs text-muted-foreground">
+        <label
+          className={`mb-1 block ${tradingFieldLabelClass}`}
+          htmlFor="market-trade-amount"
+        >
           Amount (USDC)
         </label>
         <Input
+          id="market-trade-amount"
           type="number"
           placeholder="0.00"
           min="0"
@@ -91,9 +96,9 @@ export function MarketTradeFormFields({
         />
       ) : null}
 
-      <div className="flex gap-3 text-xs text-muted-foreground">
-        <span>Base: ${baseUsdcBalance.toFixed(2)}</span>
-        <span>Polygon: ${polygonUsdcBalance.toFixed(2)}</span>
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[11px] tabular-nums text-muted-foreground/90">
+        <span>Base ${baseUsdcBalance.toFixed(2)}</span>
+        <span>Polygon ${polygonUsdcBalance.toFixed(2)}</span>
       </div>
 
       {error ? (

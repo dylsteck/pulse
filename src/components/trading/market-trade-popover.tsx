@@ -24,15 +24,6 @@ export function MarketTradePopover({
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
-
   const drawerTitle = outcome?.name ?? market.title
 
   return (
@@ -42,6 +33,8 @@ export function MarketTradePopover({
         variant="outline"
         size="sm"
         className="gap-1.5 text-xs"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         onClick={() => setOpen(true)}
       >
         Trade

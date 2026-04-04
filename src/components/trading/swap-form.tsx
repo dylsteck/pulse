@@ -5,6 +5,7 @@ import {
 } from 'lucide-react'
 import type { SwapPanelProps } from '@/components/trading/swap-constants'
 import type { SwapStatus } from '@/hooks/use-swap'
+import { tradingFieldLabelClass } from '@/components/trading/trading-field-label'
 import { SWAP_STATUS_LABELS, SWAP_TOKENS } from '@/components/trading/swap-constants'
 import {
   SwapCompleteGate,
@@ -237,9 +238,7 @@ function SwapPayBlock({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        You pay
-      </span>
+      <span className={tradingFieldLabelClass}>You pay</span>
       <div className="flex items-stretch gap-2">
         <select
           value={fromKey}
@@ -297,9 +296,7 @@ function SwapReceiveBlock({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-        You receive
-      </span>
+      <span className={tradingFieldLabelClass}>You receive</span>
       <select
         value={toKey}
         onChange={(e) => setToKey(e.target.value)}

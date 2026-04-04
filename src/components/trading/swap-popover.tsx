@@ -16,21 +16,14 @@ export function SwapPopover({
     setMounted(true)
   }, [])
 
-  useEffect(() => {
-    if (!open) return
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [open])
-
   return (
     <>
       <Button
         type="button"
         variant="outline"
         className="gap-2 px-4 py-2 text-sm font-medium"
+        aria-haspopup="dialog"
+        aria-expanded={open}
         onClick={() => setOpen(true)}
       >
         <ArrowDownUpIcon className="size-4 shrink-0" />
