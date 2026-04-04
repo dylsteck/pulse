@@ -93,11 +93,11 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   })
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl sm:px-6">
+    <div className="mx-auto flex w-full max-w-7xl sm:px-6 lg:gap-3">
       <div className="min-w-0 flex-1">
         <div ref={scrollRef} className="scroll-mt-1 min-w-0">
           <div className="sticky top-12 z-20 -mx-2 flex items-center gap-2 bg-background/95 px-4 pb-1.5 pt-1 backdrop-blur-sm supports-[backdrop-filter]:bg-background/85 sm:-mx-6 sm:px-6">
-            <div className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-smooth pl-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               <ModeTabs
                 mode={mode}
                 onModeChange={(tab) => {

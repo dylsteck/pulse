@@ -28,19 +28,19 @@ export function TrendingSidebar({
     .slice(0, 20)
 
   return (
-    <div className="sticky top-12 hidden h-[calc(100vh-3rem)] lg:flex">
+    <div className="sticky top-12 hidden h-[calc(100vh-3rem)] shrink-0 lg:flex">
       <div
         className={cn(
-          'flex flex-col transition-[width] duration-200',
-          collapsed ? 'w-0 overflow-hidden' : 'w-64',
+          'flex min-w-0 flex-col transition-[width] duration-200',
+          collapsed ? 'w-0 overflow-hidden' : 'w-64 min-w-64',
         )}
       >
-        <div className="flex h-full w-64 flex-col gap-1">
+        <div className="flex h-full w-64 min-w-64 flex-col gap-1">
           {/* Trending Tokens */}
-          <div className="flex min-h-0 flex-1 flex-col pl-4 pr-1">
-            <div className="mb-1.5 flex items-center gap-1.5 pt-4 text-xs font-medium text-muted-foreground">
-              <FlameIcon className="size-3" />
-              Trending
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-visible pl-4 pr-1">
+            <div className="mb-1.5 flex min-w-0 items-center gap-1.5 pt-4 text-xs font-medium text-muted-foreground">
+              <FlameIcon className="size-3 shrink-0" aria-hidden />
+              <span className="min-w-0">Trending</span>
             </div>
             <div className="scrollbar-none flex-1 overflow-y-auto pr-1">
               {trending.map((token) => (
@@ -83,10 +83,10 @@ export function TrendingSidebar({
           </div>
 
           {/* Top Markets */}
-          <div className="flex min-h-0 flex-1 flex-col pl-4 pr-1">
-            <div className="mb-1.5 flex items-center gap-1.5 pt-1 text-xs font-medium text-muted-foreground">
-              <TrendingUpIcon className="size-3" />
-              Top Markets
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-x-visible pl-4 pr-1">
+            <div className="mb-1.5 flex min-w-0 items-center gap-1.5 pt-1 text-xs font-medium text-muted-foreground">
+              <TrendingUpIcon className="size-3 shrink-0" aria-hidden />
+              <span className="min-w-0">Top Markets</span>
             </div>
             <div className="scrollbar-none flex-1 overflow-y-auto pr-1">
               {topMarkets.map((market) => (
