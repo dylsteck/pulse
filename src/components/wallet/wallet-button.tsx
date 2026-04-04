@@ -14,7 +14,7 @@ import { useErc20Balance } from '@/hooks/use-erc20-balance'
 import { cn } from '@/lib/utils'
 import {
   baseScanAddressUrl,
-  formatUsdcBalance,
+  formatTotalUsdcBalance,
   shortWalletAddress,
 } from '@/lib/wallet-format'
 import { cdpProjectId, USDC_BASE, USDC_E_POLYGON } from '@/lib/wagmi'
@@ -104,22 +104,10 @@ export function WalletButton() {
                   ) : null}
                 </div>
               ) : null}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-lg bg-muted/50 px-2.5 py-2">
-                  <div className="text-[10px] text-muted-foreground">
-                    Base USDC
-                  </div>
-                  <div className="text-sm font-semibold tabular-nums">
-                    {formatUsdcBalance(baseUsdc)}
-                  </div>
-                </div>
-                <div className="rounded-lg bg-muted/50 px-2.5 py-2">
-                  <div className="text-[10px] text-muted-foreground">
-                    Polygon USDC.e
-                  </div>
-                  <div className="text-sm font-semibold tabular-nums">
-                    {formatUsdcBalance(polygonUsdc)}
-                  </div>
+              <div className="rounded-lg bg-muted/50 px-2.5 py-2">
+                <div className="text-[10px] text-muted-foreground">Balance</div>
+                <div className="text-sm font-semibold tabular-nums">
+                  {formatTotalUsdcBalance(baseUsdc, polygonUsdc)}
                 </div>
               </div>
               <Link

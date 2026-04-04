@@ -1,10 +1,12 @@
-import { Link } from '@tanstack/react-router'
 import { ExternalLinkIcon, LogOutIcon, WalletIcon } from 'lucide-react'
-import { formatUnits } from 'viem'
 import { useAuth } from '@/components/providers/auth-provider'
 import { Button } from '@/components/ui/button'
 import { useErc20Balance } from '@/hooks/use-erc20-balance'
-import { baseScanAddressUrl, formatUsdcBalance } from '@/lib/wallet-format'
+import {
+  baseScanAddressUrl,
+  formatTotalUsdcBalance,
+  formatUsdcBalance,
+} from '@/lib/wallet-format'
 import { USDC_BASE, USDC_E_POLYGON } from '@/lib/wagmi'
 import { base, polygon } from 'wagmi/chains'
 
@@ -77,7 +79,7 @@ export function PortfolioPage() {
         <p className="mt-3 text-xs text-muted-foreground">
           Total (USDC only):{' '}
           <span className="font-medium tabular-nums text-foreground">
-            {formatTotalUsd(baseUsdc, polygonUsdc)}
+            {formatTotalUsdcBalance(baseUsdc, polygonUsdc)}
           </span>
         </p>
       </section>
@@ -88,16 +90,6 @@ export function PortfolioPage() {
           PnL charts and history will show here in a future update.
         </p>
       </section>
-
-      <p className="mt-8 text-center">
-        <Link
-          to="/"
-          search={{ type: 'tokens' }}
-          className="text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-        >
-          Back to Pulse
-        </Link>
-      </p>
     </div>
   )
 }
@@ -111,13 +103,4 @@ function BalanceCard({ label, value }: { label: string; value: string }) {
       <div className="mt-1 text-xl font-semibold tabular-nums">{value}</div>
     </div>
   )
-}
-
-function formatTotalUsd(
-  baseRaw: bigint | undefined,
-  polyRaw: bigint | undefined,
-): string {
-  const b = baseRaw != null ? parseFloat(formatUnits(baseRaw, 6)) : 0
-  const p = polyRaw != null ? parseFloat(formatUnits(polyRaw, 6)) : 0
-  return `$${(b + p).toFixed(2)}`
 }
