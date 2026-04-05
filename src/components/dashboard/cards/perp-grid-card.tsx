@@ -39,7 +39,7 @@ export function PerpGridCard({ market }: PerpGridCardProps) {
         <ChangeBadge value={market.change24h} />
       </div>
       <div className="mt-2 mb-1 text-lg tabular-nums">
-        ${formatPerpPrice(market, market.markPx)}
+        {formatPerpPrice(market, market.markPx)}
       </div>
       <div className="mt-auto flex items-end justify-between pt-3">
         <span className="text-xs text-muted-foreground">

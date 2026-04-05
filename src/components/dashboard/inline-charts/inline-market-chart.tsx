@@ -13,7 +13,7 @@ import { buildMarketId } from '@/lib/caip19'
 
 export function InlineMarketChart({ market }: { market: Market }) {
   const { yesPercent } = useMarketOdds(market)
-  const { windowLabel, handleWindowChange } = useWindowChange('1D')
+  const { windowLabel, handleWindowChange } = useWindowChange()
   const { data: history, isLoading } = useMarketHistory(
     market.clobTokenId,
     windowLabel,

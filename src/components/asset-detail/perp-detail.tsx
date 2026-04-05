@@ -9,7 +9,7 @@ import { useWindowChange } from '@/hooks/use-window-change'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { formatCompact } from '@/lib/format'
-import { useIsMobile } from '@/hooks/use-is-mobile'
+import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
 import {
   StatItem,
   DetailSection,
@@ -35,7 +35,7 @@ export function PerpDetail({ id }: { id: string }) {
             </div>
           </div>
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
-          <div className="h-[380px] w-full animate-pulse rounded-lg bg-muted" />
+          <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
           <div className="h-12 animate-pulse rounded bg-muted" />
@@ -53,8 +53,8 @@ export function PerpDetail({ id }: { id: string }) {
 }
 
 function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
-  const isMobile = useIsMobile()
-  const { windowLabel, handleWindowChange } = useWindowChange('15m')
+  const chartHeight = useAssetChartHeight()
+  const { windowLabel, handleWindowChange } = useWindowChange()
   const { data: candles, isLoading } = useHyperliquidCandles(
     market.coin,
     windowLabel,
@@ -79,9 +79,9 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
         </div>
 
         <div className="mb-1 flex items-end justify-between gap-4">
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-center gap-3">
             <span className="text-3xl font-semibold tabular-nums sm:text-4xl">
-              ${formatPerpPrice(market, market.markPx)}
+              {formatPerpPrice(market, market.markPx)}
             </span>
             <ChangeBadge value={market.change24h} pill />
           </div>
@@ -97,7 +97,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
           <LivelineChart
             data={chartData}
             value={market.markPx}
-            height={isMobile ? 200 : 380}
+            height={chartHeight}
             color={color}
             window={WINDOW_LABEL_TO_SECS[windowLabel]}
             onWindowChange={handleWindowChange}
@@ -132,17 +132,17 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
       <DetailSection title="Position Details">
         <DetailRow label="Mark Price">
           <span className="font-semibold tabular-nums">
-            ${formatPerpPrice(market, market.markPx)}
+            {formatPerpPrice(market, market.markPx)}
           </span>
         </DetailRow>
         <DetailRow label="Mid Price">
           <span className="font-semibold tabular-nums">
-            ${formatPerpPrice(market, market.midPx)}
+            {formatPerpPrice(market, market.midPx)}
           </span>
         </DetailRow>
         <DetailRow label="Prev Day">
           <span className="font-semibold tabular-nums">
-            ${formatPerpPrice(market, market.prevDayPx)}
+            {formatPerpPrice(market, market.prevDayPx)}
           </span>
         </DetailRow>
         <DetailRow label="Max Leverage">

@@ -13,7 +13,7 @@ import { fetchPolymarketEventById } from '@/lib/polymarket'
 import { formatCompact, formatDate } from '@/lib/format'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
-import { useIsMobile } from '@/hooks/use-is-mobile'
+import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
 import { StatItem, DetailMessage } from './shared'
 
 export function MarketDetail({ id }: { id: string }) {
@@ -38,7 +38,7 @@ export function MarketDetail({ id }: { id: string }) {
             </div>
           </div>
           <div className="mb-6 h-2 w-full animate-pulse rounded-full bg-muted" />
-          <div className="h-[340px] w-full animate-pulse rounded-lg bg-muted" />
+          <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
           <div className="h-12 animate-pulse rounded bg-muted" />
@@ -128,9 +128,9 @@ function MarketHeader({ market }: { market: Market }) {
 }
 
 function BinaryBody({ market }: { market: Market }) {
-  const isMobile = useIsMobile()
+  const chartHeight = useAssetChartHeight()
   const { yesPercent } = useMarketOdds(market)
-  const { windowLabel, handleWindowChange } = useWindowChange('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange()
   const { data: history, isLoading } = useMarketHistory(
     market.clobTokenId,
     windowLabel,
@@ -178,7 +178,7 @@ function BinaryBody({ market }: { market: Market }) {
       <LivelineChart
         data={chartData}
         value={yesPercent}
-        height={isMobile ? 200 : 340}
+        height={chartHeight}
         formatValue={(v) => `${v.toFixed(1)}%`}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}
@@ -190,13 +190,13 @@ function BinaryBody({ market }: { market: Market }) {
 }
 
 function MultiOutcomeBody({ market }: { market: Market }) {
-  const isMobile = useIsMobile()
+  const chartHeight = useAssetChartHeight()
   const outcomes = market.outcomes!
 
   const leadingOutcome = useMemo(() => outcomes[0], [outcomes])
   const chartClobId = leadingOutcome?.clobTokenId
 
-  const { windowLabel, handleWindowChange } = useWindowChange('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange()
   const { data: history, isLoading } = useMarketHistory(
     chartClobId,
     windowLabel,
@@ -218,7 +218,7 @@ function MultiOutcomeBody({ market }: { market: Market }) {
       <LivelineChart
         data={chartData}
         value={chartValue}
-        height={isMobile ? 200 : 340}
+        height={chartHeight}
         formatValue={(v) => `${v.toFixed(1)}%`}
         window={WINDOW_LABEL_TO_SECS[windowLabel]}
         onWindowChange={handleWindowChange}

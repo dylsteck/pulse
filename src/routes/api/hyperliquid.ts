@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import { resolvePerpSpotPrices } from '@/lib/hyperliquid/service'
 import {
   getHyperliquidInfoClient,
   getHyperliquidSymbolConverter,
@@ -78,9 +79,10 @@ export const Route = createFileRoute('/api/hyperliquid')({
                 const assetId = converter.getAssetId(asset.name)
                 if (assetId == null) return null
 
-                const markPx = Number(ctx.markPx)
-                const midPx = Number(
-                  ctx.midPx ?? ctx.markPx ?? mids[asset.name] ?? 0,
+                const { markPx, midPx } = resolvePerpSpotPrices(
+                  ctx,
+                  mids,
+                  asset.name,
                 )
                 const prevDayPx = Number(ctx.prevDayPx)
                 const change24h =

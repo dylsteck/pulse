@@ -4,7 +4,7 @@ import {
   WINDOW_SECS_TO_LABEL,
 } from '@/components/trading/liveline-chart'
 
-export function useWindowChange(initialLabel = '15m') {
+export function useWindowChange(initialLabel = '1D') {
   const [windowLabel, setWindowLabel] = useState(initialLabel)
   const windowSecsRef = useRef(WINDOW_LABEL_TO_SECS[windowLabel])
   windowSecsRef.current = WINDOW_LABEL_TO_SECS[windowLabel]

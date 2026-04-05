@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
+import { cn } from '@/lib/utils'
 
 export const TIME_WINDOWS = [
   { label: '15m', secs: 900 },
@@ -20,6 +21,8 @@ export const WINDOW_LABEL_TO_SECS: Record<string, number> = Object.fromEntries(
 const LIVELINE_PADDING = { top: 12, right: 80, bottom: 40, left: 12 } as const
 const SPARKLINE_PADDING = { top: 2, right: 2, bottom: 2, left: 2 } as const
 const FULL_SIZE_STYLE = { width: '100%', height: '100%' } as const
+/** gap-1.5 between toolbar and chart */
+const CHART_TOOLBAR_GAP_PX = 6
 
 function ensureMinChartData(
   data: Array<{ time: number; value: number }>,
@@ -130,9 +133,6 @@ export function LivelineChart({
   }, [])
 
   let chartData = buildSparseChartSeries(data, value)
-  if (chartData.length >= 2 && windowProp) {
-    chartData = extendToFullWindow(chartData, windowProp, value)
-  }
   /** Do not cover the chart with Liveline's loading state when sparse data + spot
    *  price already produce a drawable series (see buildSparseChartSeries). */
   const showLoadingOverlay = isLoading && chartData.length < 2
@@ -145,36 +145,76 @@ export function LivelineChart({
     TIME_WINDOWS.find((w) => w.secs >= spanSecs)?.secs ??
     TIME_WINDOWS[TIME_WINDOWS.length - 1].secs
 
+  const resolvedWindow = windowProp ?? defaultWindow
+  if (chartData.length >= 2 && resolvedWindow) {
+    chartData = extendToFullWindow(chartData, resolvedWindow, value)
+  }
+
   const resolvedColor = color ?? (isDark ? '#3b82f6' : '#111111')
+
+  /** Liveline ignores the `window` prop for its tab bar when `windows` is set — it always
+   *  initializes from `windows[0]` (15m). We render timeframe controls here instead. */
+  const showWindowControls = Boolean(onWindowChange)
+  const toolbarH = showWindowControls ? 26 : 0
+  /** Fixed total height so flex parents cannot stretch this block and leave dead space below. */
+  const outerHeightPx =
+    Math.max(120, height) +
+    toolbarH +
+    (showWindowControls ? CHART_TOOLBAR_GAP_PX : 0)
 
   return (
     <div
-      className="min-h-0 overflow-visible"
-      style={{ width: '100%', height: `${height}px`, minHeight: `${height}px` }}
+      className="flex min-h-0 w-full flex-col gap-1.5 overflow-visible"
+      style={{
+        height: `${outerHeightPx}px`,
+      }}
     >
-      {mounted && (
-        <Liveline
-          data={chartData}
-          value={value}
-          color={resolvedColor}
-          theme={isDark ? 'dark' : 'light'}
-          window={windowProp ?? defaultWindow}
-          windows={TIME_WINDOWS}
-          onWindowChange={onWindowChange}
-          windowStyle="text"
-          badge
-          momentum
-          fill
-          grid
-          padding={LIVELINE_PADDING}
-          loading={showLoadingOverlay}
-          paused={paused}
-          exaggerate={exaggerate}
-          {...(emptyText ? { emptyText } : {})}
-          {...(formatValue ? { formatValue } : {})}
-          style={FULL_SIZE_STYLE}
-        />
+      {showWindowControls && (
+        <div className="flex h-[26px] shrink-0 flex-wrap items-center gap-1 pl-3">
+          {TIME_WINDOWS.map((w) => {
+            const active = w.secs === resolvedWindow
+            return (
+              <button
+                key={w.label}
+                type="button"
+                onClick={() => onWindowChange?.(w.secs)}
+                className={cn(
+                  'rounded px-1.5 py-0.5 text-[11px] font-medium transition-colors',
+                  active
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground/80',
+                )}
+              >
+                {w.label}
+              </button>
+            )
+          })}
+        </div>
       )}
+      <div className="relative min-h-0 w-full flex-1 overflow-visible">
+        {mounted && (
+          <div className="absolute inset-0">
+            <Liveline
+              data={chartData}
+              value={value}
+              color={resolvedColor}
+              theme={isDark ? 'dark' : 'light'}
+              window={resolvedWindow}
+              badge
+              momentum
+              fill
+              grid
+              padding={LIVELINE_PADDING}
+              loading={showLoadingOverlay}
+              paused={paused}
+              exaggerate={exaggerate}
+              {...(emptyText ? { emptyText } : {})}
+              {...(formatValue ? { formatValue } : {})}
+              style={FULL_SIZE_STYLE}
+            />
+          </div>
+        )}
+      </div>
     </div>
   )
 }

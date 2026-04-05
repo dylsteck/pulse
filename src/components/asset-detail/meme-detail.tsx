@@ -5,6 +5,7 @@ import {
 } from '@/components/trading/liveline-chart'
 import { useMemeTokenDetail } from '@/hooks/use-meme-tokens'
 import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
+import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
 import { useWindowChange } from '@/hooks/use-window-change'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatDate, formatPrice } from '@/lib/format'
@@ -32,7 +33,7 @@ export function MemeDetail({ id }: { id: string }) {
             </div>
           </div>
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
-          <div className="h-[380px] w-full animate-pulse rounded-lg bg-muted" />
+          <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
           <div className="h-12 animate-pulse rounded bg-muted" />
@@ -50,9 +51,10 @@ export function MemeDetail({ id }: { id: string }) {
 }
 
 function MemeDetailContent({ meme }: { meme: MemeToken }) {
+  const chartHeight = useAssetChartHeight()
   const primaryWebsite = meme.websites?.[0]
   const safePrimaryWebsite = sanitizeExternalHttpUrl(primaryWebsite)
-  const { windowLabel, handleWindowChange } = useWindowChange('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange()
   const { data: bars, isLoading } = useMemeOhlcv(meme.poolAddress, windowLabel)
   const chartData =
     bars.length >= 2
@@ -93,7 +95,7 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
         )}
 
         <div className="mb-1 flex items-end justify-between gap-4">
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-center gap-3">
             <span className="text-3xl font-semibold tabular-nums sm:text-4xl">
               ${formatPrice(meme.price)}
             </span>
@@ -132,7 +134,7 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
           <LivelineChart
             data={chartData}
             value={meme.price}
-            height={380}
+            height={chartHeight}
             color={color}
             window={WINDOW_LABEL_TO_SECS[windowLabel]}
             onWindowChange={handleWindowChange}

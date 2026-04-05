@@ -11,7 +11,7 @@ import { useWindowChange } from '@/hooks/use-window-change'
 import { fetchCodexTokenByAddress } from '@/lib/codex'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatPrice } from '@/lib/format'
-import { useIsMobile } from '@/hooks/use-is-mobile'
+import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
 import {
   StatItem,
   DetailSection,
@@ -42,7 +42,7 @@ export function TokenDetail({ id }: { id: string }) {
             </div>
           </div>
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
-          <div className="h-[380px] w-full animate-pulse rounded-lg bg-muted" />
+          <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
         <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
           <div className="h-12 animate-pulse rounded bg-muted" />
@@ -60,9 +60,9 @@ export function TokenDetail({ id }: { id: string }) {
 }
 
 function TokenDetailContent({ token }: { token: Token }) {
-  const isMobile = useIsMobile()
+  const chartHeight = useAssetChartHeight()
   const { price } = useTokenPrice(token)
-  const { windowLabel, handleWindowChange } = useWindowChange('15m')
+  const { windowLabel, handleWindowChange } = useWindowChange()
   const { data: bars, isLoading } = useTokenBars(token.address, windowLabel)
   const chartData = bars.length >= 2 ? bars : token.priceHistory
 
@@ -86,7 +86,7 @@ function TokenDetailContent({ token }: { token: Token }) {
         </div>
 
         <div className="mb-1 flex items-end justify-between gap-4">
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-center gap-3">
             <span className="text-3xl font-semibold tabular-nums sm:text-4xl">
               ${formatPrice(price)}
             </span>
@@ -106,7 +106,7 @@ function TokenDetailContent({ token }: { token: Token }) {
           <LivelineChart
             data={chartData}
             value={price}
-            height={isMobile ? 200 : 380}
+            height={chartHeight}
             window={WINDOW_LABEL_TO_SECS[windowLabel]}
             onWindowChange={handleWindowChange}
             isLoading={isLoading && bars.length < 2}

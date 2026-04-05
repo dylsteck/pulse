@@ -24,6 +24,7 @@ import {
 import { OrderBatchQueue } from '@/lib/hyperliquid/batch-queue'
 import { ScheduleCancelHeartbeat } from '@/lib/hyperliquid/heartbeat'
 import { toHyperliquidWallet } from '@/lib/hyperliquid/signer'
+import { formatPrice } from '@/lib/format'
 
 export interface PerpMarketSnapshot {
   id: string
@@ -39,6 +40,41 @@ export interface PerpMarketSnapshot {
   volume24h: number
   szDecimals: number
   maxLeverage: number
+}
+
+/** Hyperliquid sometimes returns markPx/midPx as 0; allMids() / oraclePx still have the live price. */
+export function resolvePerpSpotPrices(
+  ctx: {
+    markPx: string
+    midPx: string | null
+    oraclePx: string
+  },
+  mids: Record<string, string>,
+  coin: string,
+): { markPx: number; midPx: number } {
+  const midFromCtx =
+    ctx.midPx != null && ctx.midPx !== '' ? Number(ctx.midPx) : NaN
+  const markFromCtx = Number(ctx.markPx)
+  const midFromMids = mids[coin] != null ? Number(mids[coin]) : NaN
+  const oraclePx = Number(ctx.oraclePx)
+
+  const pickFirstPositive = (...vals: number[]): number => {
+    for (const v of vals) {
+      if (Number.isFinite(v) && v > 0) return v
+    }
+    return 0
+  }
+
+  const midPx = pickFirstPositive(
+    midFromCtx,
+    markFromCtx,
+    midFromMids,
+    oraclePx,
+  )
+  const markPx =
+    Number.isFinite(markFromCtx) && markFromCtx > 0 ? markFromCtx : midPx
+
+  return { markPx, midPx }
 }
 
 const hlPost = (body: Record<string, unknown>): RequestInit => ({
@@ -296,14 +332,13 @@ export async function createLimitOrder(params: {
 }
 
 export function formatPerpPrice(
-  market: PerpMarketSnapshot,
+  _market: PerpMarketSnapshot,
   price: number,
 ): string {
-  const maxDecimals = price >= 1000 ? 0 : price >= 1 ? 2 : market.szDecimals
-  return price.toLocaleString('en-US', {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: maxDecimals,
-  })
+  if (!Number.isFinite(price) || price <= 0) {
+    return '—'
+  }
+  return `$${formatPrice(price)}`
 }
 
 export interface PerpCandleDataPoint {

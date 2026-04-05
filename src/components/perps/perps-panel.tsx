@@ -153,7 +153,7 @@ function PerpsTable({
                   <span className="text-xs text-muted-foreground">PERP</span>
                 </div>
                 <span className="text-right text-sm tabular-nums">
-                  ${formatPerpPrice(market, market.markPx)}
+                  {formatPerpPrice(market, market.markPx)}
                 </span>
                 <span
                   className={cn(
@@ -229,7 +229,7 @@ function InlinePerpChart({ market }: { market: PerpMarketSnapshot }) {
       <div className="mb-3 flex items-baseline justify-between">
         <span className="text-sm font-semibold">{market.coin} PERP</span>
         <span className="text-lg font-semibold tabular-nums">
-          ${formatPerpPrice(market, market.markPx)}
+          {formatPerpPrice(market, market.markPx)}
         </span>
       </div>
       <LivelineChart
