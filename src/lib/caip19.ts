@@ -5,7 +5,9 @@
  * Format: chain_id/asset_namespace:asset_reference
  *
  * Blockchain assets (tokens, memes) use standard CAIP-19.
- * Non-blockchain assets (markets, perps) use custom chain IDs.
+ * Solana SPL memes use the Chain Agnostic draft namespace `token` (mint address);
+ * `spl-token` and `spl` are accepted on decode for legacy/interop URLs.
+ * Polymarket and Hyperliquid use Pulse-defined CAIP-2-like chain IDs (see README).
  */
 
 // ---------------------------------------------------------------------------
@@ -47,14 +49,14 @@ const CHAIN_IDS = {
 
 const TYPE_TO_NAMESPACE: Record<AssetType, string> = {
   tokens: 'erc20',
-  memes: 'spl-token',
+  memes: 'token',
   markets: 'event',
   perps: 'perp',
 }
 
+/** Namespaces for non-Solana chains only (Solana memes use resolveType). */
 const NAMESPACE_TO_TYPE: Record<string, AssetType> = {
   erc20: 'tokens',
-  'spl-token': 'memes',
   event: 'markets',
   perp: 'perps',
 }
@@ -99,9 +101,20 @@ function parseRawId(raw: string): AssetIdentifier | null {
 }
 
 /**
- * Determine the AssetType from a namespace.
+ * Determine the AssetType from chain id + namespace.
+ * Solana mainnet accepts `token` (canonical), `spl-token` (legacy Pulse), and `spl` (common elsewhere).
  */
-function resolveType(_chainId: string, namespace: string): AssetType | null {
+function resolveType(chainId: string, namespace: string): AssetType | null {
+  if (chainId === CHAIN_IDS.solana) {
+    if (
+      namespace === 'token' ||
+      namespace === 'spl-token' ||
+      namespace === 'spl'
+    ) {
+      return 'memes'
+    }
+    return null
+  }
   return NAMESPACE_TO_TYPE[namespace] ?? null
 }
 
@@ -164,9 +177,14 @@ export function decodeAssetId(encoded: string): ParsedAsset | null {
   const type = resolveType(parsed.chainId, parsed.namespace)
   if (!type) return null
 
+  const identifier =
+    type === 'memes' && parsed.chainId === CHAIN_IDS.solana
+      ? { ...parsed, namespace: 'token' }
+      : parsed
+
   return {
     type,
-    identifier: parsed,
+    identifier,
     raw: encoded,
   }
 }

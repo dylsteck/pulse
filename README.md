@@ -1,6 +1,6 @@
 # Pulse
 
-![Pulse screenshot April 2026](https://i.imgur.com/2mFCWEW.png)
+![Pulse screenshot April 2026](https://i.imgur.com/f62SGXf.png)
 
 Pulse is a fast and minimal trading interface across many different assets: tokens, prediction markets, perps, and memes. The goal is both to have a simple interface getting the pulse of what's happening across all these assets, and also to be able to easily transact across them. Built by [@dylsteck](https://github.com/dylsteck)
 
@@ -53,10 +53,12 @@ The identifier is percent-encoded when used in URLs.
 
 | Asset Type     | Chain ID                                  | Namespace   | Example                             |
 | -------------- | ----------------------------------------- | ----------- | ----------------------------------- |
-| Base Tokens    | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x4ed4...efed`   |
-| Memes (Solana) | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `spl-token` | `solana:.../spl-token:ABC123...`    |
-| Markets        | `polymarket:mainnet`                      | `event`     | `polymarket:mainnet/event:12345`    |
-| Perps          | `hyperliquid:mainnet`                     | `perp`      | `hyperliquid:mainnet/perp:btc-perp` |
+| Base    | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x4ed4...efed`   |
+| Solana | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `token`     | `solana:.../token:ABC123...`        |
+| Polymarket        | `polymarket:mainnet`                      | `event`     | `polymarket:mainnet/event:12345`    |
+| Hyperliquid         | `hyperliquid:mainnet`                     | `perp`      | `hyperliquid:mainnet/perp:btc-perp` |
+
+**Pulse-defined chain IDs:** `polymarket:mainnet` and `hyperliquid:mainnet` are app-stable identifiers for Polymarket and Hyperliquid; they are not CAIP-2 registry entries. Solana memes use the [Solana CAIP-19 draft](https://namespaces.chainagnostic.org/solana/caip19) shape (`token` + mint). Older bookmark URLs may use `spl-token` or `spl` instead of `token`; those still decode.
 
 ### URL Examples
 
@@ -67,8 +69,8 @@ The identifier is percent-encoded when used in URLs.
 # Polymarket market
 /asset/polymarket%3Amainnet%2Fevent%3A12345
 
-# Solana meme
-/asset/solana%3A5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp%2Fspl-token%3AABC123
+# Solana meme (canonical)
+/asset/solana%3A5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp%2Ftoken%3AABC123
 
 # Hyperliquid perp
 /asset/hyperliquid%3Amainnet%2Fperp%3Abtc-perp
