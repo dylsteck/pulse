@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { TradingDrawerHeader } from '@/components/trading/trading-drawer-header'
+import { cn } from '@/lib/utils'
 
 function TradingDrawerFrame({
   frameContent,
@@ -57,13 +58,20 @@ export function TradingDrawerPanel({
         onToggleCollapse={onToggleCollapse}
       />
 
-      {!collapsed ? (
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          <TradingDrawerFrame frameContent={frameContent}>
-            {children}
-          </TradingDrawerFrame>
+      <div
+        className={cn(
+          'grid min-h-0 flex-1 transition-[grid-template-rows] duration-300 ease-in-out motion-reduce:transition-none',
+          collapsed ? 'grid-rows-[0fr]' : 'grid-rows-[minmax(0,1fr)]',
+        )}
+      >
+        <div className="min-h-0 overflow-hidden">
+          <div className="min-h-0 max-h-[min(65vh,560px)] overflow-y-auto overflow-x-hidden sm:max-h-[min(70vh,600px)]">
+            <TradingDrawerFrame frameContent={frameContent}>
+              {children}
+            </TradingDrawerFrame>
+          </div>
         </div>
-      ) : null}
+      </div>
     </>
   )
 }
