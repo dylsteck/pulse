@@ -38,7 +38,7 @@ export const TokenGridCard = React.memo(function TokenGridCard({
         </div>
         <ChangeBadge value={token.change24h} />
       </div>
-      <div className="mt-3 text-lg tabular-nums">
+      <div className="mt-2 mb-1 text-lg tabular-nums">
         ${formatPrice(token.price)}
       </div>
       <div className="mt-auto flex items-end justify-between pt-3">

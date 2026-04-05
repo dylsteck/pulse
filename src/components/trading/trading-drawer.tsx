@@ -68,11 +68,8 @@ export function TradingDrawer({
         <DialogPrimitive.Popup
           className={cn(
             'pointer-events-auto fixed z-[51] flex max-h-[min(85vh,720px)] w-auto flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-lg outline-none',
-            'will-change-transform',
-            'transition-[transform,opacity] motion-reduce:duration-0',
-            exiting
-              ? 'duration-[280ms] ease-[cubic-bezier(0.4,0,1,1)]'
-              : 'duration-[400ms] ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'will-change-[transform,opacity]',
+            'transition-all duration-300 ease-in-out motion-reduce:duration-0',
             'bottom-3 right-3 left-3 sm:bottom-5 sm:right-5 sm:left-auto',
             'sm:w-[min(100vw-2rem,380px)]',
             panelVisible

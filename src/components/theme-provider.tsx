@@ -15,8 +15,21 @@ function getSystemTheme(): Theme {
 }
 
 function applyTheme(theme: Theme) {
+  // Disable all transitions/animations so the theme swap is instant
+  const css = document.createElement('style')
+  css.textContent =
+    '*, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; }'
+  document.head.appendChild(css)
+
   document.documentElement.classList.toggle('dark', theme === 'dark')
   localStorage.setItem('pulse-theme', theme)
+
+  // Keep the override through the next paint, then remove
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      css.remove()
+    })
+  })
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
