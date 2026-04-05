@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronRightIcon } from 'lucide-react'
+import { ChevronRightIcon, FilterIcon } from 'lucide-react'
 import type { ViewMode } from '@/components/dashboard/tabs'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +23,11 @@ import {
 import { ModeTabs } from '@/components/dashboard/tabs'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { TrendingSidebar } from '@/components/dashboard/trending-sidebar'
+import {
+  GridFilterPopover,
+  DEFAULT_FILTERS,
+  type GridFilters,
+} from '@/components/dashboard/grid-filter-popover'
 
 export type { ViewMode } from '@/components/dashboard/tabs'
 

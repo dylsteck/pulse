@@ -21,7 +21,7 @@ export function PerpGridCard({ market }: PerpGridCardProps) {
     <Link
       to="/asset/$identifier"
       params={{ identifier: buildPerpId(market.coin) }}
-      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
+      className="flex flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">

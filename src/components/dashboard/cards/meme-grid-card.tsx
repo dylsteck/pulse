@@ -16,7 +16,7 @@ export const MemeGridCard = React.memo(function MemeGridCard({
     <Link
       to="/asset/$identifier"
       params={{ identifier: buildMemeId(meme.id) }}
-      className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
+      className="flex flex-col overflow-hidden rounded-xl border border-border bg-card p-3 text-left hover:bg-accent/40 sm:p-4"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 gap-3">
