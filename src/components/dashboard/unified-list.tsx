@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { ChevronRightIcon, FilterIcon } from 'lucide-react'
+import { ChevronRightIcon } from 'lucide-react'
 import type { ViewMode } from '@/components/dashboard/tabs'
 import { cn } from '@/lib/utils'
 
@@ -26,8 +26,10 @@ import { TrendingSidebar } from '@/components/dashboard/trending-sidebar'
 import {
   GridFilterPopover,
   DEFAULT_FILTERS,
+  coerceGridFilters,
   type GridFilters,
 } from '@/components/dashboard/grid-filter-popover'
+import { sortPerpsForGrid } from '@/lib/grid-sorts'
 
 export type { ViewMode } from '@/components/dashboard/tabs'
 
@@ -39,6 +41,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   const navigate = useNavigate()
   const [mode, setMode] = useState<ViewMode>(initialMode)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [gridFilters, setGridFilters] = useState<GridFilters>(DEFAULT_FILTERS)
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const trendingLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -57,6 +60,10 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   useEffect(() => {
     setMode(initialMode)
   }, [initialMode])
+
+  useEffect(() => {
+    setGridFilters((prev) => coerceGridFilters(mode, prev))
+  }, [mode])
 
   const trendingHasMore =
     liveTokensQuery.hasMore ||
@@ -114,21 +121,29 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                 }}
               />
             </div>
-            <button
-              type="button"
-              onClick={() => setSidebarCollapsed((c) => !c)}
-              className="hidden shrink-0 items-center justify-center rounded-md border border-border px-1.5 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:inline-flex"
-              aria-label={
-                sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
-              }
-            >
-              <ChevronRightIcon
-                className={cn(
-                  'size-4 transition-transform duration-200',
-                  sidebarCollapsed ? 'rotate-180' : '',
-                )}
+            <div className="hidden shrink-0 items-center gap-[0.3375rem] lg:flex">
+              <GridFilterPopover
+                mode={mode}
+                filters={gridFilters}
+                onFiltersChange={setGridFilters}
               />
-            </button>
+              <button
+                type="button"
+                onClick={() => setSidebarCollapsed((c) => !c)}
+                className="inline-flex h-[1.575rem] w-[2.025rem] shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label={
+                  sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
+                }
+              >
+                <ChevronRightIcon
+                  className={cn(
+                    'size-[0.9rem] transition-transform duration-200',
+                    sidebarCollapsed ? 'rotate-180' : '',
+                  )}
+                  aria-hidden
+                />
+              </button>
+            </div>
           </div>
 
           <div className="mt-2 overflow-x-clip px-2 sm:px-0">
@@ -142,6 +157,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                 marketsLoading={liveMarketsQuery.isLoading}
                 perpsLoading={isPerpsLoading}
                 memesLoading={memeTokensQuery.isLoading}
+                filters={gridFilters}
               />
             ) : mode === 'tokens' ? (
               liveTokensQuery.isLoading ? (
@@ -156,7 +172,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                   onRetry={() => void liveTokensQuery.refetch()}
                 />
               ) : (
-                <TokenGrid tokens={liveTokens} />
+                <TokenGrid tokens={liveTokens} filters={gridFilters} />
               )
             ) : mode === 'markets' ? (
               liveMarketsQuery.isLoading ? (
@@ -171,7 +187,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                   onRetry={() => void liveMarketsQuery.refetch()}
                 />
               ) : (
-                <MarketGrid markets={liveMarkets} />
+                <MarketGrid markets={liveMarkets} filters={gridFilters} />
               )
             ) : mode === 'memes' ? (
               memeTokensQuery.isLoading ? (
@@ -179,7 +195,11 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
               ) : memeTokensQuery.error ? (
                 <MemeRetryState onRetry={() => memeTokensQuery.refetch()} />
               ) : (
-                <MemeGrid memes={memeTokens} isLoading={false} />
+                <MemeGrid
+                  memes={memeTokens}
+                  isLoading={false}
+                  filters={gridFilters}
+                />
               )
             ) : isPerpsLoading ? (
               <LoadingPanel label="Loading perps..." />
@@ -194,7 +214,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
               />
             ) : (
               <PerpsPanel
-                markets={perpMarkets ?? []}
+                markets={sortPerpsForGrid(perpMarkets ?? [], gridFilters.sort)}
                 isLoading={false}
                 layout="grid"
               />

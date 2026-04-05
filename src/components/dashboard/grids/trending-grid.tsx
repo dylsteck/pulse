@@ -2,6 +2,7 @@ import React from 'react'
 import type { Token, Market } from '@/lib/types'
 import type { MemeToken } from '@/lib/geckoterminal'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
+import type { GridFilters } from '@/lib/grid-filter-types'
 import {
   TokenGridCard,
   MarketGridCard,
@@ -9,6 +10,13 @@ import {
   PerpGridCard,
 } from '@/components/dashboard/cards'
 import { CardGrid, LoadingPanel } from '@/components/dashboard/shared'
+import {
+  filterTokensByNetwork,
+  sortMemesForTrending,
+  sortMarketsForTrending,
+  sortPerpsForTrending,
+  sortTokensForGrid,
+} from '@/lib/grid-sorts'
 
 type TrendingItem =
   | { kind: 'token'; data: Token }
@@ -25,6 +33,7 @@ interface TrendingGridProps {
   marketsLoading: boolean
   perpsLoading: boolean
   memesLoading: boolean
+  filters: GridFilters
 }
 
 export function TrendingGrid({
@@ -36,27 +45,23 @@ export function TrendingGrid({
   marketsLoading,
   perpsLoading,
   memesLoading,
+  filters,
 }: TrendingGridProps) {
   const allLoading = tokensLoading && marketsLoading && perpsLoading && memesLoading
   if (allLoading) {
     return <LoadingPanel label="Loading trending..." />
   }
 
-  const topTokens = tokens
-    .slice()
-    .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
+  const topTokens = sortTokensForGrid(
+    filterTokensByNetwork(tokens, filters.network),
+    filters.sort,
+  )
 
-  const topMarkets = markets
-    .slice()
-    .sort((a, b) => b.volume - a.volume)
+  const topMarkets = sortMarketsForTrending(markets, filters.sort)
 
-  const topPerps = perps
-    .slice()
-    .sort((a, b) => b.volume24h - a.volume24h)
+  const topPerps = sortPerpsForTrending(perps, filters.sort)
 
-  const topMemes = memes
-    .slice()
-    .sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h))
+  const topMemes = sortMemesForTrending(memes, filters.sort)
 
   // Interleave: round-robin across categories
   const items: TrendingItem[] = []

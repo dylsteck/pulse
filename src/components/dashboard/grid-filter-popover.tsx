@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { ArrowUpDownIcon, FilterIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowUpDownIcon, SlidersHorizontalIcon } from 'lucide-react'
 import type { ViewMode } from '@/components/dashboard/tabs'
 import {
   Popover,
@@ -8,21 +8,10 @@ import {
   PopoverPositioner,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import type { GridFilters, SortKey } from '@/lib/grid-filter-types'
 import { cn } from '@/lib/utils'
 
-export type SortKey =
-  | 'change'
-  | 'volume'
-  | 'marketCap'
-  | 'liquidity'
-  | 'valuation'
-
-export type NetworkFilter = 'all' | number
-
-export interface GridFilters {
-  sort: SortKey
-  network: NetworkFilter
-}
+export type { GridFilters, NetworkFilter, SortKey } from '@/lib/grid-filter-types'
 
 const SORT_OPTIONS: Record<ViewMode, Array<{ key: SortKey; label: string }>> = {
   trending: [
@@ -66,6 +55,15 @@ interface GridFilterPopoverProps {
   onFiltersChange: (filters: GridFilters) => void
 }
 
+export function coerceGridFilters(
+  mode: ViewMode,
+  filters: GridFilters,
+): GridFilters {
+  const keys = SORT_OPTIONS[mode].map((o) => o.key)
+  if (keys.includes(filters.sort)) return filters
+  return { ...filters, sort: SORT_OPTIONS[mode][0].key }
+}
+
 export function GridFilterPopover({
   mode,
   filters,
@@ -75,19 +73,23 @@ export function GridFilterPopover({
   const sortOptions = SORT_OPTIONS[mode]
   const showNetwork = mode === 'tokens' || mode === 'trending'
 
+  useEffect(() => {
+    setOpen(false)
+  }, [mode])
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
           <button
             type="button"
-            className="hidden shrink-0 items-center justify-center rounded-md border border-border px-1.5 py-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:inline-flex"
-            aria-label="Filter grid"
-          />
+            className="inline-flex h-[1.575rem] w-[2.025rem] shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="Sort and filter"
+          >
+            <SlidersHorizontalIcon className="size-[0.9rem] shrink-0" aria-hidden />
+          </button>
         }
-      >
-        <FilterIcon className="size-4" />
-      </PopoverTrigger>
+      />
       <PopoverPortal>
         <PopoverPositioner
           side="bottom"
@@ -96,18 +98,22 @@ export function GridFilterPopover({
           className="max-w-[min(calc(100vw-1rem),240px)]"
         >
           <PopoverContent className="w-full min-w-0 max-w-full overflow-hidden rounded-xl border border-border bg-popover p-3 text-popover-foreground shadow-md">
-            <div className="space-y-3">
-              {/* Sort */}
+            <div className="flex flex-col gap-3">
               <div>
                 <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                  <ArrowUpDownIcon className="size-3" />
+                  <ArrowUpDownIcon className="size-3 shrink-0" aria-hidden />
                   Sort by
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <div
+                  className="flex flex-wrap gap-1"
+                  role="group"
+                  aria-label="Sort by"
+                >
                   {sortOptions.map((opt) => (
                     <button
                       key={opt.key}
                       type="button"
+                      aria-pressed={filters.sort === opt.key}
                       onClick={() =>
                         onFiltersChange({ ...filters, sort: opt.key })
                       }
@@ -124,17 +130,21 @@ export function GridFilterPopover({
                 </div>
               </div>
 
-              {/* Network filter */}
-              {showNetwork && (
+              {showNetwork ? (
                 <div>
                   <div className="mb-1.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                     Network
                   </div>
-                  <div className="flex flex-wrap gap-1">
+                  <div
+                    className="flex flex-wrap gap-1"
+                    role="group"
+                    aria-label="Network"
+                  >
                     {NETWORK_OPTIONS.map((opt) => (
                       <button
                         key={String(opt.value)}
                         type="button"
+                        aria-pressed={filters.network === opt.value}
                         onClick={() =>
                           onFiltersChange({ ...filters, network: opt.value })
                         }
@@ -150,7 +160,7 @@ export function GridFilterPopover({
                     ))}
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </PopoverContent>
         </PopoverPositioner>
@@ -159,4 +169,7 @@ export function GridFilterPopover({
   )
 }
 
-export const DEFAULT_FILTERS: GridFilters = { sort: 'change', network: 'all' }
+export const DEFAULT_FILTERS: GridFilters = {
+  sort: 'change',
+  network: 'all',
+}
