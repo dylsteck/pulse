@@ -34,22 +34,13 @@ export const TokenGridCard = React.memo(function TokenGridCard({
             </div>
           </div>
         </div>
-      </div>
-      <div className="mt-2">
         <ChangeBadge value={token.change24h} />
       </div>
       <div className="mt-3 text-lg tabular-nums">
         ${formatPrice(token.price)}
       </div>
-      <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-xs">
-        <span className="text-muted-foreground">Volume</span>
-        <span className="text-right tabular-nums">
-          {formatCompact(token.volume24h)}
-        </span>
-        <span className="text-muted-foreground">Mkt Cap</span>
-        <span className="text-right tabular-nums">
-          {formatCompact(token.marketCap)}
-        </span>
+      <div className="mt-auto pt-3 text-xs text-muted-foreground">
+        <span>{formatCompact(token.volume24h)} Vol</span>
       </div>
     </Link>
   )

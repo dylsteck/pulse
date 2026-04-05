@@ -40,15 +40,8 @@ export const MemeGridCard = React.memo(function MemeGridCard({
       <div className="mt-3 text-lg tabular-nums">
         ${formatPrice(meme.price)}
       </div>
-      <div className="mt-auto grid grid-cols-2 gap-x-3 gap-y-1 pt-3 text-xs">
-        <span className="text-muted-foreground">24h Vol</span>
-        <span className="text-right tabular-nums">
-          {formatCompact(meme.volume24h)}
-        </span>
-        <span className="text-muted-foreground">Liquidity</span>
-        <span className="text-right tabular-nums">
-          {formatCompact(meme.liquidity)}
-        </span>
+      <div className="mt-auto pt-3 text-xs text-muted-foreground">
+        <span>{formatCompact(meme.volume24h)} Vol</span>
       </div>
     </Link>
   )

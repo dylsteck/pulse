@@ -40,15 +40,8 @@ export function PerpGridCard({ market }: PerpGridCardProps) {
       <div className="mt-2 mb-1 text-lg tabular-nums">
         ${formatPerpPrice(market, market.markPx)}
       </div>
-      <div className="mt-auto pt-3 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-        <span className="text-muted-foreground">Volume</span>
-        <span className="text-right tabular-nums">
-          {formatCompact(market.volume24h)}
-        </span>
-        <span className="text-muted-foreground">Funding</span>
-        <span className="text-right tabular-nums">
-          {(market.funding * 100).toFixed(4)}%
-        </span>
+      <div className="mt-auto pt-3 text-xs text-muted-foreground">
+        <span>{formatCompact(market.volume24h)} Vol</span>
       </div>
     </Link>
   )

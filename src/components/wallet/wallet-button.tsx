@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { ExternalLinkIcon, LogOutIcon, WalletIcon } from 'lucide-react'
+import { CheckIcon, CopyIcon, ExternalLinkIcon, LogOutIcon, WalletIcon } from 'lucide-react'
 import { SignInModal } from '@coinbase/cdp-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import {
@@ -24,6 +25,7 @@ import { base, polygon } from 'wagmi/chains'
 export function WalletButton() {
   const { isSignedIn, evmAddress, signOut } = useAuth()
   const isMobile = useIsMobile()
+  const [copied, setCopied] = useState(false)
 
   const { data: baseUsdc } = useErc20Balance(
     base.id,
@@ -63,6 +65,14 @@ export function WalletButton() {
 
   const scanUrl = evmAddress ? baseScanAddressUrl(evmAddress) : null
 
+  function copyAddress() {
+    if (!evmAddress) return
+    void navigator.clipboard.writeText(evmAddress).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    })
+  }
+
   return (
     <Popover>
       <PopoverTrigger
@@ -88,23 +98,37 @@ export function WalletButton() {
                   <p className="text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
                     Wallet
                   </p>
-                  <p
-                    className="mt-0.5 max-w-full font-mono text-[11px] leading-snug [overflow-wrap:anywhere] [word-break:break-all]"
-                    title={evmAddress}
-                  >
-                    {evmAddress}
-                  </p>
-                  {scanUrl ? (
-                    <a
-                      href={scanUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-1 inline-flex items-center gap-1 text-[11px] text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+                  <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+                    <p
+                      className="min-w-0 flex-1 truncate font-mono text-[11px]"
+                      title={evmAddress}
                     >
-                      Basescan
-                      <ExternalLinkIcon className="size-3" aria-hidden />
-                    </a>
-                  ) : null}
+                      {evmAddress}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={copyAddress}
+                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      title="Copy address"
+                    >
+                      {copied ? (
+                        <CheckIcon className="size-3 text-green-500" aria-hidden />
+                      ) : (
+                        <CopyIcon className="size-3" aria-hidden />
+                      )}
+                    </button>
+                    {scanUrl ? (
+                      <a
+                        href={scanUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                        title="View on Basescan"
+                      >
+                        <ExternalLinkIcon className="size-3" aria-hidden />
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
               <div className="rounded-lg bg-muted/50 px-2.5 py-2">
@@ -113,26 +137,28 @@ export function WalletButton() {
                   {formatTotalUsdcBalance(baseUsdc, polygonUsdc)}
                 </div>
               </div>
-              <Link
-                to="/portfolio"
-                className={cn(
-                  buttonVariants({ variant: 'secondary', size: 'sm' }),
-                  'inline-flex w-full justify-center no-underline',
-                )}
-              >
-                View portfolio
-              </Link>
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full gap-1.5"
-                onClick={() => {
-                  void signOut()
-                }}
-              >
-                <LogOutIcon className="size-3.5" aria-hidden />
-                Disconnect
-              </Button>
+              <div className="flex gap-2">
+                <Link
+                  to="/portfolio"
+                  className={cn(
+                    buttonVariants({ variant: 'secondary', size: 'sm' }),
+                    'flex-1 justify-center no-underline',
+                  )}
+                >
+                  Profile
+                </Link>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="flex-1 gap-1.5"
+                  onClick={() => {
+                    void signOut()
+                  }}
+                >
+                  <LogOutIcon className="size-3.5" aria-hidden />
+                  Disconnect
+                </Button>
+              </div>
             </div>
           </PopoverContent>
         </PopoverPositioner>

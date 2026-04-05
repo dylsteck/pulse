@@ -111,15 +111,8 @@ export function TrendingSidebar({
                   <span className="min-w-0 flex-1 truncate text-[11px] font-medium text-foreground">
                     {market.title}
                   </span>
-                  <span
-                    className={cn(
-                      'shrink-0 text-[11px] font-medium tabular-nums',
-                      market.yesPercent >= 50
-                        ? 'text-green-500'
-                        : 'text-red-500',
-                    )}
-                  >
-                    {market.yesPercent}%
+                  <span className="shrink-0 text-[10px] text-muted-foreground tabular-nums">
+                    {formatCompact(market.volume)}
                   </span>
                 </Link>
               ))}

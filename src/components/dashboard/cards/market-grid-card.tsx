@@ -80,7 +80,7 @@ export const MarketGridCard = React.memo(function MarketGridCard({
       )}
 
       <div className="mt-auto pt-3 text-xs text-muted-foreground">
-        <span>{formatCompact(market.volume)} Vol.</span>
+        <span>{formatCompact(market.volume)} Vol</span>
       </div>
     </Link>
   )
