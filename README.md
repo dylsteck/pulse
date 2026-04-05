@@ -1,6 +1,6 @@
 # Pulse
 
-![Pulse screenshot Feb 2026](https://i.imgur.com/qTl14CF.png)
+![Pulse screenshot April 2026](https://i.imgur.com/2mFCWEW.png)
 
 Pulse is a fast and minimal trading interface across many different assets: tokens, prediction markets, perps, and memes. The goal is both to have a simple interface getting the pulse of what's happening across all these assets, and also to be able to easily transact across them. Built by [@dylsteck](https://github.com/dylsteck)
 
