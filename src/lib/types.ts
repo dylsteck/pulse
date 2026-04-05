@@ -3,6 +3,7 @@ export interface Token {
   name: string
   symbol: string
   address: string
+  networkId?: number
   price: number
   change24h: number
   volume24h: number
