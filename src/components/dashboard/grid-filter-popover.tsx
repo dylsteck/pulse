@@ -13,7 +13,10 @@ import { cn } from '@/lib/utils'
 
 export type { GridFilters, SortKey } from '@/lib/grid-filter-types'
 
-const SORT_OPTIONS: Record<ViewMode, Array<{ key: SortKey; label: string }>> = {
+export const SORT_OPTIONS: Record<
+  ViewMode,
+  Array<{ key: SortKey; label: string }>
+> = {
   trending: [
     { key: 'change', label: '24h Change' },
     { key: 'volume', label: 'Volume' },
@@ -57,6 +60,10 @@ interface GridFilterPopoverProps {
   mode: ViewMode
   filters: GridFilters
   onFiltersChange: (filters: GridFilters) => void
+}
+
+export function getDefaultSortForMode(mode: ViewMode): SortKey {
+  return SORT_OPTIONS[mode][0].key
 }
 
 export function coerceGridFilters(

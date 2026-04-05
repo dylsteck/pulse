@@ -1,23 +1,21 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router'
 import { UnifiedList } from '@/components/dashboard/unified-list'
-
-const VALID_TYPES = ['trending', 'tokens', 'markets', 'perps', 'memes'] as const
-type ViewType = (typeof VALID_TYPES)[number]
+import {
+  stripHomeSearchDefaults,
+  validateHomeSearch,
+} from '@/lib/home-search'
 
 export const Route = createFileRoute('/')({
-  validateSearch: (search: Record<string, unknown>): { type: ViewType } => {
-    const t = search?.type
-    return {
-      type: VALID_TYPES.includes(t as ViewType) ? (t as ViewType) : 'trending',
-    }
-  },
+  validateSearch: validateHomeSearch,
   search: {
-    middlewares: [stripSearchParams({ type: 'trending' })],
+    middlewares: [
+      stripSearchParams({ type: 'trending' }),
+      stripHomeSearchDefaults(),
+    ],
   },
   component: IndexPage,
 })
 
 function IndexPage() {
-  const { type } = Route.useSearch()
-  return <UnifiedList initialMode={type} />
+  return <UnifiedList />
 }

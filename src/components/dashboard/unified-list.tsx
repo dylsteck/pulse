@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useMemo, useRef, useState } from 'react'
+import { getRouteApi } from '@tanstack/react-router'
 import { ChevronRightIcon } from 'lucide-react'
 import type { ViewMode } from '@/components/dashboard/tabs'
 import { cn } from '@/lib/utils'
@@ -25,23 +25,22 @@ import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { TrendingSidebar } from '@/components/dashboard/trending-sidebar'
 import {
   GridFilterPopover,
-  DEFAULT_FILTERS,
-  coerceGridFilters,
   type GridFilters,
 } from '@/components/dashboard/grid-filter-popover'
 import { sortPerpsForGrid } from '@/lib/grid-sorts'
 
 export type { ViewMode } from '@/components/dashboard/tabs'
 
-interface UnifiedListProps {
-  initialMode?: ViewMode
-}
+const indexRoute = getRouteApi('/')
 
-export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
-  const navigate = useNavigate()
-  const [mode, setMode] = useState<ViewMode>(initialMode)
+export function UnifiedList() {
+  const { type: mode, sort, networks } = indexRoute.useSearch()
+  const navigate = indexRoute.useNavigate()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
-  const [gridFilters, setGridFilters] = useState<GridFilters>(DEFAULT_FILTERS)
+  const gridFilters: GridFilters = useMemo(
+    () => ({ sort, networks }),
+    [sort, networks],
+  )
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const trendingLoadMoreRef = useRef<HTMLDivElement | null>(null)
   const tokensLoadMoreRef = useRef<HTMLDivElement | null>(null)
@@ -56,14 +55,6 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
   const liveTokens = liveTokensQuery.data
   const liveMarkets = liveMarketsQuery.data
   const memeTokens = memeTokensQuery.data
-
-  useEffect(() => {
-    setMode(initialMode)
-  }, [initialMode])
-
-  useEffect(() => {
-    setGridFilters((prev) => coerceGridFilters(mode, prev))
-  }, [mode])
 
   const trendingHasMore =
     liveTokensQuery.hasMore ||
@@ -115,7 +106,7 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
                 onModeChange={(tab) => {
                   navigate({
                     to: '/',
-                    search: { type: tab },
+                    search: (prev) => ({ ...prev, type: tab }),
                     resetScroll: false,
                   })
                 }}
@@ -125,7 +116,17 @@ export function UnifiedList({ initialMode = 'trending' }: UnifiedListProps) {
               <GridFilterPopover
                 mode={mode}
                 filters={gridFilters}
-                onFiltersChange={setGridFilters}
+                onFiltersChange={(next) => {
+                  navigate({
+                    to: '/',
+                    search: (prev) => ({
+                      ...prev,
+                      sort: next.sort,
+                      networks: next.networks,
+                    }),
+                    resetScroll: false,
+                  })
+                }}
               />
               <button
                 type="button"
