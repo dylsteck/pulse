@@ -44,27 +44,34 @@ export function WalletButton() {
     evmAddress,
   )
 
+  const walletTriggerClassName =
+    'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground'
+
   if (!cdpProjectId) {
     return (
-      <Button
-        variant="outline"
-        disabled
-        className="gap-1.5 text-muted-foreground"
+      <span
+        className={cn(walletTriggerClassName, 'cursor-not-allowed opacity-50')}
         title="Set VITE_CDP_PROJECT_ID in .env to enable wallet"
       >
-        <WalletIcon className="size-3.5" />
+        <WalletIcon className="size-3.5 shrink-0" aria-hidden />
         Connect
-      </Button>
+      </span>
     )
   }
 
   if (!isSignedIn) {
     return (
       <SignInModal>
-        <Button variant="outline" className="gap-1.5">
-          <WalletIcon className="size-3.5" />
+        <button
+          type="button"
+          className={cn(
+            walletTriggerClassName,
+            'cursor-pointer border-0 bg-transparent shadow-none outline-none focus-visible:ring-2 focus-visible:ring-ring/30',
+          )}
+        >
+          <WalletIcon className="size-3.5 shrink-0" aria-hidden />
           Connect
-        </Button>
+        </button>
       </SignInModal>
     )
   }
@@ -84,7 +91,10 @@ export function WalletButton() {
       <PopoverTrigger
         render={
           <div
-            className="inline-flex cursor-default items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[popup-open]:text-foreground"
+            className={cn(
+              walletTriggerClassName,
+              'cursor-default data-[popup-open]:text-foreground',
+            )}
           />
         }
         openOnHover={!isMobile}
