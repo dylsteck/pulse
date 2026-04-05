@@ -82,7 +82,11 @@ export function WalletButton() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        render={<Button variant="outline" type="button" className="gap-1.5" />}
+        render={
+          <div
+            className="inline-flex items-center gap-1.5 cursor-default rounded-md px-3 py-1.5 text-sm font-medium text-foreground"
+          />
+        }
         openOnHover={!isMobile}
         delay={220}
         closeDelay={120}

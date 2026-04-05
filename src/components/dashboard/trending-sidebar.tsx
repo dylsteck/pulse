@@ -32,7 +32,8 @@ export function TrendingSidebar({
       <div
         className={cn(
           'flex min-w-0 flex-col transition-[width] duration-200',
-          collapsed ? 'w-0 overflow-hidden' : 'w-64 min-w-64',
+          'overflow-hidden',
+          collapsed ? 'w-0' : 'w-64',
         )}
       >
         <div className="flex h-full w-64 min-w-64 flex-col gap-1">
