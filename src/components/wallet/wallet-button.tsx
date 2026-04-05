@@ -84,7 +84,7 @@ export function WalletButton() {
       <PopoverTrigger
         render={
           <div
-            className="inline-flex items-center gap-1.5 cursor-default rounded-md px-3 py-1.5 text-sm font-medium text-foreground"
+            className="inline-flex cursor-default items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[popup-open]:text-foreground"
           />
         }
         openOnHover={!isMobile}

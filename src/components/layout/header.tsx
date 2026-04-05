@@ -15,11 +15,23 @@ export function Header() {
           Pulse
         </Link>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" onClick={openCommandPalette} aria-label="Search">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={openCommandPalette}
+            aria-label="Search"
+          >
             <SearchIcon />
           </Button>
           <WalletButton />
-          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
             {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </Button>
         </div>

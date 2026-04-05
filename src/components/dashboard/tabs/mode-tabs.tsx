@@ -42,7 +42,7 @@ export function ModeTabs({ mode, onModeChange }: ModeTabsProps) {
             <TabsTrigger
               key={tab}
               value={tab}
-              className="h-10 min-h-10 shrink-0 gap-2 rounded-none border-0 bg-transparent px-3.5 text-sm font-medium capitalize text-muted-foreground shadow-none data-active:bg-transparent data-active:text-foreground data-active:shadow-none dark:data-active:bg-transparent sm:h-8 sm:min-h-0 sm:gap-1.5 sm:px-2.5 sm:text-sm [&_svg]:text-muted-foreground data-active:[&_svg]:text-foreground"
+              className="h-10 min-h-10 shrink-0 gap-2 rounded-none border-0 bg-transparent px-3.5 text-sm font-medium capitalize text-muted-foreground shadow-none first:pl-0 data-active:bg-transparent data-active:text-foreground data-active:shadow-none dark:data-active:bg-transparent sm:h-8 sm:min-h-0 sm:gap-1.5 sm:px-2.5 sm:text-sm sm:first:pl-0 [&_svg]:text-muted-foreground data-active:[&_svg]:text-foreground"
             >
               <Icon className="size-4 shrink-0 sm:size-3.5" aria-hidden />
               {tab}
