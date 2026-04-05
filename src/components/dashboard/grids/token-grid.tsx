@@ -15,7 +15,7 @@ interface TokenGridProps {
 
 export function TokenGrid({ tokens, filters }: TokenGridProps) {
   const prepared = sortTokensForGrid(
-    filterTokensByNetwork(tokens, filters.network),
+    filterTokensByNetwork(tokens, filters.networks),
     filters.sort,
   )
   return (

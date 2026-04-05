@@ -5,9 +5,8 @@ export type SortKey =
   | 'liquidity'
   | 'valuation'
 
-export type NetworkFilter = 'all' | number
-
 export interface GridFilters {
   sort: SortKey
-  network: NetworkFilter
+  /** Empty = all networks. Otherwise include tokens on any of these chain IDs. */
+  networks: number[]
 }

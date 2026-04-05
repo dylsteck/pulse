@@ -53,7 +53,7 @@ export function TrendingGrid({
   }
 
   const topTokens = sortTokensForGrid(
-    filterTokensByNetwork(tokens, filters.network),
+    filterTokensByNetwork(tokens, filters.networks),
     filters.sort,
   )
 

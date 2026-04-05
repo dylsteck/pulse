@@ -11,7 +11,7 @@ import {
 import type { GridFilters, SortKey } from '@/lib/grid-filter-types'
 import { cn } from '@/lib/utils'
 
-export type { GridFilters, NetworkFilter, SortKey } from '@/lib/grid-filter-types'
+export type { GridFilters, SortKey } from '@/lib/grid-filter-types'
 
 const SORT_OPTIONS: Record<ViewMode, Array<{ key: SortKey; label: string }>> = {
   trending: [
@@ -40,14 +40,18 @@ const SORT_OPTIONS: Record<ViewMode, Array<{ key: SortKey; label: string }>> = {
   ],
 }
 
-const NETWORK_OPTIONS: Array<{ value: NetworkFilter; label: string }> = [
-  { value: 'all', label: 'All Networks' },
+const NETWORK_CHAIN_OPTIONS: Array<{ value: number; label: string }> = [
   { value: 8453, label: 'Base' },
   { value: 1, label: 'Ethereum' },
   { value: 10, label: 'Optimism' },
   { value: 42161, label: 'Arbitrum' },
   { value: 1399811149, label: 'Solana' },
 ]
+
+function toggleNetworkId(networks: number[], id: number): number[] {
+  if (networks.includes(id)) return networks.filter((n) => n !== id)
+  return [...networks, id]
+}
 
 interface GridFilterPopoverProps {
   mode: ViewMode
@@ -140,24 +144,43 @@ export function GridFilterPopover({
                     role="group"
                     aria-label="Network"
                   >
-                    {NETWORK_OPTIONS.map((opt) => (
-                      <button
-                        key={String(opt.value)}
-                        type="button"
-                        aria-pressed={filters.network === opt.value}
-                        onClick={() =>
-                          onFiltersChange({ ...filters, network: opt.value })
-                        }
-                        className={cn(
-                          'rounded-md px-2 py-1 text-xs transition-colors',
-                          filters.network === opt.value
-                            ? 'bg-foreground text-background'
-                            : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground',
-                        )}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                    <button
+                      type="button"
+                      aria-pressed={filters.networks.length === 0}
+                      onClick={() => onFiltersChange({ ...filters, networks: [] })}
+                      className={cn(
+                        'rounded-md px-2 py-1 text-xs transition-colors',
+                        filters.networks.length === 0
+                          ? 'bg-foreground text-background'
+                          : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground',
+                      )}
+                    >
+                      All Networks
+                    </button>
+                    {NETWORK_CHAIN_OPTIONS.map((opt) => {
+                      const active = filters.networks.includes(opt.value)
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() =>
+                            onFiltersChange({
+                              ...filters,
+                              networks: toggleNetworkId(filters.networks, opt.value),
+                            })
+                          }
+                          className={cn(
+                            'rounded-md px-2 py-1 text-xs transition-colors',
+                            active
+                              ? 'bg-foreground text-background'
+                              : 'bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground',
+                          )}
+                        >
+                          {opt.label}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
               ) : null}
@@ -171,5 +194,5 @@ export function GridFilterPopover({
 
 export const DEFAULT_FILTERS: GridFilters = {
   sort: 'change',
-  network: 'all',
+  networks: [],
 }

@@ -1,7 +1,7 @@
 import type { Token, Market } from '@/lib/types'
 import type { MemeToken } from '@/lib/geckoterminal'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
-import type { NetworkFilter, SortKey } from '@/lib/grid-filter-types'
+import type { SortKey } from '@/lib/grid-filter-types'
 
 function num(n: number | undefined) {
   return typeof n === 'number' && Number.isFinite(n) ? n : 0
@@ -9,10 +9,11 @@ function num(n: number | undefined) {
 
 export function filterTokensByNetwork(
   tokens: Token[],
-  network: NetworkFilter,
+  networks: number[],
 ): Token[] {
-  if (network === 'all') return tokens
-  return tokens.filter((t) => t.networkId === network)
+  if (networks.length === 0) return tokens
+  const set = new Set(networks)
+  return tokens.filter((t) => set.has(t.networkId))
 }
 
 export function sortTokensForGrid(tokens: Token[], sort: SortKey): Token[] {
