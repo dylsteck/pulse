@@ -6,6 +6,7 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
 import { buildPerpId } from '@/lib/caip19'
 import { ChangeBadge } from '@/components/asset-detail/shared'
+import { HyperliquidIcon } from '@/components/icons'
 
 function perpIconUrl(coin: string): string {
   return `https://app.hyperliquid.xyz/coins/${coin}.svg`
@@ -40,8 +41,11 @@ export function PerpGridCard({ market }: PerpGridCardProps) {
       <div className="mt-2 mb-1 text-lg tabular-nums">
         ${formatPerpPrice(market, market.markPx)}
       </div>
-      <div className="mt-auto pt-3 text-xs text-muted-foreground">
-        <span>{formatCompact(market.volume24h)} Vol</span>
+      <div className="mt-auto flex items-end justify-between pt-3">
+        <span className="text-xs text-muted-foreground">
+          {formatCompact(market.volume24h)} Vol
+        </span>
+        <HyperliquidIcon className="size-4 shrink-0" />
       </div>
     </Link>
   )

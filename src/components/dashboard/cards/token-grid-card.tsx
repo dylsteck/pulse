@@ -7,22 +7,12 @@ import { buildTokenId } from '@/lib/caip19'
 import { ChangeBadge } from '@/components/asset-detail/shared'
 import { ChainIcon } from '@/components/icons'
 
-// Symbols considered "major" (present on all chains) — skip network badge for these
-const MAJOR_SYMBOLS = new Set([
-  'ETH', 'WETH', 'BTC', 'WBTC', 'CBBTC',
-  'USDC', 'USDT', 'DAI', 'BUSD', 'FRAX',
-  'CBETH', 'STETH', 'WSTETH',
-])
 
 export const TokenGridCard = React.memo(function TokenGridCard({
   token,
 }: {
   token: Token
 }) {
-  const showNetworkIcon =
-    !MAJOR_SYMBOLS.has(token.symbol.toUpperCase()) &&
-    token.networkId !== undefined
-
   return (
     <Link
       to="/asset/$identifier"
@@ -55,8 +45,8 @@ export const TokenGridCard = React.memo(function TokenGridCard({
         <span className="text-xs text-muted-foreground">
           {formatCompact(token.volume24h)} Vol
         </span>
-        {showNetworkIcon && token.networkId !== undefined && (
-          <ChainIcon chainId={token.networkId} className="size-4 shrink-0 overflow-hidden rounded-full" />
+        {token.networkId !== undefined && (
+          <ChainIcon chainId={token.networkId} className="size-4 shrink-0" />
         )}
       </div>
     </Link>

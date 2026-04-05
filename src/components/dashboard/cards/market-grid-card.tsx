@@ -5,6 +5,7 @@ import { ChanceGauge } from '@/components/dashboard/shared'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
 import { buildMarketId } from '@/lib/caip19'
+import { PolymarketIcon } from '@/components/icons'
 
 export const MarketGridCard = React.memo(function MarketGridCard({
   market,
@@ -79,8 +80,11 @@ export const MarketGridCard = React.memo(function MarketGridCard({
         </div>
       )}
 
-      <div className="mt-auto pt-3 text-xs text-muted-foreground">
-        <span>{formatCompact(market.volume)} Vol</span>
+      <div className="mt-auto flex items-end justify-between pt-3">
+        <span className="text-xs text-muted-foreground">
+          {formatCompact(market.volume)} Vol
+        </span>
+        <PolymarketIcon className="size-4 shrink-0" />
       </div>
     </Link>
   )

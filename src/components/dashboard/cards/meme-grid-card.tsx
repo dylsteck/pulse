@@ -5,6 +5,7 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatPrice } from '@/lib/format'
 import { buildMemeId } from '@/lib/caip19'
 import { ChangeBadge } from '@/components/asset-detail/shared'
+import { BaseIcon } from '@/components/icons'
 
 export const MemeGridCard = React.memo(function MemeGridCard({
   meme,
@@ -40,8 +41,11 @@ export const MemeGridCard = React.memo(function MemeGridCard({
       <div className="mt-3 text-lg tabular-nums">
         ${formatPrice(meme.price)}
       </div>
-      <div className="mt-auto pt-3 text-xs text-muted-foreground">
-        <span>{formatCompact(meme.volume24h)} Vol</span>
+      <div className="mt-auto flex items-end justify-between pt-3">
+        <span className="text-xs text-muted-foreground">
+          {formatCompact(meme.volume24h)} Vol
+        </span>
+        <BaseIcon className="size-4 shrink-0" />
       </div>
     </Link>
   )
