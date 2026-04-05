@@ -170,7 +170,7 @@ export function LivelineChart({
       }}
     >
       {showWindowControls && (
-        <div className="flex h-[26px] shrink-0 flex-wrap items-center gap-1 pl-3">
+        <div className="flex h-[26px] shrink-0 flex-wrap items-center gap-1">
           {TIME_WINDOWS.map((w) => {
             const active = w.secs === resolvedWindow
             return (
