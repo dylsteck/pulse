@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { useEffect, useState } from 'react'
+import { Link, useLocation } from '@tanstack/react-router'
 import { CheckIcon, CopyIcon, ExternalLinkIcon, LogOutIcon, WalletIcon } from 'lucide-react'
 import { SignInModal } from '@coinbase/cdp-react'
 import { useAuth } from '@/components/providers/auth-provider'
@@ -26,6 +26,12 @@ export function WalletButton() {
   const { isSignedIn, evmAddress, signOut } = useAuth()
   const isMobile = useIsMobile()
   const [copied, setCopied] = useState(false)
+  const [open, setOpen] = useState(false)
+  const location = useLocation()
+
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
 
   const { data: baseUsdc } = useErc20Balance(
     base.id,
@@ -74,7 +80,7 @@ export function WalletButton() {
   }
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={<Button variant="outline" type="button" className="gap-1.5" />}
         openOnHover={!isMobile}
@@ -140,6 +146,7 @@ export function WalletButton() {
               <div className="flex gap-2">
                 <Link
                   to="/portfolio"
+                  onClick={() => setOpen(false)}
                   className={cn(
                     buttonVariants({ variant: 'secondary', size: 'sm' }),
                     'flex-1 justify-center no-underline',

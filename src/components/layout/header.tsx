@@ -11,7 +11,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 bg-background">
       <div className="mx-auto flex h-12 max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link to="/" search={{ type: 'tokens' }} className="text-sm font-semibold tracking-tight text-foreground">
+        <Link to="/" className="text-sm font-semibold tracking-tight text-foreground">
           Pulse
         </Link>
         <div className="flex items-center gap-1">
