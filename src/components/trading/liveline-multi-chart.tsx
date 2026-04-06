@@ -110,6 +110,11 @@ export function LivelineMultiChart({
             'flex min-h-[28px] shrink-0 flex-wrap items-center',
             alignToolbarWithPage && 'px-3 sm:px-6',
           )}
+          style={
+            alignToolbarWithPage
+              ? undefined
+              : { paddingLeft: livelinePadding.left }
+          }
         >
           <TimeframeSegmentedControl
             windows={TIME_WINDOWS}
@@ -121,13 +126,19 @@ export function LivelineMultiChart({
       )}
       <div className="relative min-h-0 w-full flex-1 overflow-visible">
         {mounted && series.length > 0 && (
-          <div className="absolute inset-0">
+          <div
+            className={cn(
+              'absolute inset-0',
+              series.length > 1 && 'liveline-multi-chart-shell',
+            )}
+          >
             <Liveline
               data={placeholder.data}
               value={placeholder.value}
               series={series}
               theme={isDark ? 'dark' : 'light'}
               window={resolvedWindow}
+              windowStyle="rounded"
               grid
               badge={false}
               momentum={false}
