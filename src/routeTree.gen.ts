@@ -22,6 +22,7 @@ import { Route as ApiPolymarketOrderRouteImport } from './routes/api/polymarket/
 import { Route as ApiPolymarketHistoryRouteImport } from './routes/api/polymarket/history'
 import { Route as ApiPolymarketEventsRouteImport } from './routes/api/polymarket/events'
 import { Route as ApiPolymarketDeriveCredsRouteImport } from './routes/api/polymarket/derive-creds'
+import { Route as ApiPolymarketBatchHistoryRouteImport } from './routes/api/polymarket/batch-history'
 import { Route as ApiGeckoterminalTokenDetailRouteImport } from './routes/api/geckoterminal/token-detail'
 import { Route as ApiGeckoterminalOhlcvRouteImport } from './routes/api/geckoterminal/ohlcv'
 import { Route as ApiGeckoterminalMemesRouteImport } from './routes/api/geckoterminal/memes'
@@ -95,6 +96,12 @@ const ApiPolymarketDeriveCredsRoute =
     path: '/api/polymarket/derive-creds',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPolymarketBatchHistoryRoute =
+  ApiPolymarketBatchHistoryRouteImport.update({
+    id: '/api/polymarket/batch-history',
+    path: '/api/polymarket/batch-history',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiGeckoterminalTokenDetailRoute =
   ApiGeckoterminalTokenDetailRouteImport.update({
     id: '/api/geckoterminal/token-detail',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
+  '/api/polymarket/batch-history': typeof ApiPolymarketBatchHistoryRoute
   '/api/polymarket/derive-creds': typeof ApiPolymarketDeriveCredsRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
@@ -164,6 +172,7 @@ export interface FileRoutesByTo {
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
+  '/api/polymarket/batch-history': typeof ApiPolymarketBatchHistoryRoute
   '/api/polymarket/derive-creds': typeof ApiPolymarketDeriveCredsRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
@@ -186,6 +195,7 @@ export interface FileRoutesById {
   '/api/geckoterminal/memes': typeof ApiGeckoterminalMemesRoute
   '/api/geckoterminal/ohlcv': typeof ApiGeckoterminalOhlcvRoute
   '/api/geckoterminal/token-detail': typeof ApiGeckoterminalTokenDetailRoute
+  '/api/polymarket/batch-history': typeof ApiPolymarketBatchHistoryRoute
   '/api/polymarket/derive-creds': typeof ApiPolymarketDeriveCredsRoute
   '/api/polymarket/events': typeof ApiPolymarketEventsRoute
   '/api/polymarket/history': typeof ApiPolymarketHistoryRoute
@@ -209,6 +219,7 @@ export interface FileRouteTypes {
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
+    | '/api/polymarket/batch-history'
     | '/api/polymarket/derive-creds'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
+    | '/api/polymarket/batch-history'
     | '/api/polymarket/derive-creds'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
@@ -251,6 +263,7 @@ export interface FileRouteTypes {
     | '/api/geckoterminal/memes'
     | '/api/geckoterminal/ohlcv'
     | '/api/geckoterminal/token-detail'
+    | '/api/polymarket/batch-history'
     | '/api/polymarket/derive-creds'
     | '/api/polymarket/events'
     | '/api/polymarket/history'
@@ -270,6 +283,7 @@ export interface RootRouteChildren {
   ApiGeckoterminalMemesRoute: typeof ApiGeckoterminalMemesRoute
   ApiGeckoterminalOhlcvRoute: typeof ApiGeckoterminalOhlcvRoute
   ApiGeckoterminalTokenDetailRoute: typeof ApiGeckoterminalTokenDetailRoute
+  ApiPolymarketBatchHistoryRoute: typeof ApiPolymarketBatchHistoryRoute
   ApiPolymarketDeriveCredsRoute: typeof ApiPolymarketDeriveCredsRoute
   ApiPolymarketEventsRoute: typeof ApiPolymarketEventsRoute
   ApiPolymarketHistoryRoute: typeof ApiPolymarketHistoryRoute
@@ -369,6 +383,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPolymarketDeriveCredsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/polymarket/batch-history': {
+      id: '/api/polymarket/batch-history'
+      path: '/api/polymarket/batch-history'
+      fullPath: '/api/polymarket/batch-history'
+      preLoaderRoute: typeof ApiPolymarketBatchHistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/geckoterminal/token-detail': {
       id: '/api/geckoterminal/token-detail'
       path: '/api/geckoterminal/token-detail'
@@ -443,6 +464,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGeckoterminalMemesRoute: ApiGeckoterminalMemesRoute,
   ApiGeckoterminalOhlcvRoute: ApiGeckoterminalOhlcvRoute,
   ApiGeckoterminalTokenDetailRoute: ApiGeckoterminalTokenDetailRoute,
+  ApiPolymarketBatchHistoryRoute: ApiPolymarketBatchHistoryRoute,
   ApiPolymarketDeriveCredsRoute: ApiPolymarketDeriveCredsRoute,
   ApiPolymarketEventsRoute: ApiPolymarketEventsRoute,
   ApiPolymarketHistoryRoute: ApiPolymarketHistoryRoute,

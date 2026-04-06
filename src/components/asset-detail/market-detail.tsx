@@ -1,25 +1,15 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import type { Market } from '@/lib/types'
 import {
-  LivelineChart,
-  WINDOW_LABEL_TO_SECS,
-} from '@/components/trading/liveline-chart'
-import { MarketTradePopover } from '@/components/trading/market-trade-popover'
-import { useMarketOdds } from '@/hooks/use-market-odds'
-import { useMarketHistory } from '@/hooks/use-market-history'
-import { useWindowChange } from '@/hooks/use-window-change'
+  AssetDetailStatsGrid,
+  DetailMessage,
+  StatItem,
+} from './shared'
+import type { Market } from '@/lib/types'
+import { MarketDetailBinaryBody } from '@/components/asset-detail/market-detail-binary-body'
+import { MarketDetailMultiBody } from '@/components/asset-detail/market-detail-multi-body'
+import { FadeImage } from '@/components/ui/fade-image'
 import { fetchPolymarketEventById } from '@/lib/polymarket'
 import { formatCompact, formatDate } from '@/lib/format'
-import { FadeImage } from '@/components/ui/fade-image'
-import { cn } from '@/lib/utils'
-import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
-import {
-  AssetDetailChartBleed,
-  AssetDetailStatsGrid,
-  StatItem,
-  DetailMessage,
-} from './shared'
 
 export function MarketDetail({ id }: { id: string }) {
   const {
@@ -66,9 +56,9 @@ function MarketDetailContent({ market }: { market: Market }) {
     <div className="space-y-6">
       <MarketHeader market={market} />
       {isMultiOutcome ? (
-        <MultiOutcomeBody market={market} />
+        <MarketDetailMultiBody market={market} />
       ) : (
-        <BinaryBody market={market} />
+        <MarketDetailBinaryBody market={market} />
       )}
       <AssetDetailStatsGrid cols={3}>
         <StatItem label="Volume" value={formatCompact(market.volume)} />
@@ -128,155 +118,6 @@ function MarketHeader({ market }: { market: Market }) {
           ))}
         </div>
       )}
-    </div>
-  )
-}
-
-function BinaryBody({ market }: { market: Market }) {
-  const chartHeight = useAssetChartHeight()
-  const { yesPercent } = useMarketOdds(market)
-  const { windowLabel, handleWindowChange } = useWindowChange()
-  const { data: history, isLoading } = useMarketHistory(
-    market.clobTokenId,
-    windowLabel,
-  )
-
-  const chartData =
-    history.length >= 2
-      ? history
-      : [
-          { time: Date.now() / 1000 - 60, value: yesPercent },
-          { time: Date.now() / 1000, value: yesPercent },
-        ]
-
-  return (
-    <div>
-      <div className="mb-4 flex items-center gap-2">
-        <button
-          type="button"
-          className="flex cursor-default items-center gap-2 rounded-lg bg-[#22c55e]/15 px-4 py-2"
-        >
-          <span className="text-sm font-medium text-[#22c55e]">Yes</span>
-          <span className="font-semibold text-[#22c55e]">
-            {yesPercent.toFixed(0)}%
-          </span>
-        </button>
-        <button
-          type="button"
-          className="flex cursor-default items-center gap-2 rounded-lg bg-[#ef4444]/15 px-4 py-2"
-        >
-          <span className="text-sm font-medium text-[#ef4444]">No</span>
-          <span className="font-semibold text-[#ef4444]">
-            {(100 - yesPercent).toFixed(0)}%
-          </span>
-        </button>
-        <MarketTradePopover market={market} defaultOutcome="yes" />
-      </div>
-
-      <div className="mb-6 h-2 overflow-hidden rounded-full bg-muted">
-        <div
-          className="h-full rounded-full bg-[#22c55e] transition-all"
-          style={{ width: `${yesPercent}%` }}
-        />
-      </div>
-
-      <AssetDetailChartBleed>
-        <LivelineChart
-          data={chartData}
-          value={yesPercent}
-          height={chartHeight}
-          formatValue={(v) => `${v.toFixed(1)}%`}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-          isLoading={isLoading && history.length === 0}
-          emptyText="No chart data available"
-        />
-      </AssetDetailChartBleed>
-    </div>
-  )
-}
-
-function MultiOutcomeBody({ market }: { market: Market }) {
-  const chartHeight = useAssetChartHeight()
-  const outcomes = market.outcomes!
-
-  const leadingOutcome = useMemo(() => outcomes[0], [outcomes])
-  const chartClobId = leadingOutcome?.clobTokenId
-
-  const { windowLabel, handleWindowChange } = useWindowChange()
-  const { data: history, isLoading } = useMarketHistory(
-    chartClobId,
-    windowLabel,
-  )
-
-  const chartValue = leadingOutcome?.percent ?? 0
-  const chartData =
-    history.length >= 2
-      ? history
-      : [
-          { time: Date.now() / 1000 - 60, value: chartValue },
-          { time: Date.now() / 1000, value: chartValue },
-        ]
-
-  const maxPercent = outcomes[0]?.percent ?? 1
-
-  return (
-    <div className="space-y-6">
-      <AssetDetailChartBleed>
-        <LivelineChart
-          data={chartData}
-          value={chartValue}
-          height={chartHeight}
-          formatValue={(v) => `${v.toFixed(1)}%`}
-          window={WINDOW_LABEL_TO_SECS[windowLabel]}
-          onWindowChange={handleWindowChange}
-          isLoading={isLoading && history.length === 0}
-          emptyText="No chart data available"
-        />
-      </AssetDetailChartBleed>
-
-      <div>
-        <h2 className="mb-3 text-sm font-medium text-muted-foreground">
-          Outcomes
-        </h2>
-        <div className="space-y-2">
-          {outcomes.map((outcome) => {
-            const isLeading = outcome.percent === maxPercent
-            return (
-              <div key={outcome.name} className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">{outcome.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        'text-sm font-semibold tabular-nums',
-                        isLeading ? 'text-[#22c55e]' : 'text-muted-foreground',
-                      )}
-                    >
-                      {outcome.percent.toFixed(1)}%
-                    </span>
-                    {outcome.clobTokenId && (
-                      <MarketTradePopover
-                        market={market}
-                        outcome={outcome}
-                      />
-                    )}
-                  </div>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className={cn(
-                      'h-full rounded-full transition-all',
-                      isLeading ? 'bg-[#22c55e]' : 'bg-muted-foreground/30',
-                    )}
-                    style={{ width: `${outcome.percent}%` }}
-                  />
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </div>
     </div>
   )
 }

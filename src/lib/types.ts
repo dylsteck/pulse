@@ -28,7 +28,10 @@ export interface Market {
   priceHistory: Array<{ time: number; value: number }>
   imageUrl?: string
   outcomes?: Array<MarketOutcome>
+  /** CLOB token id for the Yes outcome (binary markets). */
   clobTokenId?: string
+  /** CLOB token id for the No outcome when Gamma returns two ids (index 1). */
+  noClobTokenId?: string
   description?: string
   tags?: string[]
   liquidity?: number

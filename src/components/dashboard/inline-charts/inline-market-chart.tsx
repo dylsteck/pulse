@@ -4,47 +4,68 @@ import { ArrowUpRight } from 'lucide-react'
 import type { Market } from '@/lib/types'
 import {
   LivelineChart,
-  WINDOW_LABEL_TO_SECS,
 } from '@/components/trading/liveline-chart'
-import { useMarketOdds } from '@/hooks/use-market-odds'
-import { useMarketHistory } from '@/hooks/use-market-history'
-import { useWindowChange } from '@/hooks/use-window-change'
+import { LivelineMultiChart } from '@/components/trading/liveline-multi-chart'
+import { hasAnyPriceHistoryRecord } from '@/lib/polymarket'
 import { buildMarketId } from '@/lib/caip19'
+import { useInlineMarketChartModel } from '@/components/dashboard/inline-charts/use-inline-market-chart-model'
 
 export function InlineMarketChart({ market }: { market: Market }) {
-  const { yesPercent } = useMarketOdds(market)
-  const { windowLabel, handleWindowChange } = useWindowChange()
-  const { data: history, isLoading } = useMarketHistory(
-    market.clobTokenId,
-    windowLabel,
-  )
+  const m = useInlineMarketChartModel(market)
 
-  const chartData =
-    history.length >= 2
-      ? history
-      : [
-          { time: Date.now() / 1000 - 60, value: yesPercent },
-          { time: Date.now() / 1000, value: yesPercent },
-        ]
+  const headerRight =
+    m.isMultiOutcome && m.outcomesLeading ? (
+    <span className="text-sm font-semibold text-[#22c55e]">
+      Leading {m.outcomesLeading.percent.toFixed(0)}%
+    </span>
+  ) : (
+    <span className="text-sm font-semibold text-[#22c55e]">
+      {Math.round(m.yesPercent)}% Yes
+    </span>
+  )
 
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 flex items-baseline justify-between">
+      <div className="mb-3 flex items-baseline justify-between gap-2">
         <span className="text-sm font-medium">{market.title}</span>
-        <span className="text-sm font-semibold text-[#22c55e]">
-          {Math.round(yesPercent)}% Yes
-        </span>
+        {headerRight}
       </div>
-      <LivelineChart
-        data={chartData}
-        value={yesPercent}
-        height={280}
-        formatValue={(v) => `${Math.round(v)}%`}
-        window={WINDOW_LABEL_TO_SECS[windowLabel]}
-        onWindowChange={handleWindowChange}
-        isLoading={isLoading && history.length === 0}
-        emptyText="No chart data available"
-      />
+      {m.showBinaryMulti ? (
+        <LivelineMultiChart
+          series={m.binaryDualSeries}
+          height={280}
+          formatValue={(v) => `${Math.round(v)}%`}
+          window={m.windowSecs}
+          onWindowChange={m.handleWindowChange}
+          isLoading={
+            m.batchLoading && !hasAnyPriceHistoryRecord(m.batchHistories)
+          }
+          emptyText="No chart data available"
+        />
+      ) : m.showMultiOutcomeChart ? (
+        <LivelineMultiChart
+          series={m.multiSeries}
+          height={280}
+          formatValue={(v) => `${Math.round(v)}%`}
+          window={m.windowSecs}
+          onWindowChange={m.handleWindowChange}
+          isLoading={
+            m.batchLoading && !hasAnyPriceHistoryRecord(m.batchHistories)
+          }
+          emptyText="No chart data available"
+        />
+      ) : (
+        <LivelineChart
+          data={m.chartData}
+          value={m.yesPercent}
+          height={280}
+          formatValue={(v) => `${Math.round(v)}%`}
+          window={m.windowSecs}
+          onWindowChange={m.handleWindowChange}
+          isLoading={m.singleLoading && m.singleHistory.length === 0}
+          emptyText="No chart data available"
+        />
+      )}
       <Link
         to="/asset/$identifier"
         params={{ identifier: buildMarketId(market.id) }}

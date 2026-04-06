@@ -1,4 +1,5 @@
 import type { Market, MarketOutcome } from '@/lib/types'
+import { getClobIntervalForWindowLabel } from '@/lib/polymarket-clob'
 import { makeRequest } from '@/lib/request'
 
 interface PolymarketMarket {
@@ -27,13 +28,6 @@ interface PolymarketEvent {
 export interface PolymarketPage {
   items: Array<Market>
   nextOffset: number | null
-}
-
-const CLOB_INTERVAL_MAP: Record<string, string> = {
-  '15m': '1h',
-  '1h': '6h',
-  '6h': '1d',
-  '1d': '1w',
 }
 
 function parseOutcomePrices(
@@ -76,12 +70,12 @@ function parseOutcomeNames(value: string | undefined): Array<string> | null {
 
 function shortenOutcomeName(question: string): string {
   const subjectMatch = question.match(
-    /^Will\s+([A-Z][a-zA-Z.''\-]+(?:\s+[A-Z][a-zA-Z.''\-]+)*)\s+(?:win|become|get|be\s)/i,
+    /^Will\s+([A-Z][a-zA-Z.''-]+(?:\s+[A-Z][a-zA-Z.''-]+)*)\s+(?:win|become|get|be\s)/i,
   )
   if (subjectMatch) return subjectMatch[1].trim()
 
   const haveMatch = question.match(
-    /^Will\s+([A-Z][a-zA-Z.''\-]+(?:\s+[A-Z][a-zA-Z.''\-]*)*)\s+have\s/i,
+    /^Will\s+([A-Z][a-zA-Z.''-]+(?:\s+[A-Z][a-zA-Z.''-]*)*)\s+have\s/i,
   )
   if (haveMatch) return haveMatch[1].trim()
 
@@ -119,14 +113,14 @@ function extractOutcomes(
   for (const m of markets) {
     const names = parseOutcomeNames(m.outcomes)
     const prices = parseOutcomePrices(m.outcomePrices)
-    if (!names || !prices) continue
+    if (!names || !prices || names.length === 0) continue
     const percent =
       Math.round(Math.max(0, Math.min(100, prices[0] * 100)) * 100) / 100
     const clobIds = parseClobTokenIds(m.clobTokenIds)
     outcomes.push({
       name:
         m.groupItemTitle ??
-        shortenOutcomeName(m.question ?? names[0] ?? 'Unknown'),
+        shortenOutcomeName(m.question ?? names[0]),
       percent,
       clobTokenId: clobIds?.[0],
     })
@@ -154,6 +148,7 @@ export function transformPolymarketEvents(
         Math.round(Math.max(0, Math.min(100, prices[1] * 100)) * 100) / 100
       const outcomes = extractOutcomes(event.markets ?? [])
       const clobIds = parseClobTokenIds(firstMarket?.clobTokenIds)
+      /** Gamma `clobTokenIds` is [yesToken, noToken] for standard binary markets. */
       return {
         id: String(event.id),
         title: event.title,
@@ -165,6 +160,8 @@ export function transformPolymarketEvents(
         imageUrl: event.image,
         outcomes: outcomes.length > 0 ? outcomes : undefined,
         clobTokenId: clobIds?.[0],
+        noClobTokenId:
+          clobIds && clobIds.length >= 2 ? clobIds[1] : undefined,
       }
     })
     .filter((market): market is Market => market !== null)
@@ -199,6 +196,7 @@ export function transformPolymarketEventById(
     imageUrl: json.image,
     outcomes: outcomes.length > 0 ? outcomes : undefined,
     clobTokenId: clobIds?.[0],
+    noClobTokenId: clobIds && clobIds.length >= 2 ? clobIds[1] : undefined,
     description: json.description || undefined,
     tags:
       json.tags && json.tags.length > 0
@@ -219,6 +217,25 @@ export function transformPriceHistory(json: {
     time: pt.t,
     value: Math.round(pt.p * 100 * 100) / 100,
   }))
+}
+
+/** Batch response: token id → price points (percent). */
+export function transformBatchPriceHistory(json: {
+  history?: Record<string, Array<{ t: number; p: number }>>
+}): Record<string, Array<{ time: number; value: number }>> {
+  if (!json.history || typeof json.history !== 'object') return {}
+  const out: Record<string, Array<{ time: number; value: number }>> = {}
+  for (const [id, pts] of Object.entries(json.history)) {
+    if (!Array.isArray(pts)) continue
+    out[id] = transformPriceHistory({ history: pts })
+  }
+  return out
+}
+
+export function hasAnyPriceHistoryRecord(
+  m: Record<string, Array<{ time: number; value: number }>>,
+): boolean {
+  return Object.values(m).some((a) => a.length > 0)
 }
 
 export async function fetchPolymarketEvents(
@@ -256,9 +273,7 @@ export async function fetchPolymarketPriceHistory(
   clobTokenId: string,
   windowLabel: string,
 ): Promise<Array<{ time: number; value: number }>> {
-  const interval =
-    CLOB_INTERVAL_MAP[windowLabel.toLowerCase() as keyof typeof CLOB_INTERVAL_MAP] ??
-    '1d'
+  const interval = getClobIntervalForWindowLabel(windowLabel)
   const params = new URLSearchParams({
     market: clobTokenId,
     interval,
@@ -272,5 +287,28 @@ export async function fetchPolymarketPriceHistory(
     )
   } catch {
     return []
+  }
+}
+
+export async function fetchPolymarketBatchPriceHistory(
+  tokenIds: Array<string>,
+  windowLabel: string,
+): Promise<Record<string, Array<{ time: number; value: number }>>> {
+  const unique = [...new Set(tokenIds)].filter(Boolean)
+  if (unique.length === 0) return {}
+  const params = new URLSearchParams({
+    window: windowLabel.toLowerCase(),
+  })
+  try {
+    const json = await makeRequest<{
+      history?: Record<string, Array<{ t: number; p: number }>>
+    }>(`/api/polymarket/batch-history?${params}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tokenIds: unique }),
+    })
+    return transformBatchPriceHistory(json)
+  } catch {
+    return {}
   }
 }
