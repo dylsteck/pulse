@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils'
 
 const LIVELINE_PADDING_DESKTOP = { top: 12, right: 56, bottom: 40, left: 12 } as const
 const LIVELINE_PADDING_MOBILE = { top: 10, right: 52, bottom: 36, left: 8 } as const
+const LIVELINE_PADDING = LIVELINE_PADDING_DESKTOP
 const FULL_SIZE_STYLE = { width: '100%', height: '100%' } as const
 const CHART_TOOLBAR_GAP_PX = 6
 
@@ -52,6 +53,9 @@ export function LivelineMultiChart({
 
   useEffect(() => {
     setMounted(true)
+    return () => {
+      setMounted(false)
+    }
   }, [])
 
   const resolvedWindow = useMemo(() => {

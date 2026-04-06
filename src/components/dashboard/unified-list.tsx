@@ -112,7 +112,7 @@ export function UnifiedList() {
                 }}
               />
             </div>
-            <div className="hidden shrink-0 items-center gap-[0.3375rem] lg:flex">
+            <div className="flex shrink-0 items-center gap-[0.3375rem]">
               <GridFilterPopover
                 mode={mode}
                 filters={gridFilters}
@@ -131,7 +131,7 @@ export function UnifiedList() {
               <button
                 type="button"
                 onClick={() => setSidebarCollapsed((c) => !c)}
-                className="inline-flex h-[1.575rem] w-[2.025rem] shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="hidden h-[1.575rem] w-[2.025rem] shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-muted hover:text-foreground lg:inline-flex"
                 aria-label={
                   sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
                 }

@@ -77,6 +77,9 @@ export function LivelineChart({
 
   useEffect(() => {
     setMounted(true)
+    return () => {
+      setMounted(false)
+    }
   }, [])
 
   let chartData = buildSparseChartSeries(data, value)
@@ -176,6 +179,9 @@ export function SparklineChart({
 
   useEffect(() => {
     setMounted(true)
+    return () => {
+      setMounted(false)
+    }
   }, [])
 
   const series = buildSparseChartSeries(data, value)
