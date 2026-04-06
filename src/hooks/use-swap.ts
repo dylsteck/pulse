@@ -1,6 +1,13 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
+import type {SwapRoutePreview} from '@/lib/evm/swap';
 import { useAuth } from '@/components/providers/auth-provider'
-import { getSwapQuote, executeSwap } from '@/lib/evm/swap'
+import {
+  
+  runFullSwap,
+  swapErrorMessage
+} from '@/lib/evm/swap'
+
+export type { SwapRoutePreview } from '@/lib/evm/swap'
 
 export type SwapStatus =
   | 'idle'
@@ -15,6 +22,9 @@ export function useSwap() {
   const [status, setStatus] = useState<SwapStatus>('idle')
   const [statusMessage, setStatusMessage] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [routePreview, setRoutePreview] = useState<SwapRoutePreview | null>(
+    null,
+  )
 
   const swap = useCallback(
     async (params: {
@@ -22,6 +32,8 @@ export function useSwap() {
       toToken: `0x${string}`
       amount: string
       decimals: number
+      toDecimals?: number
+      slippageBps?: number
     }) => {
       if (!viemAccount || !evmAddress) {
         setError('Wallet not connected')
@@ -31,39 +43,36 @@ export function useSwap() {
 
       try {
         setError(null)
+        setRoutePreview(null)
         setStatus('quoting')
         setStatusMessage('Getting quote...')
 
-        const quote = await getSwapQuote({
-          address: evmAddress,
+        const ok = await runFullSwap({
+          evmAddress,
+          viemAccount,
           ...params,
+          onProgress: (data) => {
+            setStatusMessage(data.message)
+            if (data.message.includes('Getting quote')) setStatus('quoting')
+            else if (data.message.includes('Confirm in your'))
+              setStatus('confirming')
+            else if (data.message.includes('Finalizing')) setStatus('swapping')
+          },
+          onRoute: setRoutePreview,
         })
 
-        if (!quote) {
+        if (!ok) {
           setError('No quote available')
           setStatus('error')
           return false
         }
 
-        setStatus('confirming')
-        setStatusMessage('Confirm in your wallet...')
-
-        await executeSwap({
-          quote,
-          viemAccount,
-          onProgress: (data) => {
-            setStatusMessage(data.message)
-            if (data.message.includes('complete')) setStatus('complete')
-            else setStatus('swapping')
-          },
-        })
-
         setStatus('complete')
         setStatusMessage('Swap complete!')
         return true
       } catch (err) {
-        const msg = err instanceof Error ? err.message : 'Swap failed'
-        setError(msg)
+        setRoutePreview(null)
+        setError(swapErrorMessage(err))
         setStatus('error')
         return false
       }
@@ -75,7 +84,15 @@ export function useSwap() {
     setStatus('idle')
     setStatusMessage('')
     setError(null)
+    setRoutePreview(null)
   }, [])
 
-  return { swap, status, statusMessage, error, reset }
+  return {
+    swap,
+    status,
+    statusMessage,
+    error,
+    reset,
+    routePreview,
+  }
 }

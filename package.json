@@ -30,6 +30,7 @@
     "@nktkas/hyperliquid": "^0.31.0",
     "@polymarket/clob-client": "^5.8.1",
     "@reservoir0x/relay-sdk": "^2.4.0",
+    "@spandex/core": "^0.6.2",
     "@tailwindcss/vite": "^4.0.6",
     "@tanstack/react-devtools": "^0.7.0",
     "@tanstack/react-router": "^1.132.0",
