@@ -37,16 +37,16 @@ export interface BarsResponse {
 /** Map our UI time-window labels to Codex resolution strings */
 const RESOLUTION_MAP = {
   '15m': '1', // 1-minute bars over 15 minutes
-  '1H': '1', // 1-minute bars over 1 hour
-  '6H': '15', // 15-minute bars over 6 hours
-  '1D': '60', // 60-minute bars over 1 day
+  '1h': '1', // 1-minute bars over 1 hour
+  '6h': '15', // 15-minute bars over 6 hours
+  '1d': '60', // 60-minute bars over 1 day
 } as const
 
 const WINDOW_SECS_MAP = {
   '15m': 900,
-  '1H': 3600,
-  '6H': 21600,
-  '1D': 86400,
+  '1h': 3600,
+  '6h': 21600,
+  '1d': 86400,
 } as const
 
 export type CodexWindowLabel = keyof typeof RESOLUTION_MAP
@@ -113,13 +113,18 @@ export function parseCodexBarsParams(
   const tokenParams = parseCodexTokenParams(searchParams)
   const windowLabel = searchParams.get('windowLabel')
 
-  if (!tokenParams || !windowLabel || !(windowLabel in RESOLUTION_MAP)) {
+  if (!tokenParams || !windowLabel) {
+    return null
+  }
+
+  const normalized = windowLabel.toLowerCase() as CodexWindowLabel
+  if (!(normalized in RESOLUTION_MAP)) {
     return null
   }
 
   return {
     address: tokenParams.address,
-    windowLabel: windowLabel as CodexWindowLabel,
+    windowLabel: normalized,
   }
 }
 
@@ -392,7 +397,7 @@ export async function fetchCodexTokenByAddress(
   // Fetch bars to compute change24h
   let change24h = 0
   try {
-    const bars = await fetchCodexBars(addr, '1D')
+    const bars = await fetchCodexBars(addr, '1d')
     if (bars.bars.length >= 2) {
       const firstPrice = bars.bars[0].value
       const lastPrice = bars.bars.at(-1)!.value

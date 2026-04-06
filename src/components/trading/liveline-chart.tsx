@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Liveline } from 'liveline'
 import { useTheme } from '@/components/theme-provider'
+import { useIsMobile } from '@/hooks/use-is-mobile'
+import { TimeframeSegmentedControl } from '@/components/trading/timeframe-segmented-control'
 import { cn } from '@/lib/utils'
 
 export const TIME_WINDOWS = [
   { label: '15m', secs: 900 },
-  { label: '1H', secs: 3600 },
-  { label: '6H', secs: 21600 },
-  { label: '1D', secs: 86400 },
+  { label: '1h', secs: 3600 },
+  { label: '6h', secs: 21600 },
+  { label: '1d', secs: 86400 },
 ]
 
 export const WINDOW_SECS_TO_LABEL: Record<number, string> = Object.fromEntries(
@@ -18,7 +20,12 @@ export const WINDOW_LABEL_TO_SECS: Record<string, number> = Object.fromEntries(
   TIME_WINDOWS.map((w) => [w.label, w.secs]),
 )
 
-const LIVELINE_PADDING = { top: 12, right: 80, bottom: 40, left: 12 } as const
+/** Slightly tighter right gutter on desktop so the series uses more width (badge still fits). */
+const LIVELINE_PADDING_DESKTOP = { top: 12, right: 56, bottom: 40, left: 12 } as const
+/** Tighter sides on narrow screens so more width is used for the series + badge. */
+const LIVELINE_PADDING_MOBILE = { top: 10, right: 52, bottom: 36, left: 8 } as const
+/** Alias for desktop padding — keeps `LIVELINE_PADDING` defined for HMR / any stale refs. */
+const LIVELINE_PADDING = LIVELINE_PADDING_DESKTOP
 const SPARKLINE_PADDING = { top: 2, right: 2, bottom: 2, left: 2 } as const
 const FULL_SIZE_STYLE = { width: '100%', height: '100%' } as const
 /** gap-1.5 between toolbar and chart */
@@ -109,6 +116,8 @@ interface LivelineChartProps {
   emptyText?: string
   /** Tight Y-axis — small moves fill chart height (for tiny values like meme tokens) */
   exaggerate?: boolean
+  /** Match asset page horizontal padding so timeframe buttons line up with the price row (use inside AssetDetailChartBleed). */
+  alignToolbarWithPage?: boolean
 }
 
 export function LivelineChart({
@@ -123,10 +132,13 @@ export function LivelineChart({
   paused = false,
   emptyText,
   exaggerate = false,
+  alignToolbarWithPage = false,
 }: LivelineChartProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
   const isDark = theme === 'dark'
+  const isMobile = useIsMobile()
+  const livelinePadding = isMobile ? LIVELINE_PADDING_MOBILE : LIVELINE_PADDING
 
   useEffect(() => {
     setMounted(true)
@@ -155,7 +167,7 @@ export function LivelineChart({
   /** Liveline ignores the `window` prop for its tab bar when `windows` is set — it always
    *  initializes from `windows[0]` (15m). We render timeframe controls here instead. */
   const showWindowControls = Boolean(onWindowChange)
-  const toolbarH = showWindowControls ? 26 : 0
+  const toolbarH = showWindowControls ? 28 : 0
   /** Fixed total height so flex parents cannot stretch this block and leave dead space below. */
   const outerHeightPx =
     Math.max(120, height) +
@@ -170,25 +182,18 @@ export function LivelineChart({
       }}
     >
       {showWindowControls && (
-        <div className="flex h-[26px] shrink-0 flex-wrap items-center gap-1">
-          {TIME_WINDOWS.map((w) => {
-            const active = w.secs === resolvedWindow
-            return (
-              <button
-                key={w.label}
-                type="button"
-                onClick={() => onWindowChange?.(w.secs)}
-                className={cn(
-                  'rounded px-1.5 py-0.5 text-[11px] font-medium transition-colors',
-                  active
-                    ? 'text-foreground'
-                    : 'text-muted-foreground hover:text-foreground/80',
-                )}
-              >
-                {w.label}
-              </button>
-            )
-          })}
+        <div
+          className={cn(
+            'flex min-h-[28px] shrink-0 flex-wrap items-center',
+            alignToolbarWithPage && 'px-3 sm:px-6',
+          )}
+        >
+          <TimeframeSegmentedControl
+            windows={TIME_WINDOWS}
+            value={resolvedWindow}
+            onChange={(secs) => onWindowChange?.(secs)}
+            isDark={isDark}
+          />
         </div>
       )}
       <div className="relative min-h-0 w-full flex-1 overflow-visible">
@@ -204,7 +209,7 @@ export function LivelineChart({
               momentum
               fill
               grid
-              padding={LIVELINE_PADDING}
+              padding={livelinePadding}
               loading={showLoadingOverlay}
               paused={paused}
               exaggerate={exaggerate}

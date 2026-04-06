@@ -70,7 +70,7 @@ export function ChangeBadge({
     return (
       <span
         className={cn(
-          'rounded-full px-2.5 py-0.5 text-sm font-medium',
+          'rounded-full px-2.5 py-0.5 text-sm font-medium tracking-wide',
           isPositive
             ? 'bg-[#22c55e]/10 text-[#22c55e]'
             : 'bg-[#ef4444]/10 text-[#ef4444]',
@@ -97,6 +97,49 @@ export function ChangeBadge({
 export function DetailMessage({ children }: { children: ReactNode }) {
   return (
     <div className="rounded-xl border border-border py-16 text-center text-sm text-muted-foreground">
+      {children}
+    </div>
+  )
+}
+
+/** Stats row under the chart — same horizontal inset as DetailSection (page padding only). */
+export function AssetDetailStatsGrid({
+  children,
+  className,
+  cols = 4,
+}: {
+  children: ReactNode
+  className?: string
+  cols?: 3 | 4
+}) {
+  return (
+    <div
+      className={cn(
+        'grid w-full grid-cols-2 justify-items-start gap-x-6 gap-y-4 text-left',
+        cols === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  )
+}
+
+/** Extends the chart into the right padding only; left edge stays aligned with padded content (Token Details, stats). */
+export function AssetDetailChartBleed({
+  children,
+  className,
+}: {
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <div
+      className={cn(
+        'min-w-0 -mr-3 w-[calc(100%+0.75rem)] sm:-mr-6 sm:w-[calc(100%+1.5rem)]',
+        className,
+      )}
+    >
       {children}
     </div>
   )

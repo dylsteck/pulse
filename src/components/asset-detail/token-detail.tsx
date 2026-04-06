@@ -13,6 +13,8 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatPrice } from '@/lib/format'
 import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
 import {
+  AssetDetailChartBleed,
+  AssetDetailStatsGrid,
   StatItem,
   DetailSection,
   DetailRow,
@@ -44,12 +46,12 @@ export function TokenDetail({ id }: { id: string }) {
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
           <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+        <AssetDetailStatsGrid>
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
-        </div>
+        </AssetDetailStatsGrid>
       </div>
     )
   }
@@ -102,7 +104,7 @@ function TokenDetailContent({ token }: { token: Token }) {
           )}
         </div>
 
-        <div className="mt-6">
+        <AssetDetailChartBleed className="mt-4 sm:mt-6">
           <LivelineChart
             data={chartData}
             value={price}
@@ -112,10 +114,10 @@ function TokenDetailContent({ token }: { token: Token }) {
             isLoading={isLoading && bars.length < 2}
             emptyText="No chart data available"
           />
-        </div>
+        </AssetDetailChartBleed>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+      <AssetDetailStatsGrid>
         <StatItem
           label="Volume 24h"
           value={token.volume24h > 0 ? formatCompact(token.volume24h) : '—'}
@@ -132,7 +134,7 @@ function TokenDetailContent({ token }: { token: Token }) {
           label="24h Low"
           value={price > 0 ? formatPrice(price * 0.95) : '—'}
         />
-      </div>
+      </AssetDetailStatsGrid>
 
       <DetailSection title="Token Details">
         <DetailRow label="Contract">

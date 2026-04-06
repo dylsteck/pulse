@@ -11,9 +11,9 @@ const WINDOW_TO_OHLCV: Record<
   { timeframe: 'minute' | 'day'; aggregate: number; limit: number }
 > = {
   '15m': { timeframe: 'minute', aggregate: 1, limit: 20 },
-  '1H': { timeframe: 'minute', aggregate: 1, limit: 65 },
-  '6H': { timeframe: 'minute', aggregate: 15, limit: 24 },
-  '1D': { timeframe: 'minute', aggregate: 60, limit: 24 },
+  '1h': { timeframe: 'minute', aggregate: 1, limit: 65 },
+  '6h': { timeframe: 'minute', aggregate: 15, limit: 24 },
+  '1d': { timeframe: 'minute', aggregate: 60, limit: 24 },
 }
 
 const POOL_ADDRESS_REGEX = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/
@@ -25,7 +25,9 @@ export const Route = createFileRoute('/api/geckoterminal/ohlcv')({
         try {
           const url = new URL(request.url)
           const poolAddress = url.searchParams.get('poolAddress')
-          const windowLabel = url.searchParams.get('window') ?? '1D'
+          const windowLabel = (
+            url.searchParams.get('window') ?? '1d'
+          ).toLowerCase()
 
           if (!poolAddress) {
             return Response.json(
@@ -47,7 +49,7 @@ export const Route = createFileRoute('/api/geckoterminal/ohlcv')({
             )
           }
 
-          const params = WINDOW_TO_OHLCV[windowLabel] ?? WINDOW_TO_OHLCV['1D']
+          const params = WINDOW_TO_OHLCV[windowLabel] ?? WINDOW_TO_OHLCV['1d']
           const { timeframe, aggregate, limit } = params
 
           const json = (await readUpstreamJson(

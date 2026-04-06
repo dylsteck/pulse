@@ -8,7 +8,7 @@ import { useMemeOhlcv } from '@/hooks/use-meme-ohlcv'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
-const CHART_WINDOW = '1D'
+const CHART_WINDOW = '1d'
 
 export function MemeCard({
   meme,

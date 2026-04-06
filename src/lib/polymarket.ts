@@ -31,9 +31,9 @@ export interface PolymarketPage {
 
 const CLOB_INTERVAL_MAP: Record<string, string> = {
   '15m': '1h',
-  '1H': '6h',
-  '6H': '1d',
-  '1D': '1w',
+  '1h': '6h',
+  '6h': '1d',
+  '1d': '1w',
 }
 
 function parseOutcomePrices(
@@ -256,7 +256,9 @@ export async function fetchPolymarketPriceHistory(
   clobTokenId: string,
   windowLabel: string,
 ): Promise<Array<{ time: number; value: number }>> {
-  const interval = CLOB_INTERVAL_MAP[windowLabel] ?? '1d'
+  const interval =
+    CLOB_INTERVAL_MAP[windowLabel.toLowerCase() as keyof typeof CLOB_INTERVAL_MAP] ??
+    '1d'
   const params = new URLSearchParams({
     market: clobTokenId,
     interval,

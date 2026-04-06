@@ -8,16 +8,16 @@ import {
 
 const PERP_INTERVAL_MAP: Record<string, '1m' | '15m' | '1h' | '4h' | '1d'> = {
   '15m': '1m',
-  '1H': '1m',
-  '6H': '15m',
-  '1D': '1h',
+  '1h': '1m',
+  '6h': '15m',
+  '1d': '1h',
 }
 
 const PERP_WINDOW_SECS: Record<string, number> = {
   '15m': 900,
-  '1H': 3600,
-  '6H': 21600,
-  '1D': 86400,
+  '1h': 3600,
+  '6h': 21600,
+  '1d': 86400,
 }
 
 const ETH_ADDRESS_REGEX = /^0x[a-fA-F0-9]{40}$/
@@ -46,8 +46,9 @@ function jsonResponse(
 
 function getWindowConfig(windowLabel: unknown) {
   if (typeof windowLabel !== 'string') return null
-  const interval = PERP_INTERVAL_MAP[windowLabel]
-  const windowSecs = PERP_WINDOW_SECS[windowLabel]
+  const key = windowLabel.toLowerCase()
+  const interval = PERP_INTERVAL_MAP[key]
+  const windowSecs = PERP_WINDOW_SECS[key]
   if (!interval || !windowSecs) return null
   return { interval, windowSecs }
 }

@@ -11,6 +11,8 @@ import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { formatCompact } from '@/lib/format'
 import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
 import {
+  AssetDetailChartBleed,
+  AssetDetailStatsGrid,
   StatItem,
   DetailSection,
   DetailRow,
@@ -37,12 +39,12 @@ export function PerpDetail({ id }: { id: string }) {
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
           <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+        <AssetDetailStatsGrid>
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
-        </div>
+        </AssetDetailStatsGrid>
       </div>
     )
   }
@@ -93,7 +95,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
           </div>
         </div>
 
-        <div className="mt-6">
+        <AssetDetailChartBleed className="mt-4 sm:mt-6">
           <LivelineChart
             data={chartData}
             value={market.markPx}
@@ -104,10 +106,10 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
             isLoading={isLoading && candles.length < 2}
             emptyText="No chart data available"
           />
-        </div>
+        </AssetDetailChartBleed>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+      <AssetDetailStatsGrid>
         <StatItem label="24h Volume" value={formatCompact(market.volume24h)} />
         <StatItem
           label="Funding Rate"
@@ -127,7 +129,7 @@ function PerpDetailContent({ market }: { market: PerpMarketSnapshot }) {
             market.change24h >= 0 ? 'text-[#22c55e]' : 'text-[#ef4444]',
           )}
         />
-      </div>
+      </AssetDetailStatsGrid>
 
       <DetailSection title="Position Details">
         <DetailRow label="Mark Price">

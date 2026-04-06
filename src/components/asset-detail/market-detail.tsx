@@ -14,7 +14,12 @@ import { formatCompact, formatDate } from '@/lib/format'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
-import { StatItem, DetailMessage } from './shared'
+import {
+  AssetDetailChartBleed,
+  AssetDetailStatsGrid,
+  StatItem,
+  DetailMessage,
+} from './shared'
 
 export function MarketDetail({ id }: { id: string }) {
   const {
@@ -40,11 +45,11 @@ export function MarketDetail({ id }: { id: string }) {
           <div className="mb-6 h-2 w-full animate-pulse rounded-full bg-muted" />
           <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+        <AssetDetailStatsGrid cols={3}>
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
-        </div>
+        </AssetDetailStatsGrid>
       </div>
     )
   }
@@ -65,7 +70,7 @@ function MarketDetailContent({ market }: { market: Market }) {
       ) : (
         <BinaryBody market={market} />
       )}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+      <AssetDetailStatsGrid cols={3}>
         <StatItem label="Volume" value={formatCompact(market.volume)} />
         {market.liquidity != null && market.liquidity > 0 && (
           <StatItem
@@ -74,7 +79,7 @@ function MarketDetailContent({ market }: { market: Market }) {
           />
         )}
         <StatItem label="End Date" value={formatDate(market.expiry)} />
-      </div>
+      </AssetDetailStatsGrid>
       {market.description && (
         <div>
           <h2 className="mb-2 text-sm font-medium text-muted-foreground">
@@ -175,16 +180,18 @@ function BinaryBody({ market }: { market: Market }) {
         />
       </div>
 
-      <LivelineChart
-        data={chartData}
-        value={yesPercent}
-        height={chartHeight}
-        formatValue={(v) => `${v.toFixed(1)}%`}
-        window={WINDOW_LABEL_TO_SECS[windowLabel]}
-        onWindowChange={handleWindowChange}
-        isLoading={isLoading && history.length === 0}
-        emptyText="No chart data available"
-      />
+      <AssetDetailChartBleed>
+        <LivelineChart
+          data={chartData}
+          value={yesPercent}
+          height={chartHeight}
+          formatValue={(v) => `${v.toFixed(1)}%`}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+          isLoading={isLoading && history.length === 0}
+          emptyText="No chart data available"
+        />
+      </AssetDetailChartBleed>
     </div>
   )
 }
@@ -215,16 +222,18 @@ function MultiOutcomeBody({ market }: { market: Market }) {
 
   return (
     <div className="space-y-6">
-      <LivelineChart
-        data={chartData}
-        value={chartValue}
-        height={chartHeight}
-        formatValue={(v) => `${v.toFixed(1)}%`}
-        window={WINDOW_LABEL_TO_SECS[windowLabel]}
-        onWindowChange={handleWindowChange}
-        isLoading={isLoading && history.length === 0}
-        emptyText="No chart data available"
-      />
+      <AssetDetailChartBleed>
+        <LivelineChart
+          data={chartData}
+          value={chartValue}
+          height={chartHeight}
+          formatValue={(v) => `${v.toFixed(1)}%`}
+          window={WINDOW_LABEL_TO_SECS[windowLabel]}
+          onWindowChange={handleWindowChange}
+          isLoading={isLoading && history.length === 0}
+          emptyText="No chart data available"
+        />
+      </AssetDetailChartBleed>
 
       <div>
         <h2 className="mb-3 text-sm font-medium text-muted-foreground">

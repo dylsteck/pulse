@@ -1,29 +1,42 @@
-import { useEffect, useState } from 'react'
-import { useIsMobile } from '@/hooks/use-is-mobile'
+import { useLayoutEffect, useState } from 'react'
 
-const MOBILE = 200
+const MOBILE_BREAKPOINT_PX = 768
+
+const MOBILE_MIN = 260
+const MOBILE_MAX = 380
 const DEFAULT_DESKTOP = 520
 const MIN_DESKTOP = 400
 const MAX_DESKTOP = 640
 
 /** Pixel height for main Liveline on asset detail pages — scales with viewport. */
 export function useAssetChartHeight(): number {
-  const isMobile = useIsMobile()
   const [h, setH] = useState(DEFAULT_DESKTOP)
 
-  useEffect(() => {
-    if (isMobile) return
+  useLayoutEffect(() => {
     const calc = () => {
-      const next = Math.min(
-        MAX_DESKTOP,
-        Math.max(MIN_DESKTOP, Math.round(window.innerHeight * 0.48)),
-      )
-      setH(next)
+      const mobile = window.matchMedia(
+        `(max-width: ${MOBILE_BREAKPOINT_PX}px)`,
+      ).matches
+      if (mobile) {
+        setH(
+          Math.min(
+            MOBILE_MAX,
+            Math.max(MOBILE_MIN, Math.round(window.innerHeight * 0.4)),
+          ),
+        )
+      } else {
+        setH(
+          Math.min(
+            MAX_DESKTOP,
+            Math.max(MIN_DESKTOP, Math.round(window.innerHeight * 0.48)),
+          ),
+        )
+      }
     }
     calc()
     window.addEventListener('resize', calc)
     return () => window.removeEventListener('resize', calc)
-  }, [isMobile])
+  }, [])
 
-  return isMobile ? MOBILE : h
+  return h
 }

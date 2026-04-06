@@ -11,6 +11,8 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatDate, formatPrice } from '@/lib/format'
 import { sanitizeExternalHttpUrl } from '@/lib/url'
 import {
+  AssetDetailChartBleed,
+  AssetDetailStatsGrid,
   StatItem,
   DetailSection,
   DetailRow,
@@ -35,12 +37,12 @@ export function MemeDetail({ id }: { id: string }) {
           <div className="mb-6 h-9 w-40 animate-pulse rounded bg-muted" />
           <div className="min-h-[520px] w-full animate-pulse rounded-lg bg-muted" />
         </div>
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+        <AssetDetailStatsGrid>
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
           <div className="h-12 animate-pulse rounded bg-muted" />
-        </div>
+        </AssetDetailStatsGrid>
       </div>
     )
   }
@@ -130,7 +132,7 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
           </div>
         )}
 
-        <div className="mt-6">
+        <AssetDetailChartBleed className="mt-4 sm:mt-6">
           <LivelineChart
             data={chartData}
             value={meme.price}
@@ -143,10 +145,10 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
             exaggerate
             formatValue={(v) => `$${formatPrice(v)}`}
           />
-        </div>
+        </AssetDetailChartBleed>
       </div>
 
-      <div className="grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-4">
+      <AssetDetailStatsGrid>
         <StatItem label="24h Volume" value={formatCompact(meme.volume24h)} />
         <StatItem label="Liquidity" value={formatCompact(meme.liquidity)} />
         <StatItem
@@ -157,7 +159,7 @@ function MemeDetailContent({ meme }: { meme: MemeToken }) {
           label="Holders"
           value={meme.holdersCount?.toLocaleString('en-US') ?? '—'}
         />
-      </div>
+      </AssetDetailStatsGrid>
 
       <DetailSection title="Token Details">
         <DetailRow label="Contract">

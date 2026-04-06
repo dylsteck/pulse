@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { ArrowDownUpIcon } from 'lucide-react'
 import type { SwapPanelProps } from '@/components/trading/swap-constants'
+import { PulsePillButton } from '@/components/trading/pulse-pill-button'
 import { SwapDrawer } from '@/components/trading/swap-drawer'
-import { Button } from '@/components/ui/button'
 
 export function SwapPopover({
   defaultFromToken = 'ETH',
@@ -18,17 +18,15 @@ export function SwapPopover({
 
   return (
     <>
-      <Button
+      <PulsePillButton
         type="button"
-        variant="outline"
-        className="gap-2 px-4 py-2 text-sm font-medium"
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
-        <ArrowDownUpIcon className="size-4 shrink-0" />
+        <ArrowDownUpIcon className="size-3.5 shrink-0" aria-hidden />
         Swap
-      </Button>
+      </PulsePillButton>
       {mounted && open
         ? createPortal(
             <SwapDrawer

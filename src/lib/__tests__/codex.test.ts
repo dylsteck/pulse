@@ -106,11 +106,11 @@ describe('Codex parameter parsing', () => {
   test('parses bars params only for allowed windows', () => {
     const ok = new URLSearchParams({
       address: '0xabc1230000000000000000000000000000000000',
-      windowLabel: '1D',
+      windowLabel: '1d',
     })
     expect(parseCodexBarsParams(ok)).toEqual({
       address: '0xabc1230000000000000000000000000000000000',
-      windowLabel: '1D',
+      windowLabel: '1d',
     })
 
     const bad = new URLSearchParams({
@@ -139,7 +139,7 @@ describe('buildBarsQuery', () => {
   test('uses Codex token symbol tokenAddress:networkId', () => {
     const addr = '0x4200000000000000000000000000000000000006'
     expect(codexBarsTokenSymbol(addr)).toBe(`${addr}:8453`)
-    const q = buildBarsQuery(addr, '1H')
+    const q = buildBarsQuery(addr, '1h')
     const vars = q.variables as { symbol: string }
     expect(vars.symbol).toBe(`${addr}:8453`)
   })

@@ -7,7 +7,7 @@ import { useDocumentHidden } from '@/hooks/use-document-hidden'
 import { useTokenBars } from '@/hooks/use-token-bars'
 import { cn } from '@/lib/utils'
 
-const CHART_WINDOW = '1D'
+const CHART_WINDOW = '1d'
 
 export function AssetCard({
   asset,
