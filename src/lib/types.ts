@@ -33,7 +33,7 @@ export interface Market {
   /** CLOB token id for the No outcome when Gamma returns two ids (index 1). */
   noClobTokenId?: string
   description?: string
-  tags?: string[]
+  tags?: Array<string>
   liquidity?: number
   negRisk?: boolean
 }

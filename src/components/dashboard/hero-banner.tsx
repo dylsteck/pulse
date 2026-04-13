@@ -8,7 +8,7 @@ import { useLiveTokens } from '@/hooks/use-live-tokens'
 import { useLiveMarkets } from '@/hooks/use-live-markets'
 import { useMemeTokens } from '@/hooks/use-meme-tokens'
 import { cn } from '@/lib/utils'
-import { buildTokenId, buildMemeId, buildMarketId } from '@/lib/caip19'
+import { buildMarketId, buildMemeId, buildTokenId } from '@/lib/caip19'
 
 const ACCENT_COLOR = '#0066ff'
 

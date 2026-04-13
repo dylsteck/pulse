@@ -1,14 +1,13 @@
 import {
+  
   createContext,
-  useContext,
-  useMemo,
   useCallback,
-  useState,
+  useContext,
   useEffect,
-  type ReactNode,
+  useMemo,
+  useState
 } from 'react'
 import { toViemAccount } from '@coinbase/cdp-core'
-import type { LocalAccount } from 'viem'
 import {
   useAccount,
   useConnect,
@@ -16,13 +15,15 @@ import {
   useWalletClient,
 } from 'wagmi'
 import { injected } from '@wagmi/connectors'
+import type {ReactNode} from 'react';
+import type { LocalAccount } from 'viem'
 import { cdpProjectId } from '@/lib/wagmi'
 
 type AuthMode = 'email' | 'wallet' | null
 
 interface CdpState {
   isSignedIn: boolean
-  currentUser: { evmAccounts?: { address: string }[] } | undefined
+  currentUser: { evmAccounts?: Array<{ address: string }> } | undefined
   evmAddress: string | undefined
   signOut: () => Promise<void>
 }
@@ -125,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       window.ethereum
         .request({ method: 'eth_accounts' })
-        .then((accounts: string[]) => {
+        .then((accounts: Array<string>) => {
           if (accounts?.length > 0) {
             connect({ connector: injected() })
           }
@@ -223,12 +224,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           message: Parameters<LocalAccount['signMessage']>[0]['message']
         }) => client.signMessage({ account: address, message }),
         signTypedData: (params: Parameters<LocalAccount['signTypedData']>[0]) =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           client.signTypedData({ account: address, ...(params as any) }),
         signTransaction: (
           tx: Parameters<LocalAccount['signTransaction']>[0],
         ) =>
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           client.signTransaction({ account: address, ...(tx as any) }),
       } as LocalAccount
       setViemAccount(adapter)

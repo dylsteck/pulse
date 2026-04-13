@@ -1,13 +1,14 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { formatUnits } from 'viem'
 import { base, polygon } from 'wagmi/chains'
+import type {OrderResult} from '@/lib/polymarket/orders';
 import { useAuth } from '@/components/providers/auth-provider'
 import { useErc20Balance } from '@/hooks/use-erc20-balance'
 import { useBridge } from '@/hooks/use-bridge'
 import { getOrDeriveCredentials } from '@/lib/polymarket/credentials'
 import {
-  createAndSubmitOrder,
-  type OrderResult,
+  
+  createAndSubmitOrder
 } from '@/lib/polymarket/orders'
 import { USDC_BASE, USDC_E_POLYGON } from '@/lib/wagmi'
 

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { getRouteApi } from '@tanstack/react-router'
 import { ChevronRightIcon } from 'lucide-react'
 import type { ViewMode } from '@/components/dashboard/tabs'
+import type {GridFilters} from '@/components/dashboard/grid-filter-popover';
 import { cn } from '@/lib/utils'
 
 import { usePerpMarkets } from '@/hooks/use-perps'
@@ -24,8 +25,8 @@ import { ModeTabs } from '@/components/dashboard/tabs'
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll'
 import { TrendingSidebar } from '@/components/dashboard/trending-sidebar'
 import {
-  GridFilterPopover,
-  type GridFilters,
+  GridFilterPopover
+  
 } from '@/components/dashboard/grid-filter-popover'
 import { sortPerpsForGrid } from '@/lib/grid-sorts'
 

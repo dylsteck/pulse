@@ -1,14 +1,14 @@
 import { FlameIcon, TrendingUpIcon } from 'lucide-react'
 import { Link } from '@tanstack/react-router'
-import type { Token, Market } from '@/lib/types'
+import type { Market, Token } from '@/lib/types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { buildTokenId, buildMarketId } from '@/lib/caip19'
+import { buildMarketId, buildTokenId } from '@/lib/caip19'
 
 interface TrendingSidebarProps {
-  tokens: Token[]
-  markets: Market[]
+  tokens: Array<Token>
+  markets: Array<Market>
   collapsed: boolean
 }
 

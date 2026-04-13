@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { PortfolioPage } from '@/components/portfolio/portfolio-page'
 import { useAuth } from '@/components/providers/auth-provider'
 import { cdpProjectId } from '@/lib/wagmi'

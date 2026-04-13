@@ -1,4 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
+import {
+  AssetDetailChartBleed,
+  AssetDetailStatsGrid,
+  ChangeBadge,
+  DetailMessage,
+  DetailRow,
+  DetailSection,
+  StatItem,
+} from './shared'
 import type { Token } from '@/lib/types'
 import {
   LivelineChart,
@@ -12,15 +21,6 @@ import { fetchCodexTokenByAddress } from '@/lib/codex'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatPrice } from '@/lib/format'
 import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
-import {
-  AssetDetailChartBleed,
-  AssetDetailStatsGrid,
-  StatItem,
-  DetailSection,
-  DetailRow,
-  ChangeBadge,
-  DetailMessage,
-} from './shared'
 
 export function TokenDetail({ id }: { id: string }) {
   const {

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Liveline } from 'liveline'
-import type { CarouselTokenItem } from './types'
 import { HERO_CHART_PADDING } from './types'
+import type { CarouselTokenItem } from './types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { useDocumentHidden } from '@/hooks/use-document-hidden'
 import { useTokenBars } from '@/hooks/use-token-bars'

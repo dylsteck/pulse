@@ -10,14 +10,14 @@ export function TimeframeSegmentedControl({
   isDark,
   className,
 }: {
-  windows: TimeframeWindow[]
+  windows: Array<TimeframeWindow>
   value: number
   onChange: (secs: number) => void
   isDark: boolean
   className?: string
 }) {
   const trackRef = useRef<HTMLDivElement>(null)
-  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const buttonRefs = useRef<Array<HTMLButtonElement | null>>([])
   const [indicator, setIndicator] = useState({ left: 0, width: 0 })
 
   const updateIndicator = useCallback(() => {

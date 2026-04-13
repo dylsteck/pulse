@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { ArrowUpDownIcon, SlidersHorizontalIcon } from 'lucide-react'
 import type { ViewMode } from '@/components/dashboard/tabs'
+import type { GridFilters, SortKey } from '@/lib/grid-filter-types'
 import {
   Popover,
   PopoverContent,
@@ -8,7 +9,6 @@ import {
   PopoverPositioner,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import type { GridFilters, SortKey } from '@/lib/grid-filter-types'
 import { cn } from '@/lib/utils'
 
 export type { GridFilters, SortKey } from '@/lib/grid-filter-types'
@@ -51,7 +51,7 @@ const NETWORK_CHAIN_OPTIONS: Array<{ value: number; label: string }> = [
   { value: 1399811149, label: 'Solana' },
 ]
 
-function toggleNetworkId(networks: number[], id: number): number[] {
+function toggleNetworkId(networks: Array<number>, id: number): Array<number> {
   if (networks.includes(id)) return networks.filter((n) => n !== id)
   return [...networks, id]
 }

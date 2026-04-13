@@ -4,13 +4,12 @@ import type { SidebarItem } from './types'
 import { FadeImage } from '@/components/ui/fade-image'
 import { cn } from '@/lib/utils'
 import { formatCompact } from '@/lib/format'
-import { buildTokenId, buildMemeId, buildMarketId } from '@/lib/caip19'
+import { buildMarketId, buildMemeId, buildTokenId } from '@/lib/caip19'
 
 function buildSidebarItemId(item: SidebarItem): string {
   if (item.kind === 'token') return buildTokenId(item.id)
   if (item.kind === 'meme') return buildMemeId(item.id)
-  if (item.kind === 'market') return buildMarketId(item.id)
-  return item.id
+  return buildMarketId(item.id)
 }
 
 export function SidebarRow({ item }: { item: SidebarItem }) {

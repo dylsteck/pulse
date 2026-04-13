@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
 import { CheckIcon, CopyIcon, ExternalLinkIcon, LogOutIcon, WalletIcon } from 'lucide-react'
 import { SignInModal } from '@coinbase/cdp-react'
+import { base, polygon } from 'wagmi/chains'
 import { useAuth } from '@/components/providers/auth-provider'
 import {
   Popover,
@@ -19,8 +20,7 @@ import {
   formatTotalUsdcBalance,
   shortWalletAddress,
 } from '@/lib/wallet-format'
-import { cdpProjectId, USDC_BASE, USDC_E_POLYGON } from '@/lib/wagmi'
-import { base, polygon } from 'wagmi/chains'
+import { USDC_BASE, USDC_E_POLYGON, cdpProjectId } from '@/lib/wagmi'
 
 export function WalletButton() {
   const { isSignedIn, evmAddress, signOut } = useAuth()

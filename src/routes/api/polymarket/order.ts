@@ -1,5 +1,5 @@
+import { createHmac } from 'node:crypto'
 import { createFileRoute } from '@tanstack/react-router'
-import { createHmac } from 'crypto'
 
 const CLOB_HOST = 'https://clob.polymarket.com'
 

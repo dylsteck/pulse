@@ -83,7 +83,7 @@ export async function createAndSubmitOrder(
       orderID?: string
       id?: string
       status?: string
-      transactionsHashes?: string[]
+      transactionsHashes?: Array<string>
       error?: string
     }>('/api/polymarket/order', {
       method: 'POST',

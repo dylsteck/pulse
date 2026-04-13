@@ -1,4 +1,4 @@
-import type { Token, Market } from '@/lib/types'
+import type { Market, Token } from '@/lib/types'
 import type { MemeToken } from '@/lib/geckoterminal'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import type { SortKey } from '@/lib/grid-filter-types'
@@ -8,15 +8,15 @@ function num(n: number | undefined) {
 }
 
 export function filterTokensByNetwork(
-  tokens: Token[],
-  networks: number[],
-): Token[] {
+  tokens: Array<Token>,
+  networks: Array<number>,
+): Array<Token> {
   if (networks.length === 0) return tokens
   const set = new Set(networks)
   return tokens.filter((t) => set.has(t.networkId))
 }
 
-export function sortTokensForGrid(tokens: Token[], sort: SortKey): Token[] {
+export function sortTokensForGrid(tokens: Array<Token>, sort: SortKey): Array<Token> {
   const copy = tokens.slice()
   switch (sort) {
     case 'change':
@@ -30,7 +30,7 @@ export function sortTokensForGrid(tokens: Token[], sort: SortKey): Token[] {
   }
 }
 
-export function sortMarketsForGrid(markets: Market[], sort: SortKey): Market[] {
+export function sortMarketsForGrid(markets: Array<Market>, sort: SortKey): Array<Market> {
   const copy = markets.slice()
   switch (sort) {
     case 'volume':
@@ -42,7 +42,7 @@ export function sortMarketsForGrid(markets: Market[], sort: SortKey): Market[] {
   }
 }
 
-export function sortMemesForGrid(memes: MemeToken[], sort: SortKey): MemeToken[] {
+export function sortMemesForGrid(memes: Array<MemeToken>, sort: SortKey): Array<MemeToken> {
   const copy = memes.slice()
   switch (sort) {
     case 'change':
@@ -59,9 +59,9 @@ export function sortMemesForGrid(memes: MemeToken[], sort: SortKey): MemeToken[]
 }
 
 export function sortPerpsForGrid(
-  markets: PerpMarketSnapshot[],
+  markets: Array<PerpMarketSnapshot>,
   sort: SortKey,
-): PerpMarketSnapshot[] {
+): Array<PerpMarketSnapshot> {
   const copy = markets.slice()
   switch (sort) {
     case 'volume':
@@ -74,7 +74,7 @@ export function sortPerpsForGrid(
 }
 
 /** Per-category sort for trending interleave (metrics align with tab “Sort by” labels). */
-export function sortMarketsForTrending(markets: Market[], sort: SortKey): Market[] {
+export function sortMarketsForTrending(markets: Array<Market>, sort: SortKey): Array<Market> {
   const copy = markets.slice()
   switch (sort) {
     case 'change':
@@ -89,9 +89,9 @@ export function sortMarketsForTrending(markets: Market[], sort: SortKey): Market
 }
 
 export function sortPerpsForTrending(
-  markets: PerpMarketSnapshot[],
+  markets: Array<PerpMarketSnapshot>,
   sort: SortKey,
-): PerpMarketSnapshot[] {
+): Array<PerpMarketSnapshot> {
   const copy = markets.slice()
   switch (sort) {
     case 'change':
@@ -105,7 +105,7 @@ export function sortPerpsForTrending(
   }
 }
 
-export function sortMemesForTrending(memes: MemeToken[], sort: SortKey): MemeToken[] {
+export function sortMemesForTrending(memes: Array<MemeToken>, sort: SortKey): Array<MemeToken> {
   const copy = memes.slice()
   switch (sort) {
     case 'change':

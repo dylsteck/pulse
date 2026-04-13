@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { bridgeUsdcToPolygon } from '@/lib/polymarket/bridge'
 

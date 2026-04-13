@@ -1,3 +1,12 @@
+import {
+  AssetDetailChartBleed,
+  AssetDetailStatsGrid,
+  ChangeBadge,
+  DetailMessage,
+  DetailRow,
+  DetailSection,
+  StatItem,
+} from './shared'
 import type { MemeToken } from '@/lib/geckoterminal'
 import {
   LivelineChart,
@@ -10,15 +19,6 @@ import { useWindowChange } from '@/hooks/use-window-change'
 import { FadeImage } from '@/components/ui/fade-image'
 import { formatCompact, formatDate, formatPrice } from '@/lib/format'
 import { sanitizeExternalHttpUrl } from '@/lib/url'
-import {
-  AssetDetailChartBleed,
-  AssetDetailStatsGrid,
-  StatItem,
-  DetailSection,
-  DetailRow,
-  ChangeBadge,
-  DetailMessage,
-} from './shared'
 
 export function MemeDetail({ id }: { id: string }) {
   const { data: meme, isLoading, isError } = useMemeTokenDetail(id)

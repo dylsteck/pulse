@@ -75,7 +75,7 @@ export function CommandPalette() {
           to: '/asset/$identifier',
           params: {
             identifier: encodeAssetId(
-              item.type as CommandSearchItem['type'],
+              item.type,
               item.id,
             ),
           },

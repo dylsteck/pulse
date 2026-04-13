@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { createPublicClient, http, erc20Abi } from 'viem'
+import { createPublicClient, erc20Abi, http } from 'viem'
 import { base, polygon } from 'wagmi/chains'
 
 const chains = { [base.id]: base, [polygon.id]: polygon } as const

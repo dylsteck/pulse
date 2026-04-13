@@ -58,7 +58,7 @@ export function resolvePerpSpotPrices(
   const midFromMids = mids[coin] != null ? Number(mids[coin]) : NaN
   const oraclePx = Number(ctx.oraclePx)
 
-  const pickFirstPositive = (...vals: number[]): number => {
+  const pickFirstPositive = (...vals: Array<number>): number => {
     for (const v of vals) {
       if (Number.isFinite(v) && v > 0) return v
     }

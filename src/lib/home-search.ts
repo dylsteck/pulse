@@ -1,13 +1,13 @@
 import type { SearchMiddleware } from '@tanstack/router-core'
-import {
-  coerceGridFilters,
-  DEFAULT_FILTERS,
-  getDefaultSortForMode,
-} from '@/components/dashboard/grid-filter-popover'
 import type { ViewMode } from '@/components/dashboard/tabs'
 import type { SortKey } from '@/lib/grid-filter-types'
+import {
+  DEFAULT_FILTERS,
+  coerceGridFilters,
+  getDefaultSortForMode,
+} from '@/components/dashboard/grid-filter-popover'
 
-const VALID_TYPES: ViewMode[] = [
+const VALID_TYPES: Array<ViewMode> = [
   'trending',
   'tokens',
   'markets',
@@ -18,10 +18,10 @@ const VALID_TYPES: ViewMode[] = [
 export type HomeSearch = {
   type: ViewMode
   sort: SortKey
-  networks: number[]
+  networks: Array<number>
 }
 
-function parseNetworks(raw: unknown): number[] {
+function parseNetworks(raw: unknown): Array<number> {
   if (raw == null || raw === '') return []
   if (Array.isArray(raw)) {
     return raw
@@ -64,7 +64,7 @@ export function validateHomeSearch(search: Record<string, unknown>): HomeSearch 
 
 export function stripHomeSearchDefaults(): SearchMiddleware<HomeSearch> {
   return ({ search, next }) => {
-    const result = next(search) as HomeSearch
+    const result = next(search)
     const copy = { ...result }
     const mode = copy.type ?? 'trending'
     if (copy.sort === getDefaultSortForMode(mode)) {

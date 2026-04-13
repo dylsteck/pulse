@@ -8,5 +8,5 @@ export type SortKey =
 export interface GridFilters {
   sort: SortKey
   /** Empty = all networks. Otherwise include tokens on any of these chain IDs. */
-  networks: number[]
+  networks: Array<number>
 }

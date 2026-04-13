@@ -1,19 +1,19 @@
 import React from 'react'
-import type { Token, Market } from '@/lib/types'
+import type { Market, Token } from '@/lib/types'
 import type { MemeToken } from '@/lib/geckoterminal'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import type { GridFilters } from '@/lib/grid-filter-types'
 import {
-  TokenGridCard,
   MarketGridCard,
   MemeGridCard,
   PerpGridCard,
+  TokenGridCard,
 } from '@/components/dashboard/cards'
 import { CardGrid, LoadingPanel } from '@/components/dashboard/shared'
 import {
   filterTokensByNetwork,
-  sortMemesForTrending,
   sortMarketsForTrending,
+  sortMemesForTrending,
   sortPerpsForTrending,
   sortTokensForGrid,
 } from '@/lib/grid-sorts'
@@ -25,10 +25,10 @@ type TrendingItem =
   | { kind: 'meme'; data: MemeToken }
 
 interface TrendingGridProps {
-  tokens: Token[]
-  markets: Market[]
-  perps: PerpMarketSnapshot[]
-  memes: MemeToken[]
+  tokens: Array<Token>
+  markets: Array<Market>
+  perps: Array<PerpMarketSnapshot>
+  memes: Array<MemeToken>
   tokensLoading: boolean
   marketsLoading: boolean
   perpsLoading: boolean
@@ -64,7 +64,7 @@ export function TrendingGrid({
   const topMemes = sortMemesForTrending(memes, filters.sort)
 
   // Interleave: round-robin across categories
-  const items: TrendingItem[] = []
+  const items: Array<TrendingItem> = []
   const maxLen = Math.max(topTokens.length, topMarkets.length, topPerps.length, topMemes.length)
   for (let i = 0; i < maxLen; i++) {
     if (i < topTokens.length) items.push({ kind: 'token', data: topTokens[i] })

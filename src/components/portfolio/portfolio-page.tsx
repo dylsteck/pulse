@@ -1,4 +1,5 @@
 import { ExternalLinkIcon, LogOutIcon, WalletIcon } from 'lucide-react'
+import { base, polygon } from 'wagmi/chains'
 import { useAuth } from '@/components/providers/auth-provider'
 import { Button } from '@/components/ui/button'
 import { useErc20Balance } from '@/hooks/use-erc20-balance'
@@ -8,7 +9,6 @@ import {
   formatUsdcBalance,
 } from '@/lib/wallet-format'
 import { USDC_BASE, USDC_E_POLYGON } from '@/lib/wagmi'
-import { base, polygon } from 'wagmi/chains'
 
 export function PortfolioPage() {
   const { evmAddress, signOut } = useAuth()

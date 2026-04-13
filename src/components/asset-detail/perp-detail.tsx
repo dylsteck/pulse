@@ -1,3 +1,12 @@
+import {
+  AssetDetailChartBleed,
+  AssetDetailStatsGrid,
+  ChangeBadge,
+  DetailMessage,
+  DetailRow,
+  DetailSection,
+  StatItem,
+} from './shared'
 import type { PerpMarketSnapshot } from '@/lib/hyperliquid/service'
 import {
   LivelineChart,
@@ -10,15 +19,6 @@ import { FadeImage } from '@/components/ui/fade-image'
 import { formatPerpPrice } from '@/lib/hyperliquid/service'
 import { formatCompact } from '@/lib/format'
 import { useAssetChartHeight } from '@/hooks/use-asset-chart-height'
-import {
-  AssetDetailChartBleed,
-  AssetDetailStatsGrid,
-  StatItem,
-  DetailSection,
-  DetailRow,
-  ChangeBadge,
-  DetailMessage,
-} from './shared'
 import { cn } from '@/lib/utils'
 
 export function PerpDetail({ id }: { id: string }) {
