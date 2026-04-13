@@ -16,12 +16,23 @@ export const TIME_WINDOWS = [
   { label: '1d', secs: 86400 },
 ]
 
-export const WINDOW_SECS_TO_LABEL: Record<number, string> = Object.fromEntries(
-  TIME_WINDOWS.map((w) => [w.secs, w.label]),
+/** Extended timeframes for market (Polymarket) pages. */
+export const MARKET_TIME_WINDOWS = [
+  { label: '1h', secs: 3600 },
+  { label: '6h', secs: 21600 },
+  { label: '1d', secs: 86400 },
+  { label: '1w', secs: 604800 },
+  { label: '1m', secs: 2592000 },
+  { label: 'ALL', secs: 0 },
+]
+
+/** Union of all known window labels → secs (includes both standard and market-specific). */
+export const WINDOW_LABEL_TO_SECS: Record<string, number> = Object.fromEntries(
+  [...TIME_WINDOWS, ...MARKET_TIME_WINDOWS].map((w) => [w.label, w.secs]),
 )
 
-export const WINDOW_LABEL_TO_SECS: Record<string, number> = Object.fromEntries(
-  TIME_WINDOWS.map((w) => [w.label, w.secs]),
+export const WINDOW_SECS_TO_LABEL: Record<number, string> = Object.fromEntries(
+  [...TIME_WINDOWS, ...MARKET_TIME_WINDOWS].map((w) => [w.secs, w.label]),
 )
 
 /** Slightly tighter right gutter on desktop so the series uses more width (badge still fits). */
@@ -53,6 +64,8 @@ interface LivelineChartProps {
   exaggerate?: boolean
   /** Match asset page horizontal padding so timeframe buttons line up with the price row (use inside AssetDetailChartBleed). */
   alignToolbarWithPage?: boolean
+  /** Hide the built-in toolbar so the parent can render its own. */
+  hideToolbar?: boolean
 }
 
 export function LivelineChart({
@@ -68,6 +81,7 @@ export function LivelineChart({
   emptyText,
   exaggerate = false,
   alignToolbarWithPage = false,
+  hideToolbar = false,
 }: LivelineChartProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
@@ -92,10 +106,14 @@ export function LivelineChart({
       : 3600
   const spanSecs = dataSpanSecs > 1e6 ? dataSpanSecs / 1000 : dataSpanSecs
   const defaultWindow =
-    TIME_WINDOWS.find((w) => w.secs >= spanSecs)?.secs ??
-    TIME_WINDOWS[TIME_WINDOWS.length - 1].secs
+    TIME_WINDOWS.find((w) => w.secs > 0 && w.secs >= spanSecs)?.secs ?? 86400
 
-  const resolvedWindow = windowProp ?? defaultWindow
+  /* ALL (0): compute window from actual data span */
+  const resolvedWindow =
+    windowProp === 0
+      ? Math.ceil(spanSecs * 1.05) || 3600
+      : windowProp ?? defaultWindow
+
   if (chartData.length >= 2 && resolvedWindow) {
     chartData = extendToFullWindow(chartData, resolvedWindow, value)
   }
@@ -103,8 +121,8 @@ export function LivelineChart({
   const resolvedColor = color ?? (isDark ? '#3b82f6' : '#111111')
 
   /** Liveline ignores the `window` prop for its tab bar when `windows` is set — it always
-   *  initializes from `windows[0]` (15m). We render timeframe controls here instead. */
-  const showWindowControls = Boolean(onWindowChange)
+   *  initializes from `windows[0]`. We render timeframe controls here instead. */
+  const showWindowControls = Boolean(onWindowChange) && !hideToolbar
   const toolbarH = showWindowControls ? 28 : 0
   /** Fixed total height so flex parents cannot stretch this block and leave dead space below. */
   const outerHeightPx =

@@ -179,6 +179,11 @@
     border-radius: 9999px !important;
     white-space: nowrap;
   }
+
+  /** Hide Liveline's built-in series toggle when custom legend is rendered by parent. */
+  .liveline-hide-toggle > div:first-child > div:last-child {
+    display: none !important;
+  }
 }
 
 @layer utilities {

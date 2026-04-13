@@ -4,10 +4,12 @@
  */
 
 export const CLOB_WINDOW_LABEL_TO_INTERVAL: Record<string, string> = {
-  '15m': '1h',
   '1h': '6h',
   '6h': '1d',
   '1d': '1w',
+  '1w': '1m',
+  '1m': 'max',
+  'all': 'max',
 }
 
 export const CLOB_DEFAULT_INTERVAL = '1d'

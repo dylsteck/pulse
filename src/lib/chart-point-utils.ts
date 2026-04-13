@@ -41,7 +41,8 @@ export function toSeconds(t: number): number {
   return t > 1e12 ? t / 1000 : t
 }
 
-/** Extend data so the line stretches across the full visible window. */
+/** Extend data so the line stretches across the full visible window.
+ *  When windowSecs is 0 (ALL), skip left-padding — just normalize and append current value. */
 export function extendToFullWindow(
   data: Array<{ time: number; value: number }>,
   windowSecs: number,
@@ -49,7 +50,6 @@ export function extendToFullWindow(
 ): Array<{ time: number; value: number }> {
   if (data.length < 2) return data
   const now = Date.now() / 1000
-  const windowStart = now - windowSecs
 
   const normalized = data
     .map((p) => ({ time: toSeconds(p.time), value: p.value }))
@@ -59,8 +59,11 @@ export function extendToFullWindow(
   const last = normalized[normalized.length - 1]
   let result = normalized
 
-  if (first.time > windowStart) {
-    result = [{ time: windowStart, value: first.value }, ...result]
+  if (windowSecs > 0) {
+    const windowStart = now - windowSecs
+    if (first.time > windowStart) {
+      result = [{ time: windowStart, value: first.value }, ...result]
+    }
   }
   if (last.time < now) {
     result = [...result, { time: now, value: currentValue }]

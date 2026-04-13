@@ -59,7 +59,7 @@ export const Route = createFileRoute('/api/polymarket/batch-history')({
         const windowParam = url.searchParams.get('window')
         if (!isValidPolymarketWindowLabel(windowParam)) {
           return Response.json(
-            { error: 'Invalid or missing window query (15m, 1h, 6h, 1d)' },
+            { error: 'Invalid or missing window query (1h, 6h, 1d, 1w, 1m, all)' },
             { status: 400 },
           )
         }

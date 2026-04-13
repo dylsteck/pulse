@@ -24,6 +24,10 @@ export interface LivelineMultiChartProps {
   alignToolbarWithPage?: boolean
   /** Compact legend chips on small screens (Liveline `seriesToggleCompact`). */
   seriesToggleCompact?: boolean
+  /** Hide the built-in toolbar so the parent can render its own. */
+  hideToolbar?: boolean
+  /** Hide Liveline's built-in series toggle chips (parent renders custom legend). */
+  hideSeriesToggle?: boolean
 }
 
 /**
@@ -42,6 +46,8 @@ export function LivelineMultiChart({
   emptyText,
   alignToolbarWithPage = false,
   seriesToggleCompact,
+  hideToolbar = false,
+  hideSeriesToggle = false,
 }: LivelineMultiChartProps) {
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
@@ -59,7 +65,9 @@ export function LivelineMultiChart({
   }, [])
 
   const resolvedWindow = useMemo(() => {
-    if (typeof windowProp === 'number') return windowProp
+    if (typeof windowProp === 'number' && windowProp > 0) return windowProp
+
+    /* ALL (0) or no prop: compute span from data */
     const span =
       series.length > 0 && series[0].data.length >= 2
         ? Math.abs(
@@ -68,6 +76,10 @@ export function LivelineMultiChart({
           )
         : 3600
     const spanSecs = span > 1e6 ? span / 1000 : span
+
+    /* When ALL is explicitly selected, use the actual data span (+ 5% padding) */
+    if (windowProp === 0) return Math.ceil(spanSecs * 1.05) || 3600
+
     return (
       TIME_WINDOWS.find((w) => w.secs >= spanSecs)?.secs ??
       TIME_WINDOWS[TIME_WINDOWS.length - 1].secs
@@ -92,7 +104,7 @@ export function LivelineMultiChart({
   /** Parent should set `isLoading` false once upstream has returned (even if empty). */
   const showLoadingOverlay = isLoading
 
-  const showWindowControls = Boolean(onWindowChange)
+  const showWindowControls = Boolean(onWindowChange) && !hideToolbar
   const toolbarH = showWindowControls ? 28 : 0
   const outerHeightPx =
     Math.max(120, height) +
@@ -130,6 +142,7 @@ export function LivelineMultiChart({
             className={cn(
               'absolute inset-0',
               series.length > 1 && 'liveline-multi-chart-shell',
+              hideSeriesToggle && 'liveline-hide-toggle',
             )}
           >
             <Liveline
