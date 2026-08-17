@@ -11,8 +11,11 @@
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
+    "build:node": "DEPLOY_TARGET=node vite build",
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
+    "deploy": "bun run build && wrangler deploy",
+    "cf-typegen": "wrangler types",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
@@ -56,6 +59,7 @@
     "wagmi": "^3.5.0"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.52.1",
     "@happy-dom/global-registrator": "^20.8.4",
     "@tanstack/devtools-vite": "^0.3.11",
     "@tanstack/eslint-config": "^0.3.0",
@@ -70,6 +74,7 @@
     "prettier": "^3.5.3",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
-    "web-vitals": "^5.1.0"
+    "web-vitals": "^5.1.0",
+    "wrangler": "^4.123.0"
   }
 }

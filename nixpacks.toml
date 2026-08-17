@@ -2,7 +2,7 @@
 cmds = ["bun install"]
 
 [phases.build]
-cmds = ["bun run build"]
+cmds = ["bun run build:node"]
 
 [start]
 cmd = "node .output/server/index.mjs"
