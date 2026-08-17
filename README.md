@@ -6,7 +6,7 @@ Pulse is a fast and minimal trading interface across many different assets: toke
 
 ## Stack
 
-- [TanStack Start](https://tanstack.com/start) — full-stack React framework (SSR + file-based routing)
+- [TanStack Start](https://tanstack.com/start) on [Vite](https://vite.dev/) + [Cloudflare Workers](https://developers.cloudflare.com/workers/) — full-stack React framework (SSR + file-based routing)
 - [Tailwind CSS v4](https://tailwindcss.com/) + [shadcn/ui](https://ui.shadcn.com/)
 - [Liveline](https://benji.org/liveline) — real-time animated price charts
 - [Codex](https://docs.codex.io/) — onchain token data (prices, volume, chart history)
@@ -51,12 +51,12 @@ chain_id/asset_namespace:asset_reference
 
 The identifier is percent-encoded when used in URLs.
 
-| Asset Type     | Chain ID                                  | Namespace   | Example                             |
-| -------------- | ----------------------------------------- | ----------- | ----------------------------------- |
-| Base    | `eip155:8453`                             | `erc20`     | `eip155:8453/erc20:0x4ed4...efed`   |
-| Solana | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `token`     | `solana:.../token:ABC123...`        |
-| Polymarket        | `polymarket:mainnet`                      | `event`     | `polymarket:mainnet/event:12345`    |
-| Hyperliquid         | `hyperliquid:mainnet`                     | `perp`      | `hyperliquid:mainnet/perp:btc-perp` |
+| Asset Type  | Chain ID                                  | Namespace | Example                             |
+| ----------- | ----------------------------------------- | --------- | ----------------------------------- |
+| Base        | `eip155:8453`                             | `erc20`   | `eip155:8453/erc20:0x4ed4...efed`   |
+| Solana      | `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp` | `token`   | `solana:.../token:ABC123...`        |
+| Polymarket  | `polymarket:mainnet`                      | `event`   | `polymarket:mainnet/event:12345`    |
+| Hyperliquid | `hyperliquid:mainnet`                     | `perp`    | `hyperliquid:mainnet/perp:btc-perp` |
 
 **Pulse-defined chain IDs:** `polymarket:mainnet` and `hyperliquid:mainnet` are app-stable identifiers for Polymarket and Hyperliquid; they are not CAIP-2 registry entries. Solana memes use the [Solana CAIP-19 draft](https://namespaces.chainagnostic.org/solana/caip19) shape (`token` + mint). Older bookmark URLs may use `spl-token` or `spl` instead of `token`; those still decode.
 
@@ -106,14 +106,31 @@ const parsed = decodeAssetId(tokenId)
 ## Scripts
 
 ```bash
-bun run dev      # dev server
-bun run build    # production build
-bun run check    # format + lint
+bun run dev        # vite + workerd on :3000
+bun run build      # Cloudflare Workers build (default)
+bun run deploy     # build + wrangler deploy
+bun run build:node # Nitro Node build for Docker / Coolify
+bun run check      # format + lint
 ```
 
 ## Deploy
 
-Since this is a TanStack Start app, it should be simple to deploy across providers. For your convenience, you can click the buttons below to easily deploy to either Railway or Vercel.
+Primary host is [Cloudflare Workers](https://developers.cloudflare.com/workers/):
+
+```sh
+bun run deploy
+```
+
+Pushes to `main` also deploy via `.github/workflows/deploy.yml` (needs a `CLOUDFLARE_API_TOKEN` repo secret with Workers edit permission, plus any `VITE_*` secrets used at build time). Custom domain `pulse.dylansteck.com` is declared in `wrangler.jsonc`. Set `CODEX_API_KEY` with `bunx wrangler secret put CODEX_API_KEY`.
+
+There's still a `Dockerfile` at the repo root for optional self-hosting (e.g. on [Coolify](https://coolify.io)). It builds the Nitro Node target and serves on port 3000:
+
+```sh
+docker build -t pulse .
+docker run -p 3000:3000 pulse
+```
+
+Coolify/Nixpacks uses `bun run build:node` so the Node image path stays unchanged. Railway/Vercel one-click deploys should also use the Node target (`DEPLOY_TARGET=node`).
 
 | Platform |                                                                                                                                                                               |
 | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

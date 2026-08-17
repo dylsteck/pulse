@@ -7,6 +7,7 @@ export default [
     ignores: [
       '.output/**',
       'dist/**',
+      '.wrangler/**',
       'eslint.config.js',
       'prettier.config.js',
     ],

@@ -6,6 +6,12 @@ Context for AI agents working in this codebase.
 
 Pulse is a trading interface across tokens (Base), prediction markets (Polymarket), perpetual futures (Hyperliquid), and meme tokens (Solana/Pump.fun via GeckoTerminal).
 
+## Stack
+
+- [Vite](https://vite.dev/) + [TanStack Start](https://tanstack.com/start) + [TanStack Router](https://tanstack.com/router) for routing, SSR, and server routes.
+- [Cloudflare Workers](https://developers.cloudflare.com/workers/) as the primary runtime via [`@cloudflare/vite-plugin`](https://developers.cloudflare.com/workers/vite-plugin/) + [Wrangler](https://developers.cloudflare.com/workers/wrangler/).
+- [Nitro](https://nitro.build/) is still used for the optional Docker/Node image (`DEPLOY_TARGET=node`, produced as `.output/server/`). Coolify uses this path via `nixpacks.toml`.
+
 ## Project structure
 
 ```
@@ -63,6 +69,8 @@ src/
     └── ...
 ```
 
+Root files: `src/start.ts` (request middleware / API origin guard), `vite.config.ts` (Cloudflare by default, Nitro when `DEPLOY_TARGET=node`), `wrangler.jsonc`, `Dockerfile` (optional self-host), `nixpacks.toml` (Coolify Node build).
+
 ## Key conventions
 
 - **Package manager**: Always use bun for install, dev, build, test, and other npm scripts. If bun isn't in the sandbox, run `curl -fsSL https://bun.sh/install | bash` and `source ~/.bashrc`.
@@ -71,6 +79,7 @@ src/
 - **Styling**: Tailwind v4 + shadcn. Design tokens are in `src/styles.css`. Raw color values used: `#FFFFFF` bg, `#F9F9F9` sections, `#E5E5E5` borders, `#22c55e` green, `#ef4444` red.
 - **UI components**: Use **shadcn/ui** for all UI. Prefer existing components in `src/components/ui/` before creating new ones. They're built on `@base-ui/react`. For guidance on adding, styling, and composing shadcn components, refer to the shadcn skill at `.agents/skills/shadcn/SKILL.md` and its rules in `.agents/skills/shadcn/`.
 - **Live data**: All data is fetched from live APIs via server-side proxy routes in `src/routes/api/`. No mock data layer.
+- **Workers runtime**: Do not read the filesystem at runtime (`fs`, `process.cwd()`). Workers have no disk. Server secrets like `CODEX_API_KEY` come from `process.env` (Worker secrets / Node env). If adding packages that bundle their own Buffer / Node polyfills, add them to `ssr.noExternal` in `vite.config.ts`.
 - **No auto-commit**: Don't commit unless explicitly asked.
 
 ## Security guardrails
@@ -142,8 +151,10 @@ Then:
 
 ```bash
 bun install
-bun run dev     # localhost:3000
-bun run build   # production build (catches type errors)
+bun run dev        # localhost:3000 (Cloudflare local runtime)
+bun run build      # Cloudflare Workers build (default)
+bun run deploy     # build + wrangler deploy
+bun run build:node # Nitro Node build for Docker / Coolify
 ```
 
 ## Cursor Cloud specific instructions
@@ -153,7 +164,7 @@ bun run build   # production build (catches type errors)
 - **`.env` setup**: Copy `.env.example` to `.env`. All API keys are optional — the app falls back to mock data in `src/lib/mock/`. The `/tokens` page uses live Codex data when `CODEX_API_KEY` is set; without it, mock data is shown.
 - **Lint**: `bun run lint` (ESLint). The codebase has pre-existing lint errors (import ordering, array-type style). `bun run check` runs Prettier + ESLint with `--fix`.
 - **Tests**: `bun run test` (bun:test). Tests are under `src/lib/__tests__/`, `src/lib/hyperliquid/__tests__/`, `src/hooks/__tests__/`, and `src/components/.../__tests__/`.
-- **Build**: `bun run build` produces a Nitro server bundle in `.output/`. This also surfaces TypeScript errors.
+- **Build**: `bun run build` produces the Cloudflare Workers bundle. For Docker/Coolify, `bun run build:node` produces a Nitro server bundle in `.output/`. Both surface TypeScript errors.
 - **Route generation**: TanStack Router auto-generates `src/routeTree.gen.ts` when the dev server runs. If routes look stale, start the dev server to regenerate.
 
 ## Component layout and design principles

@@ -5,6 +5,9 @@ import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
 import { nitro } from 'nitro/vite'
+import { cloudflare } from '@cloudflare/vite-plugin'
+
+const isNodeTarget = process.env.DEPLOY_TARGET === 'node'
 
 const config = defineConfig({
   server: {
@@ -16,8 +19,8 @@ const config = defineConfig({
     noExternal: ['@coinbase/cdp-react'],
   },
   plugins: [
+    isNodeTarget ? nitro() : cloudflare({ viteEnvironment: { name: 'ssr' } }),
     devtools(),
-    nitro(),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
